@@ -1,10 +1,11 @@
 // ui/settings.js: preferences panel
 
 import { state } from '../state.js';
-import { applyTheme, applyFont } from '../themes.js'; // <-- Импортируем applyFont
+import { applyTheme, applyFont } from '../themes.js'; 
 import { toggleParticles } from '../particles.js';
 import { openFullSchedule } from './full-schedule.js';
 import { promptInstall } from '../pwa.js';
+import { vibrate } from '../haptics.js'; // ИМПОРТ ВИБРАЦИИ
 
 export function openSettings() {
     if (document.getElementById('settings-modal')) return;
@@ -50,7 +51,27 @@ export function openSettings() {
                 </a>
             </div>
 
-            <!-- НОВЫЙ БЛОК: ШРИФТЫ -->
+            <!-- НОВЫЙ БЛОК: ВИБРАЦИЯ -->
+            <div class="settings-group">
+                <h3>Вибрация</h3>
+                <div class="toggle-row">
+                    <span>Тактильный отклик</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-vibration" ${settings.vibration ? 'checked' : ''}>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-row" style="${!settings.vibration ? 'opacity: 0.5; pointer-events: none;' : ''}" id="vibration-force-row">
+                    <span>Сила вибрации</span>
+                    <select id="select-vibration-force" class="settings-select" style="width: auto; padding: 5px 10px;">
+                        <option value="light" ${settings.vibrationForce === 'light' ? 'selected' : ''}>Легкая</option>
+                        <option value="medium" ${settings.vibrationForce === 'medium' ? 'selected' : ''}>Средняя</option>
+                        <option value="heavy" ${settings.vibrationForce === 'heavy' ? 'selected' : ''}>Сильная</option>
+                    </select>
+                </div>
+            </div>
+            <!-- КОНЕЦ БЛОКА ВИБРАЦИИ -->
+
             <div class="settings-group">
                 <h3>Шрифты</h3>
                 <div class="theme-grid">
@@ -59,7 +80,6 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- БЛОК: ОБОИ -->
             <div class="settings-group">
                 <h3>Обои</h3>
                 <input type="text" id="bg-url" class="settings-select" placeholder="Ссылка на видео/гифку (URL)" value="${settings.bgUrl || ''}" style="margin-bottom: 8px;">
@@ -118,50 +138,76 @@ export function openSettings() {
     `;
 
     document.body.appendChild(modal);
+    vibrate('impact');
 
     // --- Обработчики ---
     const closeBtn = modal.querySelector('#btn-close-settings');
-    closeBtn.addEventListener('click', () => modal.remove());
+    closeBtn.addEventListener('click', () => { modal.remove(); vibrate('impact'); });
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
+        if (e.target === modal) { modal.remove(); vibrate('impact'); }
+    });
+
+    // НАСТРОЙКИ ВИБРАЦИИ
+    const vibToggle = modal.querySelector('#toggle-vibration');
+    const vibForceRow = modal.querySelector('#vibration-force-row');
+    const vibForceSelect = modal.querySelector('#select-vibration-force');
+
+    vibToggle.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        const newSettings = { ...state.get('settings'), vibration: isChecked };
+        state.set('settings', newSettings);
+        
+        vibForceRow.style.opacity = isChecked ? '1' : '0.5';
+        vibForceRow.style.pointerEvents = isChecked ? 'auto' : 'none';
+        
+        if (isChecked) vibrate('success');
+    });
+
+    vibForceSelect.addEventListener('change', (e) => {
+        const newSettings = { ...state.get('settings'), vibrationForce: e.target.value };
+        state.set('settings', newSettings);
+        vibrate('impact');
     });
 
     // PWA
     const installBtn = modal.querySelector('#btn-install-pwa');
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
+            vibrate('impact');
             const accepted = await promptInstall();
             if (accepted) {
                 installBtn.innerHTML = '✅ Приложение установлено';
                 installBtn.style.background = 'rgba(255,255,255,0.1)';
+                vibrate('success');
             }
         });
     }
 
     // Поделиться
     modal.querySelector('#btn-share-qr').addEventListener('click', () => {
+        vibrate('impact');
         modal.remove();
         openQRCodeModal();
     });
 
     // Расписание
     modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => {
+        vibrate('impact');
         modal.remove();
         openFullSchedule();
     });
 
-    // ОБОИ - URL
+    // ОБОИ
     modal.querySelector('#bg-url').addEventListener('input', (e) => {
         const newSettings = { ...state.get('settings'), bgUrl: e.target.value };
         state.set('settings', newSettings);
     });
 
-    // ОБОИ - Загрузка файла
     modal.querySelector('#bg-file').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         if (file.size > 4 * 1024 * 1024) {
-            alert('Файл слишком большой (макс. 4 МБ). Для больших файлов используйте ссылку (URL).');
+            alert('Файл слишком большой (макс. 4 МБ).');
             return;
         }
         const reader = new FileReader();
@@ -173,20 +219,18 @@ export function openSettings() {
         reader.readAsDataURL(file);
     });
 
-    // ОБОИ - Затемнение
     modal.querySelector('#bg-darkness').addEventListener('input', (e) => {
         const newSettings = { ...state.get('settings'), bgDarkness: parseFloat(e.target.value) };
         state.set('settings', newSettings);
     });
 
-    // ОБОИ - Размытие
     modal.querySelector('#bg-blur').addEventListener('input', (e) => {
         const newSettings = { ...state.get('settings'), bgBlur: parseInt(e.target.value) };
         state.set('settings', newSettings);
     });
 
-    // ОБОИ - Убрать
     modal.querySelector('#btn-clear-bg').addEventListener('click', () => {
+        vibrate('error');
         const newSettings = { ...state.get('settings'), bgUrl: '', bgDarkness: 0, bgBlur: 0 };
         state.set('settings', newSettings);
         modal.querySelector('#bg-url').value = '';
@@ -198,11 +242,10 @@ export function openSettings() {
     // Шрифты
     modal.querySelectorAll('.theme-btn[data-font]').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            vibrate('impact');
             const font = e.target.dataset.font;
-            
             modal.querySelectorAll('.theme-btn[data-font]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            
             const newSettings = { ...state.get('settings'), font: font };
             state.set('settings', newSettings);
             applyFont(font);
@@ -212,6 +255,7 @@ export function openSettings() {
     // Темы
     modal.querySelectorAll('.theme-btn[data-theme]').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            vibrate('impact');
             const theme = e.target.dataset.theme;
             modal.querySelectorAll('.theme-btn[data-theme]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
@@ -220,8 +264,7 @@ export function openSettings() {
     });
 
     // Погода
-    const weatherSelect = modal.querySelector('#select-weather');
-    weatherSelect.addEventListener('change', (e) => {
+    modal.querySelector('#select-weather').addEventListener('change', (e) => {
         const newSettings = { ...state.get('settings'), weatherApi: e.target.value };
         state.set('settings', newSettings);
     });
@@ -230,6 +273,7 @@ export function openSettings() {
     const setupToggle = (id, settingName, callback) => {
         const toggle = modal.querySelector(`#${id}`);
         toggle.addEventListener('change', (e) => {
+            vibrate('impact');
             const isChecked = e.target.checked;
             const newSettings = { ...state.get('settings'), [settingName]: isChecked };
             state.set('settings', newSettings);

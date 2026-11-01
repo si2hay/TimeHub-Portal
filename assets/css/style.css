@@ -2,14 +2,16 @@
 
 @font-face {
     font-family: 'MinecraftRus';
-    src: url('../fonts/MinecraftRus.ttf') format('truetype');
+    src: url('../fonts/MinecraftRus.woff2') format('woff2'),
+         url('../fonts/MinecraftRus.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family: 'Tsap-Tsarap';
-    src: url('../fonts/Tsap-Tsarap.ttf') format('truetype');
+    src: url('../fonts/Tsap-Tsarap.woff2') format('woff2'),
+         url('../fonts/Tsap-Tsarap.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -34,6 +36,28 @@ html, body {
     transition: background-color var(--transition-speed), color var(--transition-speed);
     overflow-x: hidden;
 }
+
+/* --- НОВАЯ КНОПКА КАЛЕНДАРЯ --- */
+.calendar-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    opacity: 0.6;
+}
+.calendar-btn:hover, .calendar-btn:active {
+    opacity: 1;
+    background: var(--accent-color);
+    border-color: var(--accent-hover);
+    transform: scale(1.1);
+}
+/* -------------------------------- */
 
 /* --- ЧИТАЕМОСТЬ TSAP-TSARAP --- */
 body.font-tsap {

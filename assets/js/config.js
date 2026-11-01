@@ -10,13 +10,17 @@ export const CONFIG = {
     // Настройки по умолчанию
     DEFAULT_SETTINGS: {
         theme: "dark",
-        font: "minecraft", // <-- Изменено с monocraft
+        font: "minecraft",
         particles: true,
         liquidGlass: true,
         pulse: true,
         weatherApi: "open-meteo",
         group: "26 АТП-2Бо", 
-        course: 1 
+        course: 1,
+        
+        // НОВЫЕ НАСТРОЙКИ ВИБРАЦИИ
+        vibration: true,           
+        vibrationForce: "medium"   
     }
 };
 
