@@ -14,7 +14,13 @@ import { createNotes } from './ui/notes.js';
 import { createFooter } from './ui/footer.js';
 import { createRadialDayPicker } from './ui/radial-day-picker.js';
 
+// ФИЛЬТР ОШИБОК (Игнорируем внутренние ошибки Telegram)
 window.addEventListener('error', (e) => {
+    if (!e.filename || e.message.includes('Script error')) {
+        console.warn('Подавлена внутренняя ошибка Telegram WebApp:', e.message);
+        return;
+    }
+    
     const errDiv = document.createElement('div');
     errDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:red; color:white; z-index:9999; padding:10px; font-size:14px; font-family:monospace;';
     errDiv.textContent = `ОШИБКА: ${e.message} в файле ${e.filename}:${e.lineno}`;

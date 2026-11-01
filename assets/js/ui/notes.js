@@ -31,18 +31,27 @@ export function createNotes() {
         </div>
     `;
 
-    // --- ЛОГИКА ЧЕК-ЛИСТА ---
     const checkInput = container.querySelector('#check-input');
     const addBtn = container.querySelector('#btn-add-check');
     const checklistUl = container.querySelector('#checklist');
+    const textarea = container.querySelector('#notes-area');
+    const status = container.querySelector('#notes-status');
     
     let tasks = [];
+    let isLoaded = false; // Флаг, чтобы не перезаписать облако пустым массивом до его загрузки
 
-    // Асинхронная инициализация чек-листа
-    async function initChecklist() {
+    async function loadData() {
+        // 1. Загружаем чек-лист
         const saved = await smartStorage.getItem('timehub_checklist');
         tasks = saved ? JSON.parse(saved) : [];
         renderChecklist();
+
+        // 2. Загружаем текст
+        const savedNotes = await smartStorage.getItem('timehub_notes') || '';
+        textarea.value = savedNotes;
+        
+        // Разрешаем сохранение
+        isLoaded = true;
     }
 
     function renderChecklist() {
@@ -56,14 +65,12 @@ export function createNotes() {
                 <button class="check-delete">✖</button>
             `;
 
-            // Обработчик галочки
             li.querySelector('.check-box').addEventListener('change', (e) => {
                 tasks[index].done = e.target.checked;
                 saveTasks();
                 renderChecklist();
             });
 
-            // Обработчик удаления
             li.querySelector('.check-delete').addEventListener('click', () => {
                 tasks.splice(index, 1);
                 saveTasks();
@@ -75,14 +82,13 @@ export function createNotes() {
     }
 
     function saveTasks() {
-        // Отправляем в умное хранилище (сначала в localStorage, потом в облако TG)
+        if (!isLoaded) return; // Блокируем сохранение, пока не загрузились данные
         smartStorage.setItem('timehub_checklist', JSON.stringify(tasks));
     }
 
     function addTask() {
         const text = checkInput.value.trim();
         if (text) {
-            // Защита от XSS (только буквы, цифры, пробелы)
             const cleanText = text.replace(/[^a-zA-Zа-яА-Я0-9\s.,!?\-]/g, '');
             if (cleanText) {
                 tasks.push({ text: cleanText, done: false });
@@ -98,24 +104,10 @@ export function createNotes() {
         if (e.key === 'Enter') addTask();
     });
 
-    // --- ЛОГИКА ТЕКСТОВЫХ ЗАМЕТОК ---
-    const textarea = container.querySelector('#notes-area');
-    const status = container.querySelector('#notes-status');
-
-    // Асинхронная инициализация текстовых заметок
-    async function initNotes() {
-        const savedNotes = await smartStorage.getItem('timehub_notes') || '';
-        textarea.value = savedNotes;
-    }
-
     let saveTimeout;
-
-    textarea.addEventListener('keydown', () => {
-        textarea.classList.add('key-pressed');
-        setTimeout(() => textarea.classList.remove('key-pressed'), 100);
-    });
-
     textarea.addEventListener('input', (e) => {
+        if (!isLoaded) return; // Ждем загрузки
+
         const originalValue = e.target.value;
         const cleanValue = originalValue.replace(/[^a-zA-Zа-яА-Я0-9\s.,!?\-]/g, '');
         if (originalValue !== cleanValue) e.target.value = cleanValue;
@@ -140,9 +132,7 @@ export function createNotes() {
         }, 500);
     });
 
-    // Запускаем загрузку данных
-    initChecklist();
-    initNotes();
+    loadData();
 
     return container;
 }

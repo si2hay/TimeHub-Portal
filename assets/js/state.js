@@ -5,7 +5,6 @@ import { smartStorage } from './telegram-storage.js';
 
 class State {
     constructor() {
-        // 1. Синхронно загружаем настройки из localStorage (чтобы сайт открылся мгновенно)
         const savedSettings = JSON.parse(localStorage.getItem('timehub_settings')) || {};
         
         const currentWeekCalc = this.determineWeek();
@@ -20,31 +19,33 @@ class State {
         };
         
         this.listeners = {};
+        this.isReady = false;
 
-        // 2. В фоне запускаем проверку облака Telegram
-        this.syncWithCloud();
+        // Запускаем синхронизацию в фоне
+        this.initCloudSync();
     }
 
-    async syncWithCloud() {
+    async initCloudSync() {
         try {
-            // Запрашиваем настройки из умного хранилища (сначала облако, потом локал)
             const cloudSettingsStr = await smartStorage.getItem('timehub_settings');
             
             if (cloudSettingsStr) {
                 const cloudSettings = JSON.parse(cloudSettingsStr);
                 const localSettingsStr = JSON.stringify(this.data.settings);
 
-                // Если в облаке настройки другие — обновляем и применяем
                 if (localSettingsStr !== cloudSettingsStr) {
                     this.data.settings = { ...CONFIG.DEFAULT_SETTINGS, ...cloudSettings };
                     localStorage.setItem('timehub_settings', cloudSettingsStr);
                     
-                    // Оповещаем все модули (темы, шрифты, UI), что настройки изменились
+                    // Оповещаем интерфейс, что настройки поменялись
                     this.emit('change:settings', this.data.settings);
                 }
             }
         } catch (e) {
-            console.warn('Ошибка синхронизации настроек с облаком Telegram:', e);
+            console.warn('Ошибка синхронизации настроек:', e);
+        } finally {
+            this.isReady = true;
+            this.emit('ready'); // Говорим всем, что облако проверено
         }
     }
 
@@ -70,12 +71,8 @@ class State {
         
         if (key === 'settings') {
             const strValue = JSON.stringify(value);
-            
-            // Синхронно сохраняем в локальное хранилище
-            localStorage.setItem('timehub_settings', strValue);
-            
-            // Асинхронно отправляем в облако (внутри smartStorage)
-            smartStorage.setItem('timehub_settings', strValue);
+            localStorage.setItem('timehub_settings', strValue); 
+            smartStorage.setItem('timehub_settings', strValue); 
         }
     }
 
