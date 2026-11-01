@@ -16,11 +16,7 @@ export const CONFIG = {
         pulse: true,
         weatherApi: "open-meteo",
         group: "26 АТП-2Бо", 
-        course: 1,
-        
-        // НОВЫЕ НАСТРОЙКИ ВИБРАЦИИ
-        vibration: true,           
-        vibrationForce: "medium"   
+        course: 1 
     }
 };
 

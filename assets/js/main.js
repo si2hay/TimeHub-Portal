@@ -13,7 +13,6 @@ import { createReference } from './ui/reference.js';
 import { createNotes } from './ui/notes.js';
 import { createFooter } from './ui/footer.js';
 import { createRadialDayPicker } from './ui/radial-day-picker.js';
-import { vibrate } from './haptics.js';
 
 // ФИЛЬТР ОШИБОК
 window.addEventListener('error', (e) => {
@@ -34,7 +33,6 @@ if (tg && tg.initData) {
         const modals = document.querySelectorAll('.modal-overlay');
         if (modals.length > 0) {
             modals[modals.length - 1].remove(); 
-            vibrate('impact');
         }
     });
 
