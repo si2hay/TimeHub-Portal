@@ -1,12 +1,14 @@
 // state.js: Хранилище состояния приложения и система событий
 
 import { CONFIG } from './config.js';
-import { smartStorage } from './telegram-storage.js';
 
 class State {
     constructor() {
+        // 1. Загружаем настройки ТОЛЬКО из локального хранилища устройства.
+        // Каждое устройство (телефон, ПК) хранит свои настройки независимо.
         const savedSettings = JSON.parse(localStorage.getItem('timehub_settings')) || {};
         
+        // Вычисляем текущую неделю на основе даты старта семестра
         const currentWeekCalc = this.determineWeek();
         
         this.data = {
@@ -19,36 +21,9 @@ class State {
         };
         
         this.listeners = {};
-        this.isReady = false;
-
-        // Запускаем синхронизацию в фоне
-        this.initCloudSync();
     }
 
-    async initCloudSync() {
-        try {
-            const cloudSettingsStr = await smartStorage.getItem('timehub_settings');
-            
-            if (cloudSettingsStr) {
-                const cloudSettings = JSON.parse(cloudSettingsStr);
-                const localSettingsStr = JSON.stringify(this.data.settings);
-
-                if (localSettingsStr !== cloudSettingsStr) {
-                    this.data.settings = { ...CONFIG.DEFAULT_SETTINGS, ...cloudSettings };
-                    localStorage.setItem('timehub_settings', cloudSettingsStr);
-                    
-                    // Оповещаем интерфейс, что настройки поменялись
-                    this.emit('change:settings', this.data.settings);
-                }
-            }
-        } catch (e) {
-            console.warn('Ошибка синхронизации настроек:', e);
-        } finally {
-            this.isReady = true;
-            this.emit('ready'); // Говорим всем, что облако проверено
-        }
-    }
-
+    // Вычисление учебной недели (1 или 2)
     determineWeek() {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -61,21 +36,24 @@ class State {
         return weekIndex + 1;
     }
 
+    // Получить значение из состояния
     get(key) {
         return this.data[key];
     }
 
+    // Установить значение и оповестить UI
     set(key, value) {
         this.data[key] = value;
         this.emit(`change:${key}`, value);
         
         if (key === 'settings') {
-            const strValue = JSON.stringify(value);
-            localStorage.setItem('timehub_settings', strValue); 
-            smartStorage.setItem('timehub_settings', strValue); 
+            // Сохраняем настройки ТОЛЬКО локально. 
+            // В облако Telegram они больше не летят (по твоей просьбе).
+            localStorage.setItem('timehub_settings', JSON.stringify(value));
         }
     }
 
+    // Подписка на события
     on(event, callback) {
         if (!this.listeners[event]) {
             this.listeners[event] = [];
@@ -83,6 +61,7 @@ class State {
         this.listeners[event].push(callback);
     }
 
+    // Вызов события для всех подписчиков
     emit(event, data) {
         if (this.listeners[event]) {
             this.listeners[event].forEach(callback => callback(data));

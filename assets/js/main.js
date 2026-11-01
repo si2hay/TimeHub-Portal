@@ -100,8 +100,8 @@ const appDiv = document.getElementById('app');
 if (appDiv) {
     appDiv.innerHTML = ''; 
     
-    initThemes(); 
-    initParticles(); 
+    initThemes(); // Тема загрузится из локального хранилища
+    initParticles(); // Частицы тоже
     initPWA(); 
     
     appDiv.appendChild(createHeader());
