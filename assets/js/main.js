@@ -1,11 +1,10 @@
 // main.js: Точка входа в приложение
 
-//import { initDebug } from './debug.js';
 import { state } from './state.js';
 import { CONFIG } from './config.js';
 import { initThemes } from './themes.js';
 import { initParticles } from './particles.js';
-import { initPWA } from './pwa.js'; // <-- Импорт PWA
+import { initPWA } from './pwa.js';
 import { createHeader } from './ui/header.js';
 import { createControls } from './ui/controls.js';
 import { createTimer } from './ui/timer.js';
@@ -22,13 +21,56 @@ window.addEventListener('error', (e) => {
     document.body.appendChild(errDiv);
 });
 
+// ФУНКЦИЯ ДЛЯ ПРИМЕНЕНИЯ ОБОЕВ
+function applyBackground() {
+    const settings = state.get('settings');
+    const container = document.getElementById('custom-bg-container');
+    const media = container.querySelector('.custom-bg-media');
+    const overlay = container.querySelector('.custom-bg-overlay');
+
+    // Если обоев нет - скрываем контейнер и возвращаем стандартный фон
+    if (!settings.bgUrl) {
+        container.style.display = 'none';
+        document.body.style.backgroundColor = 'var(--bg-color)';
+        document.body.style.backgroundImage = 'var(--bg-gradient)';
+        return;
+    }
+
+    container.style.display = 'block';
+    document.body.style.backgroundColor = 'transparent';
+    document.body.style.backgroundImage = 'none';
+
+    // Настройка затемнения и размытия
+    overlay.style.opacity = settings.bgDarkness || 0;
+    media.style.filter = `blur(${settings.bgBlur || 0}px)`;
+
+    // Проверяем, видео это или картинка
+    const isVideo = settings.bgUrl.match(/\.(mp4|webm|ogg)$/i) || (settings.bgUrl.startsWith('data:video'));
+    
+    // Если ссылка изменилась - пересоздаем элемент
+    if (media.dataset.currentUrl !== settings.bgUrl) {
+        if (isVideo) {
+            media.innerHTML = `<video src="${settings.bgUrl}" autoplay loop muted playsinline></video>`;
+        } else {
+            media.innerHTML = `<img src="${settings.bgUrl}" alt="wallpaper">`;
+        }
+        media.dataset.currentUrl = settings.bgUrl;
+    }
+
+    // Подгонка (cover / contain)
+    const mediaEl = media.querySelector('img, video');
+    if (mediaEl) {
+        mediaEl.style.objectFit = settings.bgFit || 'cover';
+    }
+}
+
 const appDiv = document.getElementById('app');
 if (appDiv) {
     appDiv.innerHTML = ''; 
     
     initThemes(); 
     initParticles(); 
-    initPWA(); // <-- Инициализация PWA
+    initPWA(); 
     
     appDiv.appendChild(createHeader());
     appDiv.appendChild(createControls());
@@ -40,6 +82,8 @@ if (appDiv) {
     appDiv.appendChild(createRadialDayPicker());
 }
 
-//initDebug();
+// Слушаем изменения настроек и применяем фон
+state.on('change:settings', applyBackground);
+applyBackground(); // Запускаем при загрузке
 
 export {};

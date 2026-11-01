@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TimeHub Builder — Конструктор расписания</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M50 5 L85 20 L85 75 L50 95 L15 75 L15 20 Z' stroke='%230062b1' stroke-width='4' stroke-linejoin='round'/><path d='M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/><path d='M 40 30 H 60 M 50 30 V 60' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/><g transform='translate(100, 0) scale(-1, 1)'><path d='M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/></g><path d='M 15 72 C 35 82 50 67 50 67 C 50 67 65 82 85 72' stroke='%230062b1' stroke-width='5' stroke-linecap='round'/></svg>">
     
     <link rel="stylesheet" href="./assets/css/style.css">
     <link rel="stylesheet" href="./assets/css/themes.css">
@@ -14,9 +14,23 @@
 <body>
     <div id="builder-app">
         <header class="builder-header glass-panel">
-            <div class="header-title">
-                <h1>🛠️ TimeHub Builder</h1>
-                <span>Редактор расписаний</span>
+            <div class="header-title" style="display: flex; align-items: center; gap: 12px;">
+                <!-- Логотип в Builder -->
+                <div style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" width="24" height="24">
+                        <path d="M50 5 L85 20 L85 75 L50 95 L15 75 L15 20 Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                        <path d="M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M 40 30 H 60 M 50 30 V 60" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+                        <g transform="translate(100, 0) scale(-1, 1)">
+                            <path d="M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+                        </g>
+                        <path d="M 15 72 C 35 82 50 67 50 67 C 50 67 65 82 85 72" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 style="margin-bottom: 0;">TimeHub Builder</h1>
+                    <span style="font-size: 12px; color: var(--text-muted);">Редактор расписаний</span>
+                </div>
             </div>
             <div class="header-controls">
                 <input type="text" id="group-name" class="builder-input" placeholder="Группа (напр. 26 АТП-1Бо)" style="width: 220px;">
@@ -84,30 +98,13 @@
             </div>
             <div style="font-size: 14px; line-height: 1.6; color: var(--text-main);">
                 <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 12px;">
-                    <li>
-                        <strong>Название группы.</strong> Введи в шапке точное название своей группы (например, <strong>26 АТП-4Бо</strong>). Оно станет именем файла и заголовком в расписании.
-                    </li>
-                    <li>
-                        <strong>Неделя и день.</strong> Слева переключай 1-ю и 2-ю неделю, а также дни с понедельника по пятницу.
-                    </li>
-                    <li>
-                        <strong>Добавление пар.</strong> Нажми <strong>«+ Добавить пару»</strong>. Начни вводить предмет (например, «Математика») — браузер подскажет варианты. При выборе из подсказки кабинет и преподаватель подставятся автоматически, но ты можешь их изменить.
-                    </li>
-                    <li>
-                        <strong>Номер пары.</strong> В левом верхнем углу каждой карточки есть <span style="color: var(--accent-color); font-weight: bold;">синий кружок с цифрой</span>. Это номер пары по расписанию. Если в этот день первая пара отменена и сразу идёт вторая — просто кликни на кружок, введи <strong>2</strong>, и нажми Enter. Карточка встанет на нужное место.
-                    </li>
-                    <li>
-                        <strong>Подгруппы (Информатика, Ин. яз.).</strong> Если пару ведут два преподавателя или она идёт в двух кабинетах, пиши их через слэш с пробелами: <br> <code>2-213 / 212</code> или <code>Ушакова Е.П. / Процок М.П.</code>.
-                    </li>
-                    <li>
-                        <strong>Своё время.</strong> Если у пары нестандартное время (например, классный час), поставь галочку <strong>«Свое время»</strong> и введи часы начала и конца.
-                    </li>
-                    <li>
-                        <strong>Сохранение.</strong> Все изменения сохраняются в браузере автоматически. Если случайно закроешь вкладку — при следующем открытии всё будет на месте.
-                    </li>
-                    <li>
-                        <strong>Скачивание.</strong> Когда заполнил всё расписание, нажми <strong>«Скачать файл»</strong>. Откроется окно с готовым кодом, кнопкой скачивания и возможностью сразу отправить файл разработчику в Telegram.
-                    </li>
+                    <li><strong>Название группы.</strong> Введи в шапке точное название своей группы (например, <strong>26 АТП-4Бо</strong>).</li>
+                    <li><strong>Неделя и день.</strong> Слева переключай 1-ю и 2-ю неделю, а также дни.</li>
+                    <li><strong>Добавление пар.</strong> Нажми «+ Добавить пару». Начни вводить предмет, кабинет и препод подставятся сами.</li>
+                    <li><strong>Номер пары.</strong> Кликни на синий кружок, введи <strong>2</strong>, и нажми Enter, чтобы поставить пару второй.</li>
+                    <li><strong>Подгруппы.</strong> Пиши через слэш: <code>2-213 / 212</code> или <code>Ушакова Е.П. / Процок М.П.</code>.</li>
+                    <li><strong>Своё время.</strong> Поставь галочку и введи часы, если время нестандартное.</li>
+                    <li><strong>Скачивание.</strong> Нажми «Скачать файл» и отправь его в Telegram.</li>
                 </ol>
             </div>
         </div>

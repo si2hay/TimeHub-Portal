@@ -19,6 +19,15 @@
     --transition-speed: 0.3s;
 }
 
+/* --- ПЕРЕКЛЮЧАТЕЛЬ ШРИФТОВ --- */
+body.font-minecraft {
+    --font-family: 'MinecraftRus', monospace;
+}
+
+body.font-tsap {
+    --font-family: 'Tsap-Tsarap', sans-serif;
+}
+
 /* 2. Dota 2 */
 body.theme-dota {
     --bg-color: #1a0b0e;

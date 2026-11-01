@@ -7,6 +7,13 @@
     font-style: normal;
     font-display: swap;
 }
+@font-face {
+    font-family: 'Tsap-Tsarap';
+    src: url('../fonts/Tsap-Tsarap.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
 * {
     box-sizing: border-box;
     margin: 0;
@@ -27,6 +34,26 @@ html, body {
     transition: background-color var(--transition-speed), color var(--transition-speed);
     overflow-x: hidden;
 }
+
+/* --- ЧИТАЕМОСТЬ TSAP-TSARAP --- */
+body.font-tsap {
+    font-size: 20px; /* Сильно увеличиваем базовый размер */
+    letter-spacing: 0.5px; 
+    font-weight: bold; /* Принудительно делаем жирнее */
+    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9), 0px 2px 5px rgba(0, 0, 0, 0.7); /* Усиленная тень */
+}
+body.font-tsap .lesson-subject { font-size: 20px; font-weight: bold; }
+body.font-tsap .lesson-num { font-size: 28px; }
+body.font-tsap .lesson-clock { font-size: 14px; }
+body.font-tsap .lesson-details { font-size: 14px; }
+body.font-tsap .timer-status { font-size: 22px; }
+body.font-tsap .timer-timeleft { font-size: 32px; }
+body.font-tsap .timer-subject { font-size: 20px; }
+body.font-tsap .logo-text h1 { font-size: 22px; }
+body.font-tsap .header-date { font-size: 16px; }
+body.font-tsap .week-label { font-size: 18px; }
+body.font-tsap .group-trigger { font-size: 16px; }
+body.font-tsap .weather-advice { font-size: 12px; }
 
 /* Анимация для градиентных тем */
 body.theme-ocean, body.theme-sunset, body.theme-emerald, body.theme-sakura {
@@ -526,7 +553,7 @@ body.no-glass .glass-panel {
     padding: 20px;
     max-height: 85vh;
     overflow-y: auto;
-    animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes slideUp {
     from { transform: translateY(100%); }
@@ -1057,4 +1084,175 @@ html, body, .modal-content, .schedule-container {
     text-align: center;
     color: var(--accent-color);
     min-height: 40px;
+}
+/* --- Модалка QR-кода --- */
+#qr-container canvas {
+    border-radius: 8px;
+}
+/* =========================================
+   СТИЛИ ДЛЯ ПАНЕЛИ СО ССЫЛКОЙ (QR-код)
+   ========================================= */
+.share-link-container {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Текст ссылки, который обрезается многоточием, если не влезает */
+.share-link-text {
+    flex-grow: 1;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 8px;
+}
+
+/* Кнопка копирования */
+.share-copy-btn {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.share-copy-btn:hover {
+    background: var(--accent-hover);
+}
+
+.share-copy-btn:active {
+    transform: scale(0.95);
+}
+/* =========================================
+   СТИЛИ ДЛЯ QR-КОДА И ССЫЛКИ
+   ========================================= */
+
+/* Красивая подложка для QR-кода */
+.qr-glass-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 24px;
+    margin-bottom: 20px;
+    min-height: 280px;
+    min-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+    /* Свечение в цвет темы (используется переменная --qr-glow, которую мы ставим из JS) */
+    box-shadow: 0 10px 30px -10px var(--qr-glow, var(--accent-color)), 
+                0 0 0 4px rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--qr-glow, var(--accent-color));
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.qr-glass-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px -10px var(--qr-glow, var(--accent-color)), 
+                0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+/* Панель со ссылкой и кнопкой */
+.share-link-container {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 6px;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.share-link-text {
+    flex-grow: 1;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 8px;
+}
+
+.share-copy-btn {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.share-copy-btn:hover {
+    background: var(--accent-hover);
+}
+
+.share-copy-btn:active {
+    transform: scale(0.95);
+}
+/* =========================================
+   СТИЛИ ДЛЯ КАСТОМНЫХ ОБОЕВ
+   ========================================= */
+#custom-bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Уходит за частицы (0) и контент (1) */
+    overflow: hidden;
+    background-color: var(--bg-color); /* Заглушка, если картинка не загрузилась */
+    display: none; /* По умолчанию скрыто */
+}
+
+.custom-bg-media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: filter 0.3s ease;
+}
+
+.custom-bg-media img,
+.custom-bg-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* По умолчанию заполнение */
+}
+
+.custom-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }

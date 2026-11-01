@@ -7,24 +7,22 @@
     <meta name="description" content="TimeHub-Portal — умное расписание и таймер пар для студентов Газпром колледжа Волгограда.">
     <title>TimeHub-Portal</title>
     
-    <!-- Иконка сайта (встроенная SVG, чтобы не было ошибки 404) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏱️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M50 5 L85 20 L85 75 L50 95 L15 75 L15 20 Z' stroke='%230062b1' stroke-width='4' stroke-linejoin='round'/><path d='M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/><path d='M 40 30 H 60 M 50 30 V 60' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/><g transform='translate(100, 0) scale(-1, 1)'><path d='M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/></g><path d='M 15 72 C 35 82 50 67 50 67 C 50 67 65 82 85 72' stroke='%230062b1' stroke-width='5' stroke-linecap='round'/></svg>">
     
-    <!-- PWA Манифест -->
     <link rel="manifest" href="./manifest.json">
     
-    <!-- Стили -->
     <link rel="stylesheet" href="./assets/css/style.css">
     <link rel="stylesheet" href="./assets/css/themes.css">
     <link rel="stylesheet" href="./assets/css/radial.css">
 </head>
 <body>
-    <!-- Корневой контейнер для всего SPA -->
-    <div id="app">
-        <!-- Сюда JS-модули будут динамически вставлять компоненты -->
+    <!-- КОНТЕЙНЕР ДЛЯ ОБОЕВ -->
+    <div id="custom-bg-container">
+        <div class="custom-bg-media"></div>
+        <div class="custom-bg-overlay"></div>
     </div>
 
-    <!-- Точка входа для модулей JS -->
+    <div id="app"></div>
     <script type="module" src="./assets/js/main.js"></script>
 </body>
 </html>

@@ -10,13 +10,13 @@ export const CONFIG = {
     // Настройки по умолчанию
     DEFAULT_SETTINGS: {
         theme: "dark",
-        font: "monocraft",
+        font: "minecraft", // <-- Изменено с monocraft
         particles: true,
         liquidGlass: true,
         pulse: true,
         weatherApi: "open-meteo",
-        group: "26 АТП-2Бо", // Твоя группа по умолчанию
-        course: 1 // 1 или 2+
+        group: "26 АТП-2Бо", 
+        course: 1 
     }
 };
 
