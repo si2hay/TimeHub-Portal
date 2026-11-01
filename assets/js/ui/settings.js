@@ -1,7 +1,7 @@
 // ui/settings.js: preferences panel
 
 import { state } from '../state.js';
-import { applyTheme, applyFont } from '../themes.js'; 
+import { applyTheme, applyFont, applyTextScale } from '../themes.js'; 
 import { toggleParticles } from '../particles.js';
 import { openFullSchedule } from './full-schedule.js';
 import { promptInstall } from '../pwa.js';
@@ -31,11 +31,11 @@ export function openSettings() {
 
             <div class="settings-group">
                 <h3>Приложение</h3>
-                <button id="btn-install-pwa" style="width: 100%; display: flex !important; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; margin-bottom: 10px;">
+                <button id="btn-install-pwa" class="theme-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: #ef4444; color: white; border: none; margin-bottom: 10px;">
                     📲 Установить на устройство
                 </button>
-                <button id="btn-share-qr" class="theme-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;">
-                    📱 Поделиться сайтом (QR)
+                <button id="btn-share-app" class="theme-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;">
+                    🔗 Поделиться приложением (QR)
                 </button>
             </div>
 
@@ -51,18 +51,38 @@ export function openSettings() {
             </div>
 
             <div class="settings-group">
+                <h3>Размер шрифта</h3>
+                <div class="theme-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <button class="theme-btn ${settings.textScale === 0.9 ? 'active' : ''}" data-scale="0.9">Мелкий</button>
+                    <button class="theme-btn ${settings.textScale === 1 || !settings.textScale ? 'active' : ''}" data-scale="1">Обычный</button>
+                    <button class="theme-btn ${settings.textScale === 1.15 ? 'active' : ''}" data-scale="1.15">Крупный</button>
+                </div>
+            </div>
+
+            <div class="settings-group">
                 <h3>Шрифты</h3>
-                <div class="theme-grid">
+                <div class="theme-grid" style="grid-template-columns: 1fr 1fr 1fr;">
                     <button class="theme-btn ${settings.font === 'minecraft' ? 'active' : ''}" data-font="minecraft">Minecraft</button>
                     <button class="theme-btn ${settings.font === 'tsap' ? 'active' : ''}" data-font="tsap">Tsap-Tsarap</button>
+                    <button class="theme-btn ${settings.font === 'inter' ? 'active' : ''}" data-font="inter">Inter</button>
+                    <button class="theme-btn ${settings.font === 'roboto' ? 'active' : ''}" data-font="roboto">Roboto</button>
+                    <button class="theme-btn ${settings.font === 'rubik' ? 'active' : ''}" data-font="rubik">Rubik</button>
+                    <button class="theme-btn ${settings.font === 'play' ? 'active' : ''}" data-font="play">Play</button>
+                    <button class="theme-btn ${settings.font === 'montserrat' ? 'active' : ''}" data-font="montserrat">Montserrat</button>
                 </div>
             </div>
 
             <div class="settings-group">
                 <h3>Обои</h3>
-                <input type="text" id="bg-url" class="settings-select" placeholder="Ссылка на видео/гифку (URL)" value="${settings.bgUrl || ''}" style="margin-bottom: 8px;">
-                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Или загрузи картинку с устройства:</div>
-                <input type="file" id="bg-file" accept="image/*" style="font-size: 12px; color: var(--text-main); margin-bottom: 12px;">
+                <input type="text" id="bg-url" class="settings-select" placeholder="Ссылка на видео/гифку (URL)" value="${settings.bgUrl || ''}" style="margin-bottom: 12px;">
+                
+                <div style="text-align: center; margin-bottom: 12px;">
+                    <label for="bg-file" class="theme-btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; cursor: pointer; width: 100%;">
+                        📁 Выбрать картинку с устройства
+                    </label>
+                    <input type="file" id="bg-file" accept="image/*" style="display: none;">
+                    <div id="file-name" style="font-size: 11px; color: var(--text-muted); margin-top: 6px; word-break: break-all;"></div>
+                </div>
                 
                 <div class="toggle-row">
                     <span>Затемнение</span>
@@ -112,6 +132,19 @@ export function openSettings() {
                     </label>
                 </div>
             </div>
+
+            <div class="settings-group" style="text-align: center; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <h3>Связь с автором</h3>
+                <p style="color: var(--text-muted); margin-bottom: 10px;">Вопросы, предложения и добавление расписаний. <br><em>(Отвечаем по возможности)</em></p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="https://t.me/+sq9RDqa2I2A3M2Iy" target="_blank" class="theme-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        💬 Группа в Telegram
+                    </a>
+                    <a href="mailto:gemg944@gmail.com" class="theme-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        📧 gemg944@gmail.com
+                    </a>
+                </div>
+            </div>
         </div>
     `;
 
@@ -136,8 +169,8 @@ export function openSettings() {
         });
     }
 
-    // Поделиться
-    modal.querySelector('#btn-share-qr').addEventListener('click', () => {
+    // Поделиться (открывает QR-модалку)
+    modal.querySelector('#btn-share-app').addEventListener('click', () => {
         modal.remove();
         openQRCodeModal();
     });
@@ -146,6 +179,19 @@ export function openSettings() {
     modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => {
         modal.remove();
         openFullSchedule();
+    });
+
+    // РАЗМЕР ШРИФТА
+    modal.querySelectorAll('.theme-btn[data-scale]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const scale = parseFloat(e.target.dataset.scale);
+            modal.querySelectorAll('.theme-btn[data-scale]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const newSettings = { ...state.get('settings'), textScale: scale };
+            state.set('settings', newSettings);
+            applyTextScale(scale);
+        });
     });
 
     // ОБОИ
@@ -157,6 +203,9 @@ export function openSettings() {
     modal.querySelector('#bg-file').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        
+        modal.querySelector('#file-name').textContent = `Выбрано: ${file.name}`;
+        
         if (file.size > 4 * 1024 * 1024) {
             alert('Файл слишком большой (макс. 4 МБ).');
             return;
@@ -185,6 +234,7 @@ export function openSettings() {
         state.set('settings', newSettings);
         modal.querySelector('#bg-url').value = '';
         modal.querySelector('#bg-file').value = '';
+        modal.querySelector('#file-name').textContent = '';
         modal.querySelector('#bg-darkness').value = 0;
         modal.querySelector('#bg-blur').value = 0;
     });
@@ -260,11 +310,32 @@ function ensureDarkEnough(color) {
     return '#1a1a1a';
 }
 
+// Вспомогательная функция для копирования (с фолбэком для старых браузеров)
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        return new Promise((res, rej) => {
+            document.execCommand('copy') ? res() : rej();
+            textArea.remove();
+        });
+    }
+}
+
 // --- ЛОГИКА QR-КОДА ---
 async function openQRCodeModal() {
     const qrModal = document.createElement('div');
     qrModal.className = 'modal-overlay';
-    const currentUrl = window.location.origin + window.location.pathname;
+    
+    const currentUrl = window.location.href.split('?')[0];
 
     qrModal.innerHTML = `
         <div class="modal-content glass-panel" style="max-width: 400px; text-align: center;">
@@ -272,7 +343,7 @@ async function openQRCodeModal() {
                 <h2>Поделиться</h2>
                 <button id="btn-close-qr" class="icon-btn">✖</button>
             </div>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
                 Наведи камеру телефона, чтобы открыть TimeHub-Portal
             </p>
             <div id="qr-container" class="qr-glass-container">
@@ -280,6 +351,7 @@ async function openQRCodeModal() {
             </div>
             <div class="share-link-container">
                 <span class="share-link-text" id="share-url">${currentUrl}</span>
+                <button id="btn-share-qr-native" class="share-copy-btn" title="Поделиться">🔗</button>
                 <button id="btn-copy-link" class="share-copy-btn" title="Скопировать ссылку">📋</button>
             </div>
         </div>
@@ -289,10 +361,26 @@ async function openQRCodeModal() {
     qrModal.querySelector('#btn-close-qr').addEventListener('click', () => qrModal.remove());
     qrModal.addEventListener('click', (e) => { if (e.target === qrModal) qrModal.remove(); });
 
+    qrModal.querySelector('#btn-share-qr-native').addEventListener('click', async () => {
+        const shareData = {
+            title: 'TimeHub Portal',
+            text: 'Умное расписание и заметки для студентов!',
+            url: currentUrl
+        };
+
+        if (navigator.share) {
+            try { await navigator.share(shareData); } catch (err) {}
+        } else if (window.Telegram?.WebApp?.switchInlineQuery) {
+            window.Telegram.WebApp.switchInlineQuery(`Посмотри это приложение: ${currentUrl}`, ['users', 'groups']);
+        } else {
+            copyToClipboard(currentUrl).then(() => alert('Ссылка скопирована!')).catch(() => alert('Не удалось скопировать.'));
+        }
+    });
+
     const copyBtn = qrModal.querySelector('#btn-copy-link');
     copyBtn.addEventListener('click', async () => {
         try {
-            await navigator.clipboard.writeText(currentUrl);
+            await copyToClipboard(currentUrl);
             copyBtn.innerHTML = '✅';
             copyBtn.style.background = '#10b981'; 
             setTimeout(() => {
@@ -300,7 +388,6 @@ async function openQRCodeModal() {
                 copyBtn.style.background = 'var(--accent-color)';
             }, 2000);
         } catch (err) {
-            console.error('Ошибка копирования', err);
             alert('Не удалось скопировать. Ссылка: ' + currentUrl);
         }
     });

@@ -16,7 +16,8 @@ export const CONFIG = {
         pulse: true,
         weatherApi: "open-meteo",
         group: "26 АТП-2Бо", 
-        course: 1 
+        course: 1,
+        textScale: 1 // <--- НОВАЯ НАСТРОЙКА (1 = обычный)
     }
 };
 

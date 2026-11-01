@@ -1,6 +1,5 @@
 // sw.js: Умный Service Worker (Network First)
-
-const CACHE_NAME = 'timehub-v3';
+const CACHE_NAME = 'timehub-v1793575310'; // Это значение теперь обновляется автоматически Git-хуком
 const ASSETS = [
     './',
     './index.html',
@@ -15,10 +14,11 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-    self.skipWaiting();
+    // Не ждем закрытия старых вкладок, активируемся сразу
+    self.skipWaiting(); 
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS).catch(err => console.warn('Ошибка кэширования файлов:', err));
+            return cache.addAll(ASSETS).catch(err => console.warn('Ошибка кэширования:', err));
         })
     );
 });
@@ -38,11 +38,20 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
+// Слушаем команду от pwa.js на принудительную активацию
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
 self.addEventListener('fetch', (e) => {
     if (e.request.url.includes('telegram.org') || 
         e.request.url.includes('open-meteo.com') || 
         e.request.url.includes('wttr.in') ||
-        e.request.url.includes('esm.sh')) {
+        e.request.url.includes('esm.sh') ||
+        e.request.url.includes('fonts.googleapis.com') ||
+        e.request.url.includes('fonts.gstatic.com')) {
         return;
     }
 

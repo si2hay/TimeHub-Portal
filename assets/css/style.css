@@ -37,15 +37,12 @@ html, body {
     overflow-x: hidden;
 }
 
-
-/* -------------------------------- */
-
 /* --- ЧИТАЕМОСТЬ TSAP-TSARAP --- */
 body.font-tsap {
-    font-size: 20px; /* Сильно увеличиваем базовый размер */
+    font-size: 20px;
     letter-spacing: 0.5px; 
-    font-weight: bold; /* Принудительно делаем жирнее */
-    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9), 0px 2px 5px rgba(0, 0, 0, 0.7); /* Усиленная тень */
+    font-weight: bold;
+    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9), 0px 2px 5px rgba(0, 0, 0, 0.7);
 }
 body.font-tsap .lesson-subject { font-size: 20px; font-weight: bold; }
 body.font-tsap .lesson-num { font-size: 28px; }
@@ -59,6 +56,13 @@ body.font-tsap .header-date { font-size: 16px; }
 body.font-tsap .week-label { font-size: 18px; }
 body.font-tsap .group-trigger { font-size: 16px; }
 body.font-tsap .weather-advice { font-size: 12px; }
+
+/* --- НОВЫЕ ШРИФТЫ --- */
+body.font-inter { font-family: 'Inter', sans-serif; }
+body.font-roboto { font-family: 'Roboto', sans-serif; }
+body.font-rubik { font-family: 'Rubik', sans-serif; }
+body.font-play { font-family: 'Play', sans-serif; }
+body.font-montserrat { font-family: 'Montserrat', sans-serif; }
 
 /* Анимация для градиентных тем */
 body.theme-ocean, body.theme-sunset, body.theme-emerald, body.theme-sakura {
@@ -321,6 +325,97 @@ body.no-glass .glass-panel {
     transition-delay: calc(var(--i) * 0.03s); 
 }
 
+/* --- Скелетоны (Загрузка) --- */
+.skeleton-card {
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    margin-bottom: 12px;
+    height: 80px; /* Примерная высота карточки */
+}
+
+.skeleton-time {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 90px;
+    border-right: 1px solid var(--border-color);
+    gap: 8px;
+}
+
+.skeleton-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-clock {
+    width: 50px;
+    height: 12px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-info {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    gap: 10px;
+}
+
+.skeleton-title {
+    width: 60%;
+    height: 16px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-details {
+    width: 40%;
+    height: 12px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Анимация Шиммера (переливания) */
+.shimmer {
+    position: relative;
+    overflow: hidden;
+}
+.shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.05) 20%,
+        rgba(255, 255, 255, 0.1) 60%,
+        rgba(255, 255, 255, 0)
+    );
+    animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+/* --------------------------------- */
+
 /* --- Расписание --- */
 .schedule-container {
     display: flex;
@@ -521,18 +616,17 @@ body.no-glass .glass-panel {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    /* Убрали transform: scale(1.5), теперь текст не будет вылезать */
 }
 .timer-widget.fullscreen .timer-status {
-    font-size: clamp(18px, 5vw, 28px); /* Шрифт подстраивается под экран */
+    font-size: clamp(18px, 5vw, 28px);
     line-height: 1.3;
     margin-bottom: 10px;
 }
 .timer-widget.fullscreen .timer-timeleft {
-    font-size: clamp(36px, 12vw, 64px); /* Цифры будут огромными на ПК, но влезут на телефон */
+    font-size: clamp(36px, 12vw, 64px);
     line-height: 1;
     margin-bottom: 15px;
-    white-space: nowrap; /* Время не будет переноситься на новую строку */
+    white-space: nowrap;
 }
 .timer-widget.fullscreen .timer-subject {
     font-size: clamp(16px, 4vw, 24px);
@@ -900,10 +994,10 @@ input:checked + .slider:before {
 }
 /* --- Фон для полноэкранного таймера --- */
 .timer-widget.fullscreen {
-    background: #0f1115; /* Темный фон по умолчанию */
+    background: #0f1115;
 }
 
-/* Canvas внутри таймера (позиционируется абсолютно за текстом) */
+/* Canvas внутри таймера */
 .timer-particles-canvas {
     position: absolute;
     top: 0;
@@ -914,13 +1008,11 @@ input:checked + .slider:before {
     pointer-events: none;
 }
 
-/* Контент таймера должен быть поверх canvas */
 .timer-widget.fullscreen .timer-content {
     position: relative;
     z-index: 1;
 }
 
-/* Убираем черный фон при сворачивании, чтобы canvas не мешал */
 .timer-widget:not(.fullscreen) .timer-particles-canvas {
     display: none;
 }
@@ -940,67 +1032,52 @@ input:checked + .slider:before {
     letter-spacing: 1px;
 }
 /* =========================================
-   КРАСИВЫЙ СКРОЛЛБАР (Кроссбраузерный)
+   КРАСИВЫЙ СКРОЛЛБАР
    ========================================= */
-
-/* Для Firefox и новых версий Chrome (121+) */
 html, body, .modal-content, .schedule-container {
     scrollbar-width: thin;
     scrollbar-color: var(--accent-color) rgba(0, 0, 0, 0.2);
 }
-
-/* Для Chrome, Edge, Safari и Opera */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
-
 ::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb {
     background: var(--accent-color);
     border-radius: 4px;
     border: 2px solid transparent;
     background-clip: padding-box;
 }
-
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-hover);
 }
 /* =========================================
    НОВЫЕ СТИЛИ: Заметки в 2 колонки и Калькулятор
    ========================================= */
-
-/* Сетка для заметок */
 .notes-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Две колонки */
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
     margin-top: 10px;
 }
-
-/* Адаптив для телефонов: в одну колонку */
 @media (max-width: 600px) {
     .notes-grid {
         grid-template-columns: 1fr;
     }
 }
-
-/* Колонка с чек-листом */
 .checklist-container {
     display: flex;
     flex-direction: column;
 }
-
 .checklist-input-row {
     display: flex;
     gap: 8px;
     margin-bottom: 10px;
 }
-
 .check-input {
     flex-grow: 1;
     background: rgba(0, 0, 0, 0.2);
@@ -1012,11 +1089,9 @@ html, body, .modal-content, .schedule-container {
     font-size: 13px;
     outline: none;
 }
-
 .check-input:focus {
     border-color: var(--accent-color);
 }
-
 .check-add-btn {
     background: var(--accent-color);
     color: white;
@@ -1030,11 +1105,9 @@ html, body, .modal-content, .schedule-container {
     justify-content: center;
     transition: background 0.2s;
 }
-
 .check-add-btn:hover {
     background: var(--accent-hover);
 }
-
 .checklist {
     list-style: none;
     padding: 0;
@@ -1042,10 +1115,9 @@ html, body, .modal-content, .schedule-container {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-height: 150px; /* Ограничение высоты */
+    max-height: 150px;
     overflow-y: auto;
 }
-
 .check-item {
     display: flex;
     align-items: center;
@@ -1055,25 +1127,21 @@ html, body, .modal-content, .schedule-container {
     border-radius: 6px;
     transition: all 0.2s;
 }
-
 .check-item.done .check-text {
     text-decoration: line-through;
     opacity: 0.5;
 }
-
 .check-box {
     cursor: pointer;
     accent-color: var(--accent-color);
     width: 16px;
     height: 16px;
 }
-
 .check-text {
     flex-grow: 1;
     font-size: 13px;
     word-break: break-word;
 }
-
 .check-delete {
     background: transparent;
     border: none;
@@ -1083,27 +1151,20 @@ html, body, .modal-content, .schedule-container {
     opacity: 0.5;
     transition: opacity 0.2s;
 }
-
 .check-delete:hover {
     opacity: 1;
 }
-
-/* Колонка с текстом */
 .notes-text-container {
     display: flex;
     flex-direction: column;
 }
-
 .notes-textarea {
     flex-grow: 1;
-    min-height: 150px; /* Увеличили высоту, чтобы совпадало с чек-листом */
+    min-height: 150px;
 }
-
-/* Калькулятор оценок */
 .calc-container {
     padding: 10px 0;
 }
-
 .calc-result {
     margin-top: 15px;
     font-size: 18px;
@@ -1116,9 +1177,6 @@ html, body, .modal-content, .schedule-container {
 #qr-container canvas {
     border-radius: 8px;
 }
-/* =========================================
-   СТИЛИ ДЛЯ ПАНЕЛИ СО ССЫЛКОЙ (QR-код)
-   ========================================= */
 .share-link-container {
     display: flex;
     align-items: center;
@@ -1129,8 +1187,6 @@ html, body, .modal-content, .schedule-container {
     gap: 10px;
     margin-top: 10px;
 }
-
-/* Текст ссылки, который обрезается многоточием, если не влезает */
 .share-link-text {
     flex-grow: 1;
     font-size: 13px;
@@ -1141,8 +1197,6 @@ html, body, .modal-content, .schedule-container {
     text-overflow: ellipsis;
     padding-left: 8px;
 }
-
-/* Кнопка копирования */
 .share-copy-btn {
     background: var(--accent-color);
     color: white;
@@ -1158,19 +1212,12 @@ html, body, .modal-content, .schedule-container {
     flex-shrink: 0;
     transition: background 0.2s, transform 0.1s;
 }
-
 .share-copy-btn:hover {
     background: var(--accent-hover);
 }
-
 .share-copy-btn:active {
     transform: scale(0.95);
 }
-/* =========================================
-   СТИЛИ ДЛЯ QR-КОДА И ССЫЛКИ
-   ========================================= */
-
-/* Красивая подложка для QR-кода */
 .qr-glass-container {
     display: flex;
     justify-content: center;
@@ -1183,63 +1230,15 @@ html, body, .modal-content, .schedule-container {
     min-width: 280px;
     margin-left: auto;
     margin-right: auto;
-    /* Свечение в цвет темы (используется переменная --qr-glow, которую мы ставим из JS) */
     box-shadow: 0 10px 30px -10px var(--qr-glow, var(--accent-color)), 
                 0 0 0 4px rgba(255, 255, 255, 0.1);
     border: 2px solid var(--qr-glow, var(--accent-color));
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
 .qr-glass-container:hover {
     transform: translateY(-2px);
     box-shadow: 0 15px 35px -10px var(--qr-glow, var(--accent-color)), 
                 0 0 0 4px rgba(255, 255, 255, 0.2);
-}
-/* Панель со ссылкой и кнопкой */
-.share-link-container {
-    display: flex;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 6px;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.share-link-text {
-    flex-grow: 1;
-    font-size: 13px;
-    color: var(--text-muted);
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-left: 8px;
-}
-
-.share-copy-btn {
-    background: var(--accent-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    flex-shrink: 0;
-    transition: background 0.2s, transform 0.1s;
-}
-
-.share-copy-btn:hover {
-    background: var(--accent-hover);
-}
-
-.share-copy-btn:active {
-    transform: scale(0.95);
 }
 /* =========================================
    СТИЛИ ДЛЯ КАСТОМНЫХ ОБОЕВ
@@ -1250,12 +1249,11 @@ html, body, .modal-content, .schedule-container {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: -1; /* Уходит за частицы (0) и контент (1) */
+    z-index: -1;
     overflow: hidden;
-    background-color: var(--bg-color); /* Заглушка, если картинка не загрузилась */
-    display: none; /* По умолчанию скрыто */
+    background-color: var(--bg-color);
+    display: none;
 }
-
 .custom-bg-media {
     position: absolute;
     top: 0;
@@ -1264,14 +1262,12 @@ html, body, .modal-content, .schedule-container {
     height: 100%;
     transition: filter 0.3s ease;
 }
-
 .custom-bg-media img,
 .custom-bg-media video {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* По умолчанию заполнение */
+    object-fit: cover;
 }
-
 .custom-bg-overlay {
     position: absolute;
     top: 0;
@@ -1282,4 +1278,246 @@ html, body, .modal-content, .schedule-container {
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
+}
+
+/* =========================================
+   СИСТЕМА МАСШТАБИРОВАНИЯ ШРИФТА
+   ========================================= */
+:root {
+    --text-scale: 1;
+}
+
+/* Базовые размеры для обычного шрифта (Minecraft) */
+body { font-size: calc(16px * var(--text-scale)); }
+.lesson-subject { font-size: calc(16px * var(--text-scale)); }
+.lesson-num { font-size: calc(24px * var(--text-scale)); }
+.lesson-clock { font-size: calc(12px * var(--text-scale)); }
+.lesson-details { font-size: calc(12px * var(--text-scale)); }
+.timer-status { font-size: calc(18px * var(--text-scale)); }
+.timer-timeleft { font-size: calc(22px * var(--text-scale)); }
+.timer-subject { font-size: calc(16px * var(--text-scale)); }
+.timer-hint { font-size: calc(12px * var(--text-scale)); }
+.section-header h2 { font-size: calc(16px * var(--text-scale)); }
+.accordion-trigger { font-size: calc(14px * var(--text-scale)); }
+.ref-link { font-size: calc(14px * var(--text-scale)); }
+.notes-textarea { font-size: calc(14px * var(--text-scale)); }
+.notes-status { font-size: calc(11px * var(--text-scale)); }
+.check-text { font-size: calc(13px * var(--text-scale)); }
+.check-input { font-size: calc(13px * var(--text-scale)); }
+.check-delete { font-size: calc(14px * var(--text-scale)); }
+.week-label { font-size: calc(16px * var(--text-scale)); }
+.group-trigger { font-size: calc(14px * var(--text-scale)); }
+.group-option { font-size: calc(14px * var(--text-scale)); }
+.weather-main { font-size: calc(15px * var(--text-scale)); }
+.weather-advice { font-size: calc(10px * var(--text-scale)); }
+.badge-actual { font-size: calc(10px * var(--text-scale)); }
+.badge-return { font-size: calc(14px * var(--text-scale)); }
+.badge-substitution { font-size: calc(10px * var(--text-scale)); }
+.logo-text h1 { font-size: calc(18px * var(--text-scale)); }
+.logo-text span { font-size: calc(12px * var(--text-scale)); }
+.header-date { font-size: calc(14px * var(--text-scale)); }
+.icon-btn { font-size: calc(20px * var(--text-scale)); }
+.arrow-btn { font-size: calc(18px * var(--text-scale)); }
+.footer-disclaimer { font-size: calc(11px * var(--text-scale)); }
+.footer-link { font-size: calc(12px * var(--text-scale)); }
+.footer-copy { font-size: calc(10px * var(--text-scale)); }
+.share-link-text { font-size: calc(13px * var(--text-scale)); }
+.full-day-title { font-size: calc(16px * var(--text-scale)); }
+.calc-result { font-size: calc(18px * var(--text-scale)); }
+
+/* Модалка настроек */
+.modal-header h2 { font-size: calc(18px * var(--text-scale)); }
+.settings-group h3 { font-size: calc(14px * var(--text-scale)); }
+.theme-btn { font-size: calc(14px * var(--text-scale)); }
+.settings-select { font-size: calc(14px * var(--text-scale)); }
+.toggle-row span { font-size: calc(14px * var(--text-scale)); }
+.settings-group p { font-size: calc(12px * var(--text-scale)); }
+.settings-group input[type="file"] { font-size: calc(12px * var(--text-scale)); }
+.qr-loading { font-size: calc(14px * var(--text-scale)); }
+
+/* Размеры для шрифта Tsap-Tsarap */
+body.font-tsap { font-size: calc(20px * var(--text-scale)); }
+body.font-tsap .lesson-subject { font-size: calc(20px * var(--text-scale)); }
+body.font-tsap .lesson-num { font-size: calc(28px * var(--text-scale)); }
+body.font-tsap .lesson-clock { font-size: calc(14px * var(--text-scale)); }
+body.font-tsap .lesson-details { font-size: calc(14px * var(--text-scale)); }
+body.font-tsap .timer-status { font-size: calc(22px * var(--text-scale)); }
+body.font-tsap .timer-timeleft { font-size: calc(32px * var(--text-scale)); }
+body.font-tsap .timer-subject { font-size: calc(20px * var(--text-scale)); }
+body.font-tsap .logo-text h1 { font-size: calc(22px * var(--text-scale)); }
+body.font-tsap .header-date { font-size: calc(16px * var(--text-scale)); }
+body.font-tsap .week-label { font-size: calc(18px * var(--text-scale)); }
+body.font-tsap .group-trigger { font-size: calc(16px * var(--text-scale)); }
+body.font-tsap .weather-advice { font-size: calc(12px * var(--text-scale)); }
+/* =========================================
+   СТИЛИ ДЛЯ СТРИКА (ОГОНЬКА)
+   ========================================= */
+
+/* Бейдж в шапке */
+.header-streak-badge {
+    font-size: 12px;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 4px;
+    font-weight: bold;
+    vertical-align: middle;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Выпадающее меню */
+.streak-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    width: 140px;
+    padding: 16px;
+    text-align: center;
+    z-index: 100;
+    
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.streak-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.streak-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.streak-count-text {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-main);
+}
+
+.streak-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 10px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+}
+
+/* Анимация огонька */
+.fire-svg-container {
+    width: 100%;
+    height: 100%;
+    animation: fire-flicker 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes fire-flicker {
+    0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+    50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1.1) rotate(0deg); opacity: 0.9; }
+}
+
+/* Цветовые уровни огня */
+.fire-svg-container { color: #f97316; } /* Базовый оранжевый */
+
+.fire-lvl-2 { color: #ef4444; animation-duration: 1.2s; } /* 10+ дней, красный */
+.fire-lvl-3 { color: #3b82f6; animation-duration: 1s; } /* 30+ дней, синий */
+.fire-lvl-4 { color: #a855f7; animation-duration: 0.8s; } /* 60+ дней, фиолетовый */
+.fire-lvl-5 { 
+    color: #fbbf24; 
+    animation-duration: 0.6s; 
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));
+} /* 100+ дней, золотой */
+/* =========================================
+   ФИКС ПОЗИЦИОНИРОВАНИЯ ДЛЯ СТРИКА
+   ========================================= */
+.header-logo {
+    position: relative; /* Это заставит меню открываться под логотипом, а не в углу экрана */
+    cursor: pointer;
+}
+
+/* Убедимся, что меню поверх всех остальных элементов */
+.streak-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    width: 140px;
+    padding: 16px;
+    text-align: center;
+    z-index: 1000; 
+    
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.streak-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.streak-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.streak-count-text {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-main);
+}
+
+.streak-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 10px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+}
+
+/* Анимация огонька */
+.fire-svg-container {
+    width: 100%;
+    height: 100%;
+    animation: fire-flicker 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes fire-flicker {
+    0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+    50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1.1) rotate(0deg); opacity: 0.9; }
+}
+
+/* Цветовые уровни огня */
+.fire-svg-container { color: #f97316; }
+.fire-lvl-2 { color: #ef4444; animation-duration: 1.2s; }
+.fire-lvl-3 { color: #3b82f6; animation-duration: 1s; }
+.fire-lvl-4 { color: #a855f7; animation-duration: 0.8s; }
+.fire-lvl-5 { 
+    color: #fbbf24; 
+    animation-duration: 0.6s; 
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));
 }

@@ -4,6 +4,7 @@ import { state } from '../state.js';
 import { BELLS } from '../../../data/bells.js';
 import { getLessonsForDay } from '../data-manager.js';
 import { timeToMinutes } from '../utils.js';
+import { renderScheduleSkeleton } from './skeleton.js'; // ИМПОРТ СКЕЛЕТОНА
 
 export function createSchedule() {
     const container = document.createElement('div');
@@ -15,7 +16,11 @@ export function createSchedule() {
         const day = state.get('currentDay');
         const group = state.get('settings').group; 
         
-        container.innerHTML = `<div class="glass-panel" style="text-align:center; color: var(--text-muted);">Загрузка расписания...</div>`;
+        // Вставляем скелетоны вместо текста загрузки
+        container.innerHTML = renderScheduleSkeleton();
+
+        // Искусственная задержка для красоты (можно убрать, но со скелетоном выглядит плавно)
+        // await new Promise(r => setTimeout(r, 400));
 
         const lessons = await getLessonsForDay(week, day, group);
         
@@ -39,7 +44,6 @@ export function createSchedule() {
 
         lessons.forEach(lesson => {
             const standardBell = bells.find(b => b.pair === lesson.pair);
-            
             const actualStart = lesson.start || (standardBell ? standardBell.start : null);
             const actualEnd = lesson.end || (standardBell ? standardBell.end : null);
 

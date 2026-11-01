@@ -1,14 +1,13 @@
 // state.js: Хранилище состояния приложения и система событий
 
 import { CONFIG } from './config.js';
+import { smartStorage } from './telegram-storage.js';
 
 class State {
     constructor() {
-        // 1. Загружаем настройки ТОЛЬКО из локального хранилища устройства.
-        // Каждое устройство (телефон, ПК) хранит свои настройки независимо.
+        // Загружаем настройки ТОЛЬКО из локального хранилища устройства.
         const savedSettings = JSON.parse(localStorage.getItem('timehub_settings')) || {};
         
-        // Вычисляем текущую неделю на основе даты старта семестра
         const currentWeekCalc = this.determineWeek();
         
         this.data = {
@@ -17,13 +16,58 @@ class State {
             currentDay: new Date().getDay() === 0 ? 1 : new Date().getDay(), 
             settings: { ...CONFIG.DEFAULT_SETTINGS, ...savedSettings },
             schedule: null,
-            substitutions: null
+            substitutions: null,
+            streak: { count: 0, lastVisit: '' } // <-- Добавили стрик
         };
         
         this.listeners = {};
+
+        // Запускаем асинхронную проверку стрика в облаке
+        this.initStreak();
     }
 
-    // Вычисление учебной недели (1 или 2)
+    async initStreak() {
+        try {
+            // Берем стрик из облака (или локалки)
+            const savedStreakStr = await smartStorage.getItem('timehub_streak');
+            let streakData = savedStreakStr ? JSON.parse(savedStreakStr) : { count: 0, lastVisit: '' };
+
+            const today = new Date();
+            // Формируем строку даты в локальном времени (YYYY-MM-DD)
+            const offset = today.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
+
+            if (streakData.lastVisit === localISOTime) {
+                // Уже заходили сегодня, ничего не меняем
+            } else {
+                // Проверяем, был ли вчерашний визит
+                const lastVisitDate = new Date(streakData.lastVisit);
+                const currentDate = new Date(localISOTime);
+                
+                const diffTime = Math.abs(currentDate - lastVisitDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1 && streakData.lastVisit !== '') {
+                    // Заходил вчера -> увеличиваем стрик
+                    streakData.count += 1;
+                } else {
+                    // Пропустил день или первый заход -> сбрасываем на 1
+                    streakData.count = 1;
+                }
+                streakData.lastVisit = localISOTime;
+                
+                // Сохраняем обновленный стрик
+                await smartStorage.setItem('timehub_streak', JSON.stringify(streakData));
+            }
+
+            this.data.streak = streakData;
+            this.emit('change:streak', streakData);
+
+        } catch (e) {
+            console.warn('Ошибка при загрузке стрика:', e);
+        }
+    }
+
     determineWeek() {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -36,24 +80,19 @@ class State {
         return weekIndex + 1;
     }
 
-    // Получить значение из состояния
     get(key) {
         return this.data[key];
     }
 
-    // Установить значение и оповестить UI
     set(key, value) {
         this.data[key] = value;
         this.emit(`change:${key}`, value);
         
         if (key === 'settings') {
-            // Сохраняем настройки ТОЛЬКО локально. 
-            // В облако Telegram они больше не летят (по твоей просьбе).
             localStorage.setItem('timehub_settings', JSON.stringify(value));
         }
     }
 
-    // Подписка на события
     on(event, callback) {
         if (!this.listeners[event]) {
             this.listeners[event] = [];
@@ -61,7 +100,6 @@ class State {
         this.listeners[event].push(callback);
     }
 
-    // Вызов события для всех подписчиков
     emit(event, data) {
         if (this.listeners[event]) {
             this.listeners[event].forEach(callback => callback(data));

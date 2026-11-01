@@ -30,6 +30,23 @@ function sanitizeInput(text, allowPunct = true) {
     return text.replace(regex, '');
 }
 
+// ФУНКЦИЯ ТРАНСЛИТЕРАЦИИ (Русские буквы -> Английские)
+function transliterate(word) {
+    const map = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e', 'ж': 'zh',
+        'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+        'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts',
+        'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu',
+        'я': 'ya',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E', 'Ж': 'Zh',
+        'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O',
+        'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts',
+        'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu',
+        'Я': 'Ya'
+    };
+    return word.split('').map(char => map[char] || char).join('');
+}
+
 groupInput.value = state.groupName;
 
 function createDatalists() {
@@ -82,7 +99,6 @@ function renderLessons() {
         numBadge.value = lesson.pair || index + 1;
         numBadge.title = "Номер пары (1-7)";
         
-        // Автоматически выделяем текст при клике, чтобы можно было сразу печатать
         numBadge.addEventListener('focus', (e) => e.target.select());
 
         numBadge.addEventListener('change', (e) => {
@@ -250,16 +266,34 @@ function saveState() {
     localStorage.setItem('timehub_builder_state', JSON.stringify(state));
 }
 
-function generateCode() {
+// ФУНКЦИЯ ФОРМИРОВАНИЯ ПРАВИЛЬНЫХ ИМЕН
+function getFilenames() {
     const cleanGroupName = sanitizeInput(state.groupName, false);
+    
+    // 1. Транслитерация (26 АТП-2Бо -> 26 ATP-2Bo)
+    const transliterated = transliterate(cleanGroupName);
+    
+    // 2. Удаляем пробелы (26 ATP-2Bo -> 26ATP-2Bo)
+    const noSpaces = transliterated.replace(/\s+/g, '');
+    
+    // 3. Очищаем от всего кроме букв, цифр и дефиса
+    const fileBaseName = noSpaces.replace(/[^a-zA-Z0-9\-]/g, '');
+    
+    // 4. Для переменной заменяем дефис на подчеркивание (26ATP_2Bo)
+    const varName = fileBaseName.replace(/-/g, '_');
+
+    return { cleanGroupName, fileBaseName, varName };
+}
+
+function generateCode() {
+    const { cleanGroupName, fileBaseName, varName } = getFilenames();
+    
     if (!cleanGroupName) {
         alert('Введи нормальное название группы!');
         return;
     }
 
-    const varName = cleanGroupName.replace(/[^a-zA-Zа-яА-Я0-9]/g, '');
-    
-    let code = `// data/schedule/${varName}.js: Расписание для группы ${cleanGroupName}\n\n`;
+    let code = `// data/schedule/${fileBaseName}.js: Расписание для группы ${cleanGroupName}\n\n`;
     code += `export const SCHEDULE_${varName} = {\n`;
     code += `    "${cleanGroupName}": {\n`;
 
@@ -327,16 +361,10 @@ document.querySelectorAll('.day-btn').forEach(btn => {
     });
 });
 
-// ОБНОВЛЕННАЯ ЛОГИКА ДОБАВЛЕНИЯ ПАРЫ
 btnAddLesson.addEventListener('click', () => {
     const currentLessons = state.schedule[state.week][state.day];
-    
-    // Берем максимальный номер среди существующих и прибавляем 1
-    let nextPairNum = currentLessons.length > 0 
-        ? Math.max(...currentLessons.map(l => l.pair || 0)) + 1 
-        : 1;
+    let nextPairNum = currentLessons.length > 0 ? Math.max(...currentLessons.map(l => l.pair || 0)) + 1 : 1;
 
-    // Проверка, чтобы не было больше 7 пар
     if (nextPairNum > 7) {
         alert("В один день не может быть больше 7 пар!");
         return;
@@ -350,10 +378,11 @@ btnAddLesson.addEventListener('click', () => {
 btnGenerate.addEventListener('click', generateCode);
 document.getElementById('btn-close-modal').addEventListener('click', () => modalCode.classList.add('hidden'));
 
+// СКАЧИВАНИЕ ФАЙЛА
 document.getElementById('btn-download-js').addEventListener('click', () => {
-    const cleanGroupName = sanitizeInput(state.groupName, false);
-    const varName = cleanGroupName.replace(/[^a-zA-Zа-яА-Я0-9]/g, '');
-    const filename = `${varName}.js`;
+    const { fileBaseName } = getFilenames();
+    const filename = `${fileBaseName}.js`;
+    
     const blob = new Blob([codeOutput.value], { type: 'text/javascript' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -361,6 +390,18 @@ document.getElementById('btn-download-js').addEventListener('click', () => {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+
+    // Красивое уведомление на кнопке
+    const btn = document.getElementById('btn-download-js');
+    btn.innerHTML = '✅ Файл скачан!';
+    btn.style.background = '#10b981';
+    btn.style.borderColor = '#10b981';
+    
+    setTimeout(() => {
+        btn.innerHTML = '💾 Скачать файл .js';
+        btn.style.background = '';
+        btn.style.borderColor = '';
+    }, 3000);
 });
 
 document.getElementById('btn-help').addEventListener('click', () => document.getElementById('modal-help').classList.remove('hidden'));

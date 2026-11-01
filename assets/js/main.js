@@ -2,7 +2,7 @@
 
 import { state } from './state.js';
 import { CONFIG } from './config.js';
-import { initThemes } from './themes.js';
+import { initThemes, applyTextScale } from './themes.js'; // <-- ДОБАВИЛИ ИМПОРТ
 import { initParticles } from './particles.js';
 import { initPWA } from './pwa.js';
 import { createHeader } from './ui/header.js';
@@ -114,7 +114,14 @@ if (appDiv) {
     appDiv.appendChild(createRadialDayPicker());
 }
 
-state.on('change:settings', applyBackground);
+// Слушаем изменения настроек
+state.on('change:settings', (newSettings) => {
+    applyBackground();
+    if (newSettings.textScale) {
+        applyTextScale(newSettings.textScale);
+    }
+});
+
 applyBackground(); 
 
 export {};

@@ -1,15 +1,14 @@
-// pwa.js: Управление установкой приложения (PWA)
+// pwa.js: Управление установкой приложения (PWA) и авто-обновление
 
 let deferredPrompt = null;
 
 export function initPWA() {
-    // Ловим событие готовности к установке
+    // --- 1. ЛОГИКА УСТАНОВКИ ---
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         console.log('PWA: Браузер готов к установке');
         
-        // Меняем текст кнопки, если она уже есть на странице
         const installBtn = document.getElementById('btn-install-pwa');
         if (installBtn) {
             installBtn.innerHTML = '📲 Установить на устройство';
@@ -18,7 +17,6 @@ export function initPWA() {
         }
     });
 
-    // Слушаем событие, если приложение уже установлено
     window.addEventListener('appinstalled', () => {
         console.log('PWA: Приложение установлено');
         const installBtn = document.getElementById('btn-install-pwa');
@@ -30,12 +28,39 @@ export function initPWA() {
         deferredPrompt = null;
     });
 
-    // Регистрируем Service Worker
+    // --- 2. РЕГИСТРАЦИЯ SERVICE WORKER С АВТО-ОБНОВЛЕНИЕМ ---
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then((reg) => console.log('SW зарегистрирован:', reg.scope))
-                .catch((err) => console.log('Ошибка SW:', err));
+        // updateViaCache: 'none' — заставляет браузер ВСЕГДА проверять sw.js на сервере
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+            .then(registration => {
+                console.log('SW зарегистрирован:', registration.scope);
+
+                // Если нашли новый воркер (потому что изменился sw.js)
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        // Если новый воркер установлен и уже есть активный старый
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('Найдено обновление! Активируем...');
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    });
+                });
+
+                // Каждые 60 секунд проверяем обновления на сервере (пока сайт открыт)
+                setInterval(() => {
+                    registration.update();
+                }, 60000);
+            })
+            .catch(err => console.error('SW register failed:', err));
+
+        // Когда новый воркер активировался — перезагружаем страницу
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
         });
     }
 }
@@ -43,7 +68,6 @@ export function initPWA() {
 // Вызов окна установки
 export async function promptInstall() {
     if (!deferredPrompt) {
-        // Если браузер не готов, показываем инструкцию
         alert('Браузер не может установить приложение автоматически.\n\n' +
               'Пожалуйста, установите вручную:\n' +
               '1. Нажмите на три точки (меню) в правом верхнем углу браузера.\n' +
