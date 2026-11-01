@@ -1,17 +1,18 @@
 // state.js: Хранилище состояния приложения и система событий
 
 import { CONFIG } from './config.js';
+import { smartStorage } from './telegram-storage.js';
 
 class State {
     constructor() {
-        // Загружаем настройки из localStorage (если есть) или берем дефолтные
+        // 1. Синхронно загружаем настройки из localStorage (чтобы сайт открылся мгновенно)
         const savedSettings = JSON.parse(localStorage.getItem('timehub_settings')) || {};
         
         const currentWeekCalc = this.determineWeek();
         
         this.data = {
-            currentWeek: currentWeekCalc, // Выбранная пользователем неделя
-            realWeek: currentWeekCalc,    // <-- Настоящая текущая неделя (для возврата)
+            currentWeek: currentWeekCalc, 
+            realWeek: currentWeekCalc,    
             currentDay: new Date().getDay() === 0 ? 1 : new Date().getDay(), 
             settings: { ...CONFIG.DEFAULT_SETTINGS, ...savedSettings },
             schedule: null,
@@ -19,6 +20,32 @@ class State {
         };
         
         this.listeners = {};
+
+        // 2. В фоне запускаем проверку облака Telegram
+        this.syncWithCloud();
+    }
+
+    async syncWithCloud() {
+        try {
+            // Запрашиваем настройки из умного хранилища (сначала облако, потом локал)
+            const cloudSettingsStr = await smartStorage.getItem('timehub_settings');
+            
+            if (cloudSettingsStr) {
+                const cloudSettings = JSON.parse(cloudSettingsStr);
+                const localSettingsStr = JSON.stringify(this.data.settings);
+
+                // Если в облаке настройки другие — обновляем и применяем
+                if (localSettingsStr !== cloudSettingsStr) {
+                    this.data.settings = { ...CONFIG.DEFAULT_SETTINGS, ...cloudSettings };
+                    localStorage.setItem('timehub_settings', cloudSettingsStr);
+                    
+                    // Оповещаем все модули (темы, шрифты, UI), что настройки изменились
+                    this.emit('change:settings', this.data.settings);
+                }
+            }
+        } catch (e) {
+            console.warn('Ошибка синхронизации настроек с облаком Telegram:', e);
+        }
     }
 
     determineWeek() {
@@ -42,7 +69,13 @@ class State {
         this.emit(`change:${key}`, value);
         
         if (key === 'settings') {
-            localStorage.setItem('timehub_settings', JSON.stringify(value));
+            const strValue = JSON.stringify(value);
+            
+            // Синхронно сохраняем в локальное хранилище
+            localStorage.setItem('timehub_settings', strValue);
+            
+            // Асинхронно отправляем в облако (внутри smartStorage)
+            smartStorage.setItem('timehub_settings', strValue);
         }
     }
 
