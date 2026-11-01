@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeHub Builder — Конструктор расписания</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+    
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/themes.css">
+    <link rel="stylesheet" href="./assets/css/builder.css">
+</head>
+<body>
+    <div id="builder-app">
+        <header class="builder-header glass-panel">
+            <div class="header-title">
+                <h1>🛠️ TimeHub Builder</h1>
+                <span>Редактор расписаний</span>
+            </div>
+            <div class="header-controls">
+                <input type="text" id="group-name" class="builder-input" placeholder="Группа (напр. 26 АТП-1Бо)" style="width: 220px;">
+                <button id="btn-generate" class="builder-btn success">📄 Скачать файл</button>
+            </div>
+        </header>
+
+        <div class="builder-layout">
+            <aside class="builder-sidebar glass-panel">
+                <h3>Неделя</h3>
+                <div class="week-nav" style="margin-bottom: 20px;">
+                    <button class="week-btn active" data-week="1">1</button>
+                    <button class="week-btn" data-week="2">2</button>
+                </div>
+
+                <h3>День недели</h3>
+                <div class="days-nav">
+                    <button class="day-btn active" data-day="1">Пн</button>
+                    <button class="day-btn" data-day="2">Вт</button>
+                    <button class="day-btn" data-day="3">Ср</button>
+                    <button class="day-btn" data-day="4">Чт</button>
+                    <button class="day-btn" data-day="5">Пт</button>
+                </div>
+                
+                <div class="sidebar-info">
+                    <p>Заполняй пары для выбранного дня.</p>
+                    <button id="btn-help" class="builder-btn text" style="font-size: 12px; margin-top: 10px;">❓ Как это работает?</button>
+                </div>
+            </aside>
+
+            <main class="builder-main">
+                <div class="lessons-list" id="lessons-container"></div>
+                <button id="btn-add-lesson" class="builder-btn dashed">+ Добавить пару</button>
+            </main>
+        </div>
+    </div>
+
+    <!-- Модалка с кодом -->
+    <div id="modal-code" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Файл готов!</h2>
+                <button id="btn-close-modal" class="icon-btn">✖</button>
+            </div>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 15px;">
+                1. Скачай файл.<br>
+                2. Перекинь его в папку <code>data/schedule/</code>.<br>
+                3. Добавь его имя в <code>manifest.json</code>.<br>
+                4. Или просто отправь его в Telegram разработчику 👇
+            </p>
+            <textarea id="code-output" class="builder-input" style="height: 250px; font-family: monospace; font-size: 12px; margin-bottom: 15px;" readonly></textarea>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-download-js" class="builder-btn success" style="flex: 1;">💾 Скачать .js файл</button>
+                <a href="https://t.me/si2hay" target="_blank" class="builder-btn primary" style="flex: 1; text-decoration: none;">✈️ Отправить в Telegram</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка с инструкцией -->
+    <div id="modal-help" class="modal-overlay hidden">
+        <div class="modal-content glass-panel" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>📖 Инструкция</h2>
+                <button id="btn-close-help" class="icon-btn">✖</button>
+            </div>
+            <div style="font-size: 14px; line-height: 1.6; color: var(--text-main);">
+                <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 12px;">
+                    <li>
+                        <strong>Название группы.</strong> Введи в шапке точное название своей группы (например, <strong>26 АТП-4Бо</strong>). Оно станет именем файла и заголовком в расписании.
+                    </li>
+                    <li>
+                        <strong>Неделя и день.</strong> Слева переключай 1-ю и 2-ю неделю, а также дни с понедельника по пятницу.
+                    </li>
+                    <li>
+                        <strong>Добавление пар.</strong> Нажми <strong>«+ Добавить пару»</strong>. Начни вводить предмет (например, «Математика») — браузер подскажет варианты. При выборе из подсказки кабинет и преподаватель подставятся автоматически, но ты можешь их изменить.
+                    </li>
+                    <li>
+                        <strong>Номер пары.</strong> В левом верхнем углу каждой карточки есть <span style="color: var(--accent-color); font-weight: bold;">синий кружок с цифрой</span>. Это номер пары по расписанию. Если в этот день первая пара отменена и сразу идёт вторая — просто кликни на кружок, введи <strong>2</strong>, и нажми Enter. Карточка встанет на нужное место.
+                    </li>
+                    <li>
+                        <strong>Подгруппы (Информатика, Ин. яз.).</strong> Если пару ведут два преподавателя или она идёт в двух кабинетах, пиши их через слэш с пробелами: <br> <code>2-213 / 212</code> или <code>Ушакова Е.П. / Процок М.П.</code>.
+                    </li>
+                    <li>
+                        <strong>Своё время.</strong> Если у пары нестандартное время (например, классный час), поставь галочку <strong>«Свое время»</strong> и введи часы начала и конца.
+                    </li>
+                    <li>
+                        <strong>Сохранение.</strong> Все изменения сохраняются в браузере автоматически. Если случайно закроешь вкладку — при следующем открытии всё будет на месте.
+                    </li>
+                    <li>
+                        <strong>Скачивание.</strong> Когда заполнил всё расписание, нажми <strong>«Скачать файл»</strong>. Откроется окно с готовым кодом, кнопкой скачивания и возможностью сразу отправить файл разработчику в Telegram.
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./assets/js/builder.js"></script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+/* themes.css: Настройка цветовых тем и переменных */
+
+:root {
+    /* 1. Базовая (Газпром) */
+    --bg-color: #0f1115;
+    --bg-gradient: none;
+    --surface-color: rgba(26, 29, 36, 0.7);
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent-color: #0062b1; 
+    --accent-hover: #0077d9;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(20, 22, 26, 0.35); 
+    --glass-border: rgba(255, 255, 255, 0.15); 
+    --glass-blur: blur(16px);
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --font-family: 'MinecraftRus', monospace;
+    --border-radius: 12px;
+    --transition-speed: 0.3s;
+}
+
+/* 2. Dota 2 */
+body.theme-dota {
+    --bg-color: #1a0b0e;
+    --bg-gradient: none;
+    --surface-color: rgba(42, 13, 15, 0.8);
+    --text-main: #e5c1a2;
+    --accent-color: #b83a26;
+    --accent-hover: #d64530;
+    --border-color: #4a1c1c;
+    --glass-bg: rgba(42, 13, 15, 0.4);
+}
+
+/* 3. Minecraft */
+body.theme-minecraft {
+    --bg-color: #3d3d3d;
+    --bg-gradient: none;
+    --surface-color: rgba(90, 90, 90, 0.8);
+    --text-main: #ffffff;
+    --accent-color: #5b8731;
+    --accent-hover: #7ab33e;
+    --border-color: #2b2b2b;
+    --border-radius: 0px;
+    --glass-bg: rgba(50, 50, 50, 0.6);
+}
+
+/* 4. Nothing (Секретная) */
+body.theme-nothing {
+    --bg-color: #000000;
+    --bg-gradient: none;
+    --surface-color: rgba(30, 30, 30, 0.9);
+    --text-main: #ffffff;
+    --text-muted: #888888;
+    --accent-color: #ff0000;
+    --border-color: #333333;
+    --glass-bg: rgba(20, 20, 20, 0.8);
+}
+
+/* 5. Глубокий океан (Градиент) */
+body.theme-ocean {
+    --bg-color: #0f2027;
+    --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    --surface-color: rgba(15, 32, 39, 0.8);
+    --text-main: #e0f2fe;
+    --text-muted: #7dd3fc;
+    --accent-color: #0ea5e9;
+    --accent-hover: #38bdf8;
+    --border-color: rgba(14, 165, 233, 0.3);
+    --glass-bg: rgba(15, 32, 39, 0.4);
+}
+
+/* 6. Нежный закат (Градиент) */
+body.theme-sunset {
+    --bg-color: #2b1a1a;
+    --bg-gradient: linear-gradient(135deg, #2b1a1a, #4a2525, #6b3636);
+    --surface-color: rgba(43, 26, 26, 0.8);
+    --text-main: #ffe4d6;
+    --text-muted: #fca5a5;
+    --accent-color: #f97316;
+    --accent-hover: #fb923c;
+    --border-color: rgba(249, 115, 22, 0.3);
+    --glass-bg: rgba(43, 26, 26, 0.4);
+}
+
+/* 7. Золото */
+body.theme-golden {
+    --bg-color: #1c1917;
+    --bg-gradient: none;
+    --surface-color: rgba(41, 37, 36, 0.8);
+    --text-main: #fde047;
+    --text-muted: #ca8a04;
+    --accent-color: #eab308;
+    --accent-hover: #facc15;
+    --border-color: rgba(234, 179, 8, 0.3);
+    --glass-bg: rgba(28, 25, 23, 0.5);
+}
+
+/* 8. Изумруд (Градиент) */
+body.theme-emerald {
+    --bg-color: #022c22;
+    --bg-gradient: linear-gradient(135deg, #022c22, #064e3b, #065f46);
+    --surface-color: rgba(2, 44, 34, 0.8);
+    --text-main: #d1fae5;
+    --text-muted: #6ee7b7;
+    --accent-color: #10b981;
+    --accent-hover: #34d399;
+    --border-color: rgba(16, 185, 129, 0.3);
+    --glass-bg: rgba(2, 44, 34, 0.4);
+}
+
+/* 9. Норд (Холодный, спокойный) */
+body.theme-nord {
+    --bg-color: #2e3440;
+    --bg-gradient: none;
+    --surface-color: rgba(59, 66, 82, 0.8);
+    --text-main: #eceff4;
+    --text-muted: #81a1c1;
+    --accent-color: #5e81ac;
+    --accent-hover: #81a1c1;
+    --border-color: rgba(129, 161, 193, 0.3);
+    --glass-bg: rgba(46, 52, 64, 0.4);
+}
+
+/* 10. Кофе (Теплый) */
+body.theme-coffee {
+    --bg-color: #2c1e16;
+    --bg-gradient: none;
+    --surface-color: rgba(60, 40, 30, 0.8);
+    --text-main: #efebe9;
+    --text-muted: #bcaaa4;
+    --accent-color: #d7ccc8;
+    --accent-hover: #ffffff;
+    --border-color: rgba(215, 204, 200, 0.3);
+    --glass-bg: rgba(44, 30, 22, 0.4);
+}
+
+/* 11. Сакура (Нежный розовый) */
+body.theme-sakura {
+    --bg-color: #2d1b21;
+    --bg-gradient: linear-gradient(135deg, #2d1b21, #4c2a35, #6b3c4a);
+    --surface-color: rgba(45, 27, 33, 0.8);
+    --text-main: #fce7f3;
+    --text-muted: #fbcfe8;
+    --accent-color: #ec4899;
+    --accent-hover: #f472b6;
+    --border-color: rgba(236, 72, 153, 0.3);
+    --glass-bg: rgba(45, 27, 33, 0.4);
+}

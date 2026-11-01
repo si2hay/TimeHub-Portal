@@ -1,0 +1,347 @@
+/* builder.css: Стили для Конструктора расписания */
+
+body {
+    background-color: var(--bg-color);
+    background-image: var(--bg-gradient);
+    background-size: 200% 200%;
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#builder-app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 20px;
+}
+
+/* --- ШАПКА --- */
+.builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    flex-shrink: 0;
+}
+
+.header-title h1 {
+    font-size: 20px;
+    margin: 0 0 4px 0;
+    color: var(--accent-color);
+}
+
+.header-title span {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.header-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* --- СЕТКА --- */
+.builder-layout {
+    display: flex;
+    gap: 20px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* --- ЛЕВАЯ ПАНЕЛЬ --- */
+.builder-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.builder-sidebar h3 {
+    margin-top: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+}
+
+.week-nav {
+    display: flex;
+    gap: 8px;
+}
+
+.week-btn {
+    flex: 1;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.week-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-hover);
+}
+
+.days-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.day-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.day-btn:hover { 
+    background: rgba(255, 255, 255, 0.1); 
+}
+
+.day-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-hover);
+    box-shadow: 0 0 10px var(--accent-color);
+}
+
+.sidebar-info {
+    margin-top: auto;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+}
+
+/* --- ЦЕНТРАЛЬНАЯ ПАНЕЛЬ (ПАРЫ) --- */
+.builder-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.lessons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* --- КАРТОЧКА ПАРЫ --- */
+.lesson-edit-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 16px 20px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lesson-fields {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: 16px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* --- ПОЛЯ ВВОДА --- */
+.builder-input, .builder-select {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.builder-input:focus, .builder-select:focus {
+    border-color: var(--accent-color);
+}
+
+.builder-input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-main);
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input {
+    accent-color: var(--accent-color);
+    width: 16px;
+    height: 16px;
+}
+
+.lesson-time-inputs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* --- КНОПКИ --- */
+.builder-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.builder-btn.primary { background: var(--accent-color); color: white; }
+.builder-btn.primary:hover { background: var(--accent-hover); }
+
+.builder-btn.success { background: #10b981; color: white; }
+.builder-btn.success:hover { background: #059669; }
+
+.builder-btn.dashed {
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-muted);
+    width: 100%;
+    padding: 15px;
+}
+.builder-btn.dashed:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.builder-btn.text {
+    background: transparent;
+    color: var(--text-main);
+    padding: 5px;
+    text-decoration: underline;
+}
+
+.delete-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.delete-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.hidden { display: none !important; }
+
+/* --- НОМЕР ПАРЫ (БЕЗ СТРЕЛОЧЕК) --- */
+.pair-num-input {
+    width: 36px;
+    height: 36px;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    flex-shrink: 0;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pair-num-input:focus {
+    box-shadow: 0 0 10px var(--accent-hover);
+    background: var(--accent-hover);
+}
+
+@media (max-width: 900px) {
+    .lesson-fields {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,104 @@
+/* radial.css: Радиальное меню дней недели */
+
+.radial-menu-container {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Главная кнопка-триггер */
+.radial-trigger {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.radial-trigger:hover {
+    background: var(--accent-hover);
+}
+
+/* Вращение кнопки при открытии (плюсик превращается в крестик) */
+.radial-menu-container.open .radial-trigger {
+    transform: rotate(45deg);
+}
+
+/* Обертка для пунктов меню */
+.radial-menu-items {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Сами кнопки дней */
+.radial-item {
+    position: absolute;
+    /* Идеальное центрирование внутри контейнера 60x60 */
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    margin-top: -25px; /* Половина высоты */
+    margin-left: -25px; /* Половина ширины */
+    
+    border-radius: 50%;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(5px);
+    z-index: 5;
+}
+
+.radial-item:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Анимация раскрытия */
+.radial-menu-container.open .radial-item {
+    opacity: 1;
+    pointer-events: auto;
+    /* 
+       Угол от -150 до -30 (широкая дуга).
+       Шаг между днями = 30 градусов.
+       Радиус = 135px (много места).
+    */
+    transform: rotate(calc(-150deg + var(--i) * 30deg)) translate(135px) rotate(calc(150deg - var(--i) * 30deg));
+}
+
+/* Если день выбран (активный) */
+.radial-item.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-hover);
+}
