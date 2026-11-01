@@ -1,6 +1,6 @@
 // main.js: Точка входа в приложение
 
-import { initDebug } from './debug.js';
+//import { initDebug } from './debug.js';
 import { state } from './state.js';
 import { CONFIG } from './config.js';
 import { initThemes } from './themes.js';
@@ -40,6 +40,6 @@ if (appDiv) {
     appDiv.appendChild(createRadialDayPicker());
 }
 
-initDebug();
+//initDebug();
 
 export {};
