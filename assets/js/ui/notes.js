@@ -1,5 +1,7 @@
 // ui/notes.js: Блок личных заметок + Чек-лист
 
+import { smartStorage } from '../telegram-storage.js';
+
 export function createNotes() {
     const container = document.createElement('div');
     container.className = 'notes-widget glass-panel';
@@ -34,7 +36,14 @@ export function createNotes() {
     const addBtn = container.querySelector('#btn-add-check');
     const checklistUl = container.querySelector('#checklist');
     
-    let tasks = JSON.parse(localStorage.getItem('timehub_checklist')) || [];
+    let tasks = [];
+
+    // Асинхронная инициализация чек-листа
+    async function initChecklist() {
+        const saved = await smartStorage.getItem('timehub_checklist');
+        tasks = saved ? JSON.parse(saved) : [];
+        renderChecklist();
+    }
 
     function renderChecklist() {
         checklistUl.innerHTML = '';
@@ -66,7 +75,8 @@ export function createNotes() {
     }
 
     function saveTasks() {
-        localStorage.setItem('timehub_checklist', JSON.stringify(tasks));
+        // Отправляем в умное хранилище (сначала в localStorage, потом в облако TG)
+        smartStorage.setItem('timehub_checklist', JSON.stringify(tasks));
     }
 
     function addTask() {
@@ -88,13 +98,15 @@ export function createNotes() {
         if (e.key === 'Enter') addTask();
     });
 
-    renderChecklist(); // Первая отрисовка
-
     // --- ЛОГИКА ТЕКСТОВЫХ ЗАМЕТОК ---
     const textarea = container.querySelector('#notes-area');
     const status = container.querySelector('#notes-status');
-    const savedNotes = localStorage.getItem('timehub_notes') || '';
-    textarea.value = savedNotes;
+
+    // Асинхронная инициализация текстовых заметок
+    async function initNotes() {
+        const savedNotes = await smartStorage.getItem('timehub_notes') || '';
+        textarea.value = savedNotes;
+    }
 
     let saveTimeout;
 
@@ -113,8 +125,9 @@ export function createNotes() {
         status.classList.remove('status-show');
 
         clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            localStorage.setItem('timehub_notes', e.target.value);
+        saveTimeout = setTimeout(async () => {
+            await smartStorage.setItem('timehub_notes', e.target.value);
+            
             status.textContent = 'Сохранено!';
             status.style.color = 'var(--accent-color)';
             status.classList.add('status-show');
@@ -126,6 +139,10 @@ export function createNotes() {
             }, 2000);
         }, 500);
     });
+
+    // Запускаем загрузку данных
+    initChecklist();
+    initNotes();
 
     return container;
 }
