@@ -1,7 +1,7 @@
-// data/schedule/26ATP-2Bo.js: Расписание для группы 26ATP-2Bo
+// data/schedule/26ATP-2Bo.js: Расписание для группы 26 АТП-2Бо
 
 export const SCHEDULE_26ATP_2Bo = {
-    "26ATP-2Bo": {
+    "26 АТП-2Бо": {
         week1: {
             1: [
                 { pair: 1, subject: "Разговоры о важном", room: "2-110", teacher: "Куратор" },
