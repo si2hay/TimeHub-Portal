@@ -1,6 +1,7 @@
 // assets/js/builder.js: Логика Конструктора
 
 import { ALL_TEACHERS, ALL_ROOMS, ALL_SUBJECTS, DICTIONARY } from '../../data/dictionary.js';
+import { ALL_SCHEDULES } from '../../data/schedule/index.js';
 import { CONFIG } from './config.js';
 
 let state = {
@@ -122,6 +123,9 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
             builderTitle.textContent = "TimeHub Замены";
             builderSubtitle.textContent = "Редактор замен на день";
             tabManifest.style.display = 'none';
+            // При переключении в замены очищаем state для этого дня, чтобы не тащить старое
+            const { week, day } = getWeekAndDayFromDate(state.subDate);
+            state.schedule[week][day] = [];
         } else {
             scheduleControls.classList.add('hidden');
             substitutionControls.classList.add('hidden');
@@ -137,6 +141,8 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 
 subDateInput.addEventListener('change', (e) => {
     state.subDate = e.target.value;
+    const { week, day } = getWeekAndDayFromDate(state.subDate);
+    state.schedule[week][day] = [];
     saveState();
     renderLessons();
 });
@@ -169,7 +175,7 @@ function renderLessons() {
     if (currentData.length === 0) {
         lessonsContainer.innerHTML = `
             <div style="text-align: center; color: var(--text-muted); padding: 40px; border: 2px dashed var(--border-color); border-radius: 8px;">
-                ${state.mode === 'schedule' ? 'На этот день пар пока нет.' : state.mode === 'substitution' ? 'Добавь только те пары, которые поменялись.' : 'Добавь консультации преподавателей.'}
+                ${state.mode === 'schedule' ? 'На этот день пар пока нет.' : state.mode === 'substitution' ? 'Добавь только те пары, которые поменялись. Остальные Билдер проигнорирует.' : 'Добавь консультации преподавателей.'}
             </div>
         `;
         return;
@@ -481,11 +487,53 @@ async function generateCode() {
             if (!cleanGroupName) { alert('Введи нормальное название группы!'); return; }
             const { week, day } = getWeekAndDayFromDate(state.subDate);
             const currentLessons = state.schedule[week][day] || [];
+            
+            // 1. Получаем базовое расписание для сравнения
+            const groupData = ALL_SCHEDULES[displayGroupName];
+            let baseLessons = [];
+            if (groupData) {
+                const weekData = week === 1 ? groupData.week1 : groupData.week2;
+                if (weekData && weekData[day]) {
+                    baseLessons = weekData[day];
+                }
+            }
+
+            // 2. Сравниваем и оставляем только отличия
             const newSubs = {};
-            currentLessons.sort((a, b) => (a.pair || 0) - (b.pair || 0)).forEach(lesson => {
-                newSubs[lesson.pair] = { subject: lesson.subject || "", room: lesson.room || "", teacher: lesson.teacher || "" };
+            currentLessons.forEach(lesson => {
+                const base = baseLessons.find(b => b.pair === lesson.pair);
+                const subject = lesson.subject || "";
+                const room = lesson.room || "";
+                const teacher = lesson.teacher || "";
+
+                // Если пара отменена
+                if (subject === "") {
+                    newSubs[lesson.pair] = { subject: "", room: "", teacher: "" };
+                    return;
+                }
+
+                // Если пары не было в базе
+                if (!base) {
+                    newSubs[lesson.pair] = { subject, room, teacher };
+                    return;
+                }
+
+                // Сравниваем поля
+                const baseSubject = base.subject || "";
+                const baseRoom = base.room || "";
+                const baseTeacher = base.teacher || "";
+
+                if (subject !== baseSubject || room !== baseRoom || teacher !== baseTeacher) {
+                    newSubs[lesson.pair] = { subject, room, teacher };
+                }
             });
 
+            if (Object.keys(newSubs).length === 0) {
+                alert("Ты не внес никаких изменений по сравнению с базовым расписанием. Файл замен пуст.");
+                return;
+            }
+
+            // 3. Мержим с существующим JSON
             try {
                 const url = new URL('../../data/substitutions/data.json', import.meta.url);
                 url.searchParams.set('t', Date.now());
@@ -528,9 +576,9 @@ async function generateCode() {
                     c.afterPair === newC.afterPair
                 );
                 if (index !== -1) {
-                    combinedData[index] = newC; // Обновляем существующую
+                    combinedData[index] = newC;
                 } else {
-                    combinedData.push(newC); // Добавляем новую
+                    combinedData.push(newC);
                 }
             });
 
