@@ -5,9 +5,7 @@ import { smartStorage } from './telegram-storage.js';
 
 class State {
     constructor() {
-        // Загружаем настройки ТОЛЬКО из локального хранилища устройства для мгновенного старта
         const savedSettings = JSON.parse(localStorage.getItem('timehub_settings')) || {};
-        
         const currentWeekCalc = this.determineWeek();
         
         this.data = {
@@ -22,34 +20,28 @@ class State {
         
         this.listeners = {};
 
-        // Запускаем асинхронную проверку стрика в облаке
         this.initStreak();
-
-        // ВСЕГДА запускаем проверку облака (асинхронно, в фоне).
-        // Применит облачные настройки, только если они новее локальных (сравнение по _updatedAt).
         this.restoreSettingsFromCloud();
     }
 
     async restoreSettingsFromCloud() {
         try {
-            // Читаем ТОЛЬКО из облака (без фолбэка в localStorage)
             const cloudSettingsStr = await smartStorage.getCloudOnly('timehub_settings');
             if (!cloudSettingsStr) return;
 
             const cloudSettings = JSON.parse(cloudSettingsStr);
             
-            // Сравниваем timestamp'ы (время последнего изменения)
             const cloudUpdatedAt = cloudSettings._updatedAt || 0;
             const localUpdatedAt = this.data.settings._updatedAt || 0;
             
-            // Применяем облачные, только если они новее локальных
-            if (cloudUpdatedAt > localUpdatedAt) {
+            // Если облачные настройки новее (или локальных вообще нет метки времени) — применяем
+            if (cloudUpdatedAt > localUpdatedAt || !this.data.settings._updatedAt) {
                 this.data.settings = { ...CONFIG.DEFAULT_SETTINGS, ...cloudSettings };
                 localStorage.setItem('timehub_settings', JSON.stringify(this.data.settings));
                 this.emit('change:settings', this.data.settings);
-                console.log('[State] ✅ Настройки обновлены из облака (новее локальных)');
+                console.log('[State] ✅ Настройки обновлены из облака');
             } else {
-                console.log('[State] Локальные настройки новее или равны облачным');
+                console.log('[State] Локальные настройки новее, оставляем их');
             }
         } catch (e) {
             console.warn('[State] Не удалось восстановить настройки из облака:', e);
@@ -65,9 +57,7 @@ class State {
             const offset = today.getTimezoneOffset() * 60000;
             const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
 
-            if (streakData.lastVisit === localISOTime) {
-                // Уже заходили сегодня
-            } else {
+            if (streakData.lastVisit !== localISOTime) {
                 const lastVisitDate = new Date(streakData.lastVisit);
                 const currentDate = new Date(localISOTime);
                 
@@ -108,16 +98,16 @@ class State {
     }
 
     set(key, value) {
-        // Специальная обработка для настроек: добавляем _updatedAt и дублируем в облако
         if (key === 'settings') {
+            // Добавляем метку времени, чтобы знать, какие настройки новее
             const settingsWithTimestamp = { ...value, _updatedAt: Date.now() };
             this.data[key] = settingsWithTimestamp;
             this.emit(`change:${key}`, settingsWithTimestamp);
             
-            // 1. Всегда пишем полные настройки в localStorage
+            // 1. Пишем локально полные настройки (с обоями)
             localStorage.setItem('timehub_settings', JSON.stringify(settingsWithTimestamp));
             
-            // 2. В облако — без base64-обоев (не влезут в лимит 4096)
+            // 2. Пишем в облако, но вырезаем base64-обои (не влезут в лимит)
             const cloudSettings = { ...settingsWithTimestamp };
             if (cloudSettings.bgUrl && cloudSettings.bgUrl.startsWith('data:')) {
                 delete cloudSettings.bgUrl;
@@ -126,7 +116,7 @@ class State {
             return;
         }
         
-        // Для остальных ключей — обычное поведение
+        // Для остальных ключей
         this.data[key] = value;
         this.emit(`change:${key}`, value);
     }

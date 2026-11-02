@@ -14,7 +14,6 @@ import { createNotes } from './ui/notes.js';
 import { createFooter } from './ui/footer.js';
 import { createRadialDayPicker } from './ui/radial-day-picker.js';
 
-// ФИЛЬТР ОШИБОК
 window.addEventListener('error', (e) => {
     if (!e.filename || e.message.includes('Script error')) {
         console.warn('Подавлена внутренняя ошибка Telegram WebApp:', e.message);
@@ -26,7 +25,6 @@ window.addEventListener('error', (e) => {
     document.body.appendChild(errDiv);
 });
 
-// ТЕЛЕГРАМ ФИШКИ
 const tg = window.Telegram?.WebApp;
 if (tg && tg.initData) {
     tg.BackButton.onClick(() => {
@@ -58,7 +56,6 @@ if (tg && tg.initData) {
     document.addEventListener('focusout', checkFocus);
 }
 
-// ФУНКЦИЯ ДЛЯ ПРИМЕНЕНИЯ ОБОЕВ
 function applyBackground() {
     const settings = state.get('settings');
     const container = document.getElementById('custom-bg-container');
@@ -96,8 +93,6 @@ function applyBackground() {
     }
 }
 
-// ФУНКЦИЯ ДЛЯ ПРИМЕНЕНИЯ ВСЕХ НАСТРОЕК
-// (Вызывается при старте и при синхронизации из облака)
 function applyAllSettings(newSettings) {
     applyBackground();
     if (newSettings.theme) applyTheme(newSettings.theme);
@@ -123,19 +118,25 @@ if (appDiv) {
     appDiv.appendChild(createRadialDayPicker());
 }
 
-// Применяем настройки при старте
 applyAllSettings(state.get('settings'));
 
-// Слушаем изменения настроек (включая синхронизацию из облака)
+// Слушаем изменения настроек
 let lastSettingsJson = JSON.stringify(state.get('settings'));
 
 state.on('change:settings', (newSettings) => {
-    // Защита от рекурсии (чтобы не вызывать applyTheme бесконечно)
     const newJson = JSON.stringify(newSettings);
     if (newJson === lastSettingsJson) return; 
     lastSettingsJson = newJson;
     
     applyAllSettings(newSettings);
+});
+
+// ВАЖНО: при возврате в приложение (например, после сворачивания) — проверяем облако
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        console.log('[Main] Приложение вернулось в фокус, проверяем облако');
+        state.restoreSettingsFromCloud();
+    }
 });
 
 export {};
