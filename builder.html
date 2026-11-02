@@ -86,22 +86,22 @@
     <div id="modal-code" class="modal-overlay hidden">
         <div class="modal-content glass-panel" style="max-width: 800px;">
             <div class="modal-header">
-                <h2>Код готов!</h2>
+                <h2>Файл готов!</h2>
                 <button id="btn-close-modal" class="icon-btn">✖</button>
             </div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button id="tab-file" class="builder-btn active" style="flex: 1; background: var(--accent-color);">1. Код файла</button>
+                <button id="tab-file" class="builder-btn active" style="flex: 1; background: var(--accent-color);">1. Скачать файл</button>
                 <button id="tab-manifest" class="builder-btn" style="flex: 1; background: rgba(255,255,255,0.1);">2. Строка для manifest.json</button>
             </div>
 
             <!-- Вкладка для файла -->
             <div id="content-file">
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
-                    Скопируй это и вставь в файл <b id="filename-hint">...</b> в папке <code>data/schedule/</code> (или в <code>substitutions/index.js</code>)
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;" id="hint-file">
+                    Скачай этот файл и положи его в папку <b id="filename-hint">...</b>
                 </p>
                 <textarea id="code-output" class="builder-input" style="height: 250px; font-family: monospace; font-size: 12px; margin-bottom: 15px; color: #10b981;" readonly></textarea>
-                <button id="btn-copy-js" class="builder-btn success" style="width: 100%;">📋 Скопировать код файла</button>
+                <button id="btn-download-js" class="builder-btn success" style="width: 100%;">💾 Скачать файл</button>
             </div>
 
             <!-- Вкладка для манифеста -->
@@ -109,8 +109,10 @@
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
                     Скопируй эту строчку и добавь в массив <code>"files"</code> в файле <code>data/schedule/manifest.json</code>:
                 </p>
-                <textarea id="manifest-output" class="builder-input" style="height: 60px; font-family: monospace; font-size: 14px; margin-bottom: 15px; color: #fbbf24;" readonly></textarea>
-                <button id="btn-copy-manifest" class="builder-btn" style="width: 100%; background: #fbbf24; color: black;">📋 Скопировать для manifest.json</button>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="manifest-output" class="builder-input" style="font-family: monospace; font-size: 14px; color: #fbbf24;" readonly>
+                    <button id="btn-copy-manifest" class="builder-btn" style="background: #fbbf24; color: black; width: auto; padding: 0 20px;">📋</button>
+                </div>
             </div>
         </div>
     </div>
@@ -127,7 +129,7 @@
                     <li><strong>Выбери режим:</strong> «Расписание» для новой группы или «Замены» для конкретного дня.</li>
                     <li><strong>Введи группу</strong> в шапке. Можно писать как угодно (латиницей или кириллицей), Билдер сам сделает красиво.</li>
                     <li><strong>Для замен:</strong> выбери дату и добавь только те пары, которые поменялись (например, 4-я пара Физика, кабинет 2-107).</li>
-                    <li><strong>Сгенерируй код:</strong> скопируй код файла и строку для манифеста (если это расписание). Вставь их на сайте.</li>
+                    <li><strong>Сгенерируй код:</strong> скачай файл и положи его в нужную папку. Если это расписание — не забудь скопировать строку для манифеста.</li>
                 </ol>
             </div>
         </div>

@@ -33,7 +33,9 @@ const substitutionControls = document.getElementById('substitution-controls');
 const builderTitle = document.getElementById('builder-title');
 const builderSubtitle = document.getElementById('builder-subtitle');
 const filenameHint = document.getElementById('filename-hint');
-const btnCopyJs = document.getElementById('btn-copy-js');
+const btnDownloadJs = document.getElementById('btn-download-js');
+const tabManifest = document.getElementById('tab-manifest');
+const hintFile = document.getElementById('hint-file');
 
 function sanitizeInput(text, allowPunct = true) {
     if (!text) return "";
@@ -46,21 +48,13 @@ function transliterate(word) {
     return word.split('').map(char => map[char] || char).join('');
 }
 
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ ФОРМАТИРОВАНИЯ (убирает лишние пробелы)
 function formatGroupName(rawName) {
     let name = rawName.trim();
-    
-    // Обратная транслитерация для латиницы
     if (!/[а-яА-Я]/.test(name)) {
         name = name.replace(/ATP/gi, 'АТП').replace(/AT/gi, 'АТ').replace(/Bo/gi, 'Бо').replace(/Ba/gi, 'Ба').replace(/Bu/gi, 'Бу').replace(/PNG/gi, 'ПНГ').replace(/EBS/gi, 'ЭБС').replace(/IST/gi, 'ИСТ').replace(/M/gi, 'М').replace(/T/gi, 'Т').replace(/P/gi, 'П').replace(/H/gi, 'Х');
     }
-
-    // Убираем ВСЕ пробелы для нормализации (26 АТП-2 Бо -> 26АТП-2Бо)
     name = name.replace(/\s+/g, '');
-    
-    // Вставляем ОДИН пробел после первых цифр (26АТП-2Бо -> 26 АТП-2Бо)
     name = name.replace(/^(\d+)([А-Яа-я])/g, '$1 $2');
-    
     return name;
 }
 
@@ -84,7 +78,6 @@ function setupTimeMask(input, nextInput = null) {
     });
 }
 
-// Вспомогательная функция для подсветки автоподстановки
 function flashAutofill(input) {
     input.classList.add('autofilled');
     setTimeout(() => input.classList.remove('autofilled'), 1000);
@@ -123,13 +116,13 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
             builderTitle.textContent = "TimeHub Builder";
             builderSubtitle.textContent = "Редактор расписаний";
             state.week = "1"; state.day = "1";
-            btnCopyJs.innerHTML = '📋 Скопировать код';
+            tabManifest.style.display = 'block';
         } else {
             scheduleControls.classList.add('hidden');
             substitutionControls.classList.remove('hidden');
             builderTitle.textContent = "TimeHub Замены";
             builderSubtitle.textContent = "Редактор замен на день";
-            btnCopyJs.innerHTML = '💾 Скачать data.json';
+            tabManifest.style.display = 'none';
             const { week, day } = getWeekAndDayFromDate(state.subDate);
             state.schedule[week][day] = []; 
         }
@@ -141,7 +134,7 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 subDateInput.addEventListener('change', (e) => {
     state.subDate = e.target.value;
     const { week, day } = getWeekAndDayFromDate(state.subDate);
-    state.schedule[week][day] = []; // Очищаем при смене даты
+    state.schedule[week][day] = [];
     saveState();
     renderLessons();
 });
@@ -153,8 +146,8 @@ function getWeekAndDayFromDate(dateStr) {
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     const week = (Math.floor(diffDays / 7) % 2) + 1;
     let day = date.getDay();
-    if (day === 0) day = 1; // Вс
-    if (day === 6) day = 1; // Сб
+    if (day === 0) day = 1;
+    if (day === 6) day = 1;
     return { week, day };
 }
 
@@ -256,24 +249,20 @@ function renderLessons() {
             lesson.subject = sanitizeInput(e.target.value); saveState();
         });
         
-        // ЛОГИКА АВТОПОДСТАНОВКИ
         subjectField.input.addEventListener('change', (e) => {
             const val = e.target.value;
             lesson.subject = val;
             
             if (DICTIONARY[val]) {
-                let filled = false;
                 if (!roomField.input.value && DICTIONARY[val].rooms.length > 0) {
                     roomField.input.value = DICTIONARY[val].rooms[0];
                     lesson.room = roomField.input.value;
-                    flashAutofill(roomField.input); // Зеленая подсветка
-                    filled = true;
+                    flashAutofill(roomField.input);
                 }
                 if (!teacherField.input.value && DICTIONARY[val].teachers.length > 0) {
                     teacherField.input.value = DICTIONARY[val].teachers[0];
                     lesson.teacher = teacherField.input.value;
-                    flashAutofill(teacherField.input); // Зеленая подсветка
-                    filled = true;
+                    flashAutofill(teacherField.input);
                 }
             }
             saveState();
@@ -283,7 +272,6 @@ function renderLessons() {
             lesson.room = sanitizeInput(e.target.value); saveState();
         });
 
-        // Исправил плейсхолдер на Ушакова Е.П.
         const teacherField = createField('ПРЕПОДАВАТЕЛЬ', 'Ушакова Е.П. / Процок М.П.', lesson.teacher, 'list-teachers', (e) => {
             lesson.teacher = sanitizeInput(e.target.value); saveState();
         });
@@ -376,8 +364,6 @@ async function generateCode() {
         return;
     }
 
-    const hintText = document.querySelector('#content-file p');
-
     if (state.mode === 'schedule') {
         let code = `// data/schedule/${fileBaseName}.js: Расписание для группы ${displayGroupName}\n\n`;
         code += `export const SCHEDULE_${varName} = {\n`;
@@ -414,10 +400,9 @@ async function generateCode() {
         codeOutput.value = code;
         manifestOutput.value = `"${fileBaseName}.js"`;
         filenameHint.textContent = `${fileBaseName}.js`;
-        hintText.innerHTML = `Скопируй это и вставь в файл <b>${fileBaseName}.js</b> в папке <code>data/schedule/</code>`;
+        hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/schedule/</b>`;
         
     } else {
-        // ГЕНЕРАЦИЯ ЗАМЕН С АВТО-ОЧИСТКОЙ
         const { week, day } = getWeekAndDayFromDate(state.subDate);
         const currentLessons = state.schedule[week][day] || [];
 
@@ -440,7 +425,6 @@ async function generateCode() {
                 allSubs = await response.json();
             }
 
-            // --- АВТО-ОЧИСТКА СТАРЫХ ДАТ ---
             const todayStr = new Date().toISOString().split('T')[0];
             for (const dateKey in allSubs) {
                 if (dateKey < todayStr) {
@@ -448,17 +432,15 @@ async function generateCode() {
                 }
             }
 
-            // Добавляем новые данные
             if (!allSubs[state.subDate]) allSubs[state.subDate] = {};
             if (!allSubs[state.subDate][displayGroupName]) allSubs[state.subDate][displayGroupName] = {};
             
-            // Сливаем старые пары на этот день с новыми
             Object.assign(allSubs[state.subDate][displayGroupName], newSubs);
 
             codeOutput.value = JSON.stringify(allSubs, null, 2);
             manifestOutput.value = "// Для замен manifest.json менять не нужно";
-            filenameHint.textContent = "data/substitutions/data.json";
-            hintText.innerHTML = `Скачай этот файл и положи его в папку <code>data/substitutions/</code>, заменив старый <code>data.json</code>`;
+            filenameHint.textContent = "data.json";
+            hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/substitutions/</b>, заменив старый`;
             
         } catch (e) {
             console.error("Не удалось скачать старые замены", e);
@@ -468,7 +450,6 @@ async function generateCode() {
     modalCode.classList.remove('hidden');
 }
 
-// Логика переключения вкладок в модалке
 document.getElementById('tab-file').addEventListener('click', () => {
     document.getElementById('tab-file').style.background = 'var(--accent-color)';
     document.getElementById('tab-manifest').style.background = 'rgba(255,255,255,0.1)';
@@ -525,45 +506,37 @@ btnAddLesson.addEventListener('click', () => {
 btnGenerate.addEventListener('click', generateCode);
 document.getElementById('btn-close-modal').addEventListener('click', () => modalCode.classList.add('hidden'));
 
-// Обработчик кнопки в модалке (копирование или скачивание)
-btnCopyJs.addEventListener('click', async () => {
-    if (state.mode === 'substitution') {
-        const blob = new Blob([codeOutput.value], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'data.json';
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        btnCopyJs.innerHTML = '✅ Файл скачан!';
-        btnCopyJs.style.background = '#10b981';
-        setTimeout(() => {
-            btnCopyJs.innerHTML = '💾 Скачать data.json';
-            btnCopyJs.style.background = '';
-        }, 3000);
-    } else {
-        try {
-            await navigator.clipboard.writeText(codeOutput.value);
-            btnCopyJs.innerHTML = '✅ Скопировано!';
-            btnCopyJs.style.background = '#10b981';
-            setTimeout(() => {
-                btnCopyJs.innerHTML = '📋 Скопировать код';
-                btnCopyJs.style.background = '';
-            }, 2000);
-        } catch (err) {
-            alert('Не удалось скопировать. Выдели текст и нажми Ctrl+C');
-        }
+btnDownloadJs.addEventListener('click', () => {
+    let filename = 'data.json';
+    if (state.mode === 'schedule') {
+        const { fileBaseName } = getFilenames();
+        filename = `${fileBaseName}.js`;
     }
+
+    const mimeType = state.mode === 'schedule' ? 'text/javascript' : 'application/json';
+    const blob = new Blob([codeOutput.value], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    btnDownloadJs.innerHTML = '✅ Файл скачан!';
+    btnDownloadJs.style.background = '#10b981';
+    setTimeout(() => {
+        btnDownloadJs.innerHTML = '💾 Скачать файл';
+        btnDownloadJs.style.background = '';
+    }, 3000);
 });
 
 document.getElementById('btn-copy-manifest').addEventListener('click', async () => {
     try {
         await navigator.clipboard.writeText(manifestOutput.value);
         const btn = document.getElementById('btn-copy-manifest');
-        btn.innerHTML = '✅ Скопировано!';
+        btn.innerHTML = '✅';
         setTimeout(() => {
-            btn.innerHTML = '📋 Скопировать для manifest.json';
+            btn.innerHTML = '📋';
         }, 2000);
     } catch (err) {
         alert('Не удалось скопировать. Выдели текст и нажми Ctrl+C');
@@ -573,7 +546,6 @@ document.getElementById('btn-copy-manifest').addEventListener('click', async () 
 document.getElementById('btn-help').addEventListener('click', () => document.getElementById('modal-help').classList.remove('hidden'));
 document.getElementById('btn-close-help').addEventListener('click', () => document.getElementById('modal-help').classList.add('hidden'));
 
-// Восстановление стейта при загрузке
 document.querySelectorAll('.mode-btn').forEach(btn => {
     if (btn.dataset.mode === state.mode) btn.classList.add('active');
     else btn.classList.remove('active');
@@ -583,7 +555,7 @@ if (state.mode === 'substitution') {
     substitutionControls.classList.remove('hidden');
     builderTitle.textContent = "TimeHub Замены";
     builderSubtitle.textContent = "Редактор замен на день";
-    btnCopyJs.innerHTML = '💾 Скачать data.json';
+    tabManifest.style.display = 'none';
 }
 
 document.querySelectorAll('.week-btn[data-week]').forEach(btn => {
