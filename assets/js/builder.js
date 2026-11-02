@@ -123,7 +123,6 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
             builderTitle.textContent = "TimeHub Замены";
             builderSubtitle.textContent = "Редактор замен на день";
             tabManifest.style.display = 'none';
-            // При переключении в замены очищаем state для этого дня, чтобы не тащить старое
             const { week, day } = getWeekAndDayFromDate(state.subDate);
             state.schedule[week][day] = [];
         } else {
@@ -489,7 +488,13 @@ async function generateCode() {
             const currentLessons = state.schedule[week][day] || [];
             
             // 1. Получаем базовое расписание для сравнения
-            const groupData = ALL_SCHEDULES[displayGroupName];
+            let groupData = ALL_SCHEDULES[displayGroupName];
+            if (!groupData) {
+                // Пытаемся найти ключ, игнорируя пробелы (на случай, если пользователь ввел с другим пробелом)
+                const cleanKey = Object.keys(ALL_SCHEDULES).find(k => k.replace(/\s+/g, '') === displayGroupName.replace(/\s+/g, ''));
+                if (cleanKey) groupData = ALL_SCHEDULES[cleanKey];
+            }
+
             let baseLessons = [];
             if (groupData) {
                 const weekData = week === 1 ? groupData.week1 : groupData.week2;
@@ -501,10 +506,12 @@ async function generateCode() {
             // 2. Сравниваем и оставляем только отличия
             const newSubs = {};
             currentLessons.forEach(lesson => {
-                const base = baseLessons.find(b => b.pair === lesson.pair);
-                const subject = lesson.subject || "";
-                const room = lesson.room || "";
-                const teacher = lesson.teacher || "";
+                // Находим базовую пару, сравнивая как строки на всякий случай
+                const base = baseLessons.find(b => String(b.pair) === String(lesson.pair));
+                
+                const subject = (lesson.subject || "").trim();
+                const room = (lesson.room || "").trim();
+                const teacher = (lesson.teacher || "").trim();
 
                 // Если пара отменена
                 if (subject === "") {
@@ -518,10 +525,10 @@ async function generateCode() {
                     return;
                 }
 
-                // Сравниваем поля
-                const baseSubject = base.subject || "";
-                const baseRoom = base.room || "";
-                const baseTeacher = base.teacher || "";
+                // Сравниваем поля с обрезкой пробелов
+                const baseSubject = (base.subject || "").trim();
+                const baseRoom = (base.room || "").trim();
+                const baseTeacher = (base.teacher || "").trim();
 
                 if (subject !== baseSubject || room !== baseRoom || teacher !== baseTeacher) {
                     newSubs[lesson.pair] = { subject, room, teacher };
