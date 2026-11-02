@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeHub Builder — Конструктор расписания</title>
+    <title>TimeHub Builder — Конструктор</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><path d='M50 5 L85 20 L85 75 L50 95 L15 75 L15 20 Z' stroke='%230062b1' stroke-width='4' stroke-linejoin='round'/><path d='M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/><path d='M 40 30 H 60 M 50 30 V 60' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/><g transform='translate(100, 0) scale(-1, 1)'><path d='M 30 30 C 20 30 20 42 30 42 C 40 42 40 54 30 54' stroke='%230062b1' stroke-width='6' stroke-linecap='round'/></g><path d='M 15 72 C 35 82 50 67 50 67 C 50 67 65 82 85 72' stroke='%230062b1' stroke-width='5' stroke-linecap='round'/></svg>">
     
@@ -27,35 +27,50 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 style="margin-bottom: 0;">TimeHub Builder</h1>
-                    <span style="font-size: 12px; color: var(--text-muted);">Редактор расписаний</span>
+                    <h1 style="margin-bottom: 0;" id="builder-title">TimeHub Builder</h1>
+                    <span style="font-size: 12px; color: var(--text-muted);" id="builder-subtitle">Редактор расписаний</span>
                 </div>
             </div>
             <div class="header-controls">
-                <input type="text" id="group-name" class="builder-input" placeholder="Группа (напр. 26 АТП-1Бо)" style="width: 220px;">
-                <button id="btn-generate" class="builder-btn success">📄 Скачать файл</button>
+                <input type="text" id="group-name" class="builder-input" placeholder="Группа (напр. 26 АТП-2Бо)" style="width: 220px;">
+                <button id="btn-generate" class="builder-btn success">📄 Сгенерировать код</button>
             </div>
         </header>
 
         <div class="builder-layout">
             <aside class="builder-sidebar glass-panel">
-                <h3>Неделя</h3>
+                <!-- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА -->
+                <h3>Режим</h3>
                 <div class="week-nav" style="margin-bottom: 20px;">
-                    <button class="week-btn active" data-week="1">1</button>
-                    <button class="week-btn" data-week="2">2</button>
+                    <button class="week-btn mode-btn active" data-mode="schedule" style="font-size: 13px;">📅 Расписание</button>
+                    <button class="week-btn mode-btn" data-mode="substitution" style="font-size: 13px;">⚡ Замены</button>
                 </div>
 
-                <h3>День недели</h3>
-                <div class="days-nav">
-                    <button class="day-btn active" data-day="1">Пн</button>
-                    <button class="day-btn" data-day="2">Вт</button>
-                    <button class="day-btn" data-day="3">Ср</button>
-                    <button class="day-btn" data-day="4">Чт</button>
-                    <button class="day-btn" data-day="5">Пт</button>
+                <!-- БЛОК РАСПИСАНИЯ -->
+                <div id="schedule-controls">
+                    <h3>Неделя</h3>
+                    <div class="week-nav" style="margin-bottom: 20px;">
+                        <button class="week-btn active" data-week="1">1</button>
+                        <button class="week-btn" data-week="2">2</button>
+                    </div>
+                    <h3>День недели</h3>
+                    <div class="days-nav">
+                        <button class="day-btn active" data-day="1">Пн</button>
+                        <button class="day-btn" data-day="2">Вт</button>
+                        <button class="day-btn" data-day="3">Ср</button>
+                        <button class="day-btn" data-day="4">Чт</button>
+                        <button class="day-btn" data-day="5">Пт</button>
+                    </div>
+                </div>
+
+                <!-- БЛОК ЗАМЕН (Скрыт по умолчанию) -->
+                <div id="substitution-controls" class="hidden">
+                    <h3>Дата замены</h3>
+                    <input type="date" id="sub-date" class="builder-input" style="width: 100%; margin-bottom: 15px;">
+                    <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Добавь только те пары, которые изменились. Если нужно отменить пару, оставь "Предмет" пустым.</p>
                 </div>
                 
                 <div class="sidebar-info">
-                    <p>Заполняй пары для выбранного дня.</p>
                     <button id="btn-help" class="builder-btn text" style="font-size: 12px; margin-top: 10px;">❓ Как это работает?</button>
                 </div>
             </aside>
@@ -69,34 +84,34 @@
 
     <!-- Модалка с кодом -->
     <div id="modal-code" class="modal-overlay hidden">
-        <div class="modal-content glass-panel" style="max-width: 600px; text-align: center;">
+        <div class="modal-content glass-panel" style="max-width: 800px;">
             <div class="modal-header">
-                <h2>Файл готов!</h2>
+                <h2>Код готов!</h2>
                 <button id="btn-close-modal" class="icon-btn">✖</button>
             </div>
             
-            <p style="font-size: 14px; color: var(--text-main); margin-bottom: 20px; line-height: 1.5;">
-                Чтобы добавить это расписание на сайт, выполни 2 простых шага:
-            </p>
-
-            <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
-                <!-- Шаг 1 -->
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px;">
-                    <h3 style="font-size: 16px; margin-bottom: 8px;">Шаг 1. Скачай файл</h3>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Файл сохранится в загрузки твоего устройства.</p>
-                    <button id="btn-download-js" class="builder-btn success" style="width: 100%;">💾 Скачать файл .js</button>
-                </div>
-
-                <!-- Шаг 2 -->
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px;">
-                    <h3 style="font-size: 16px; margin-bottom: 8px;">Шаг 2. Отправь его нам</h3>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Прикрепи этот файл в нашу группу, и мы добавим его на сайт.</p>
-                    <a href="https://t.me/+sq9RDqa2I2A3M2Iy" target="_blank" class="builder-btn primary" style="width: 100%; text-decoration: none; text-align: center; box-sizing: border-box; background: #2AABEE; color: white; border: none; padding: 12px; border-radius: 8px; display: block; font-weight: bold;">✈️ Перейти в группу</a>
-                </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button id="tab-file" class="builder-btn active" style="flex: 1; background: var(--accent-color);">1. Код файла</button>
+                <button id="tab-manifest" class="builder-btn" style="flex: 1; background: rgba(255,255,255,0.1);">2. Строка для manifest.json</button>
             </div>
-            
-            <!-- Скрытый textarea для кода -->
-            <textarea id="code-output" style="display: none;"></textarea>
+
+            <!-- Вкладка для файла -->
+            <div id="content-file">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
+                    Скопируй это и вставь в файл <b id="filename-hint">...</b> в папке <code>data/schedule/</code> (или в <code>substitutions/index.js</code>)
+                </p>
+                <textarea id="code-output" class="builder-input" style="height: 250px; font-family: monospace; font-size: 12px; margin-bottom: 15px; color: #10b981;" readonly></textarea>
+                <button id="btn-copy-js" class="builder-btn success" style="width: 100%;">📋 Скопировать код файла</button>
+            </div>
+
+            <!-- Вкладка для манифеста -->
+            <div id="content-manifest" class="hidden">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
+                    Скопируй эту строчку и добавь в массив <code>"files"</code> в файле <code>data/schedule/manifest.json</code>:
+                </p>
+                <textarea id="manifest-output" class="builder-input" style="height: 60px; font-family: monospace; font-size: 14px; margin-bottom: 15px; color: #fbbf24;" readonly></textarea>
+                <button id="btn-copy-manifest" class="builder-btn" style="width: 100%; background: #fbbf24; color: black;">📋 Скопировать для manifest.json</button>
+            </div>
         </div>
     </div>
 
@@ -109,13 +124,10 @@
             </div>
             <div style="font-size: 14px; line-height: 1.6; color: var(--text-main);">
                 <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 12px;">
-                    <li><strong>Название группы.</strong> Введи в шапке точное название своей группы (например, <strong>26 АТП-4Бо</strong>).</li>
-                    <li><strong>Неделя и день.</strong> Слева переключай 1-ю и 2-ю неделю, а также дни.</li>
-                    <li><strong>Добавление пар.</strong> Нажми «+ Добавить пару». Начни вводить предмет, кабинет и препод подставятся сами.</li>
-                    <li><strong>Номер пары.</strong> Кликни на синий кружок, введи <strong>2</strong>, и нажми Enter, чтобы поставить пару второй.</li>
-                    <li><strong>Подгруппы.</strong> Пиши через слэш: <code>2-213 / 212</code> или <code>Ушакова Е.П. / Процок М.П.</code>.</li>
-                    <li><strong>Своё время.</strong> Поставь галочку и введи часы, если время нестандартное.</li>
-                    <li><strong>Скачивание.</strong> Нажми «Скачать файл» и отправь его в нашу группу (<a href="https://t.me/+sq9RDqa2I2A3M2Iy" target="_blank" style="color: var(--accent-color);">https://t.me/+sq9RDqa2I2A3M2Iy</a>).</li>
+                    <li><strong>Выбери режим:</strong> «Расписание» для новой группы или «Замены» для конкретного дня.</li>
+                    <li><strong>Введи группу</strong> в шапке. Можно писать как угодно (латиницей или кириллицей), Билдер сам сделает красиво.</li>
+                    <li><strong>Для замен:</strong> выбери дату и добавь только те пары, которые поменялись (например, 4-я пара Физика, кабинет 2-107).</li>
+                    <li><strong>Сгенерируй код:</strong> скопируй код файла и строку для манифеста (если это расписание). Вставь их на сайте.</li>
                 </ol>
             </div>
         </div>

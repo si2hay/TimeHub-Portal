@@ -1,7 +1,7 @@
 ```markdown
 # TimeHub-Portal — AI Guide (Read this first)
 
-> ⚠️ **ВАЖНОЕ ПРЕДУПРЕЖДЕНИЕ:** Данное руководство может содержать устаревшую информацию. Проект активно развивается, файлы и архитектура могут меняться. Перед написанием любого кода или внесением изменений необходимо запросить у пользователя актуальную структуру проекта и текущие версии файлов для сверки. Не полагайтесь слепо на этот текст — всегда проверяйте исходный код.
+> ⚠️ **ВАЖНОЕ ПРЕДУПРЕЖДЕНИЕ:** Данное руководство может содержать устаревшую информацию. Проект активно развивается. Перед написанием любого кода или внесением изменений необходимо запросить у пользователя актуальную структуру проекта и текущие версии файлов для сверки. Не полагайтесь слепо на этот текст — всегда проверяйте исходный код.
 
 > **ВНИМАНИЕ ДЛЯ ИИ-АССИСТЕНТА:** Вы — Senior Frontend разработчик, задача которого — поддерживать и развивать проект **TimeHub-Portal**. Необходимо писать чистый, надежный код, не ломать существующую архитектуру и строго следовать правилам ниже.
 
@@ -10,12 +10,11 @@
 Нельзя додумывать файлы, которых нет перед глазами. Отправьте пользователю следующий запрос:
 *"Привет! Чтобы я не сломал проект, скинь мне, пожалуйста, актуальную структуру файлов. Открой терминал в корне проекта и введи команду: `find . -not -path '*/.*' -not -path '*/node_modules/*'`"*
 
-Если задача касается конкретных модулей (например, настройки или стейт), необходимо также запросить их актуальное содержимое текстом.
+Если задача касается конкретных модулей, необходимо также запросить их актуальное содержимое текстом.
 
 ---
 
 ## 1. Обзор проекта
-
 **TimeHub-Portal** — учебный SPA-портал для студента Газпром колледжа Волгограда (группа 26 АТП-2Бо).
 
 **Функционал:**
@@ -31,7 +30,7 @@
 - Работа как Telegram Mini App.
 
 **Технологии:**
-- Чистый **Vanilla JS (ES6 Modules)**. Запрещено использовать React, Vue, jQuery, TypeScript или сборщики (Webpack/Vite).
+- Чистый **Vanilla JS (ES6 Modules)**. Запрещено использовать React, Vue, jQuery, TypeScript или сборщики.
 - HTML5 + CSS3 (переменные, Grid, Flexbox, анимации).
 - Хостинг: GitHub Pages (без бэкенда).
 - Интеграция: Telegram Web App API + CloudStorage.
@@ -42,114 +41,113 @@
 ---
 
 ## 2. Быстрый старт
-
-### Локальный запуск
 1. Открыть папку в VS Code.
 2. Установить расширение **Live Server**.
 3. ПКМ по `index.html` → **Open with Live Server**.
 4. Для Конструктора: ПКМ по `builder.html` → **Open with Live Server**.
-5. Порт по умолчанию: `5500`.
 
-### Деплой
+**Деплой:**
 ```bash
 git add .
 git commit -m "описание изменений"
 git push origin master
 ```
-GitHub Pages пересоберёт сайт за 1-2 минуты.
+*(Git-хук автоматически обновит `CACHE_NAME` в `sw.js` перед коммитом, чтобы у пользователей сбросился кэш).*
 
 **Ссылки после деплоя:**
 - Сайт: `https://si2hay.github.io/TimeHub-Portal/`
 - Конструктор: `https://si2hay.github.io/TimeHub-Portal/builder.html`
-- Telegram-бот: `https://t.me/timehub_portal_bot/portal`
+- Бот: `https://t.me/timehub_portal_bot/portal`
 
 ---
 
-## 3. Полная архитектура файлов
+## 3. Полная архитектура файлов (АКТУАЛЬНО)
 
 ```text
 ├── index.html              # Точка входа SPA (telegram-web-app.js + Google Fonts)
-├── builder.html            # Конструктор (2 шага: скачать → отправить в ТГ)
+├── builder.html            # Конструктор (2 режима: Расписание / Замены)
 ├── manifest.json           # PWA манифест
-├── sw.js                   # Service Worker (офлайн-режим)
+├── sw.js                   # Service Worker (офлайн-режим, авто-обновление)
 ├── README.md
-├── AI_GUIDE.md             # Этот файл
-├── .nojekyll               # Для GitHub Pages
+├── AI_GUIDE.md
 │
 ├── assets/
 │   ├── css/
-│   │   ├── style.css       # Все стили (базовые, компоненты, скелетоны)
+│   │   ├── style.css       # Все стили (скелетоны, масштабирование шрифта)
 │   │   ├── themes.css      # CSS-переменные для тем
 │   │   ├── radial.css      # Радиальное меню дней недели
 │   │   └── builder.css     # Стили Конструктора
-│   │
 │   ├── fonts/              # .ttf и .woff2 (MinecraftRus, Tsap-Tsarap)
 │   ├── icons/              # (зарезервировано)
-│   └── img/                # Картинки
+│   └── js/
+│       ├── main.js         # Сборка UI-компонентов
+│       ├── config.js       # Константы (SEMESTER_START_DATE, VERSION)
+│       ├── state.js        # Singleton (стейт, стрик, шина событий)
+│       ├── telegram-storage.js # Обёртка localStorage + TG CloudStorage
+│       ├── storage.js      # (устарел, оставлен для совместимости)
+│       ├── themes.js       # Применение тем/шрифтов/масштаба
+│       ├── particles.js    # Анимация частиц (Canvas)
+│       ├── pwa.js          # Регистрация Service Worker с авто-обновлением
+│       ├── data-manager.js # Склейка расписания и замен (из JSON)
+│       ├── builder.js      # Логика Конструктора + транслитерация
+│       ├── debug.js        # Отладка
+│       ├── router.js       # (зарезервировано)
+│       ├── utils.js        # Утилиты (timeToMinutes)
+│       └── ui/
+│           ├── header.js       # Шапка (лого, дата, стрик)
+│           ├── controls.js     # Панель недели/группы + погода
+│           ├── timer.js        # Таймер пар
+│           ├── schedule.js     # Карточки расписания (skeleton.js)
+│           ├── skeleton.js     # Заглушки загрузки (shimmer)
+│           ├── weather.js      # Погода
+│           ├── reference.js    # Справочник (аккордеон)
+│           ├── notes.js        # Заметки + чек-лист (облако)
+│           ├── footer.js       # Подвал
+│           ├── settings.js     # Модалка настроек (темы, шрифты, QR, версия)
+│           ├── full-schedule.js # Расписание на неделю
+│           └── radial-day-picker.js
 │
-├── assets/js/
-│   ├── main.js             # Сборка UI-компонентов
-│   ├── config.js           # Константы (SEMESTER_START_DATE)
-│   ├── state.js            # Singleton (стейт, стрик, шина событий)
-│   ├── telegram-storage.js # Обёртка localStorage + TG CloudStorage
-│   ├── storage.js          # (устарел, оставлен для совместимости)
-│   ├── themes.js           # Применение тем/шрифтов/масштаба
-│   ├── particles.js        # Анимация частиц (Canvas)
-│   ├── pwa.js              # Регистрация Service Worker
-│   ├── data-manager.js     # Склейка расписания и замен
-│   ├── builder.js          # Логика Конструктора + транслитерация
-│   ├── debug.js            # Отладка
-│   ├── router.js           # (зарезервировано)
-│   ├── utils.js            # Утилиты (timeToMinutes)
-│   │
-│   └── ui/
-│       ├── header.js       # Шапка (лого, дата, стрик)
-│       ├── controls.js     # Панель недели/группы + погода
-│       ├── timer.js        # Таймер пар
-│       ├── schedule.js     # Карточки расписания (skeleton.js)
-│       ├── skeleton.js     # Заглушки загрузки (shimmer)
-│       ├── weather.js      # Погода
-│       ├── reference.js    # Справочник (аккордеон)
-│       ├── notes.js        # Заметки + чек-лист (облако)
-│       ├── footer.js       # Подвал
-│       ├── settings.js     # Модалка настроек (темы, шрифты, обои, QR)
-│       ├── full-schedule.js # Расписание на неделю
-│       └── radial-day-picker.js
+├── data/
+│   ├── bells.js            # Звонки (1 и 2+ курсы)
+│   ├── teachers.js         # База преподавателей
+│   ├── groups.js           # (устарел)
+│   ├── dictionary.js       # Словарь (Предмет → Учителя + Кабинеты)
+│   ├── schedule/
+│   │   ├── manifest.json   # Список файлов расписаний
+│   │   ├── index.js        # Агрегатор
+│   │   ├── 26ATP-1Bo.js
+│   │   ├── 26ATP-2Bo.js
+│   │   └── 26ATP-3Bo.js
+│   └── substitutions/
+│       └── data.json       # <--- ВАЖНО: Замены теперь хранятся ТОЛЬКО в JSON!
 │
-└── data/
-    ├── bells.js            # Звонки (1 и 2+ курсы)
-    ├── teachers.js         # База преподавателей
-    ├── groups.js           # (устарел)
-    ├── dictionary.js       # Словарь (Предмет → Учителя + Кабинеты)
-    │
-    ├── schedule/
-    │   ├── manifest.json   # Список файлов расписаний
-    │   ├── index.js        # Агрегатор
-    │   ├── 26ATP-1Bo.js
-    │   ├── 26ATP-2Bo.js
-    │   ├── 26ATP-3Bo.js
-    │   └── 26ATP.js
-    │
-    └── substitutions/
-        └── index.js        # Замены по датам
+└── screenshots/            # Скриншоты для README
 ```
 
 ---
 
-## 4. Архитектура модулей
+## 4. Ключевые изменения в архитектуре (Версия 1.2+)
 
-### Принцип работы
-1. `index.html` подключает `main.js`.
-2. `main.js` вызывает функции UI-компонентов (`createHeader()`, `createSchedule()`).
-3. Компоненты возвращают DOM-элементы, которые вставляются в `#app`.
-4. Компоненты читают `state.get(...)` и подписываются на `state.on('change:...')`.
-5. Данные хранятся в `localStorage` и/или `Telegram CloudStorage`.
+### 🚨 Система замен переведена на JSON
+**ВНИМАНИЕ:** Файла `data/substitutions/index.js` больше НЕТ.
+*   Все замены теперь хранятся в **`data/substitutions/data.json`**.
+*   **Формат:**
+    ```json
+    {
+      "2026-11-02": {
+        "26 АТП-2Бо": {
+          "4": { "subject": "Физика", "room": "2-107", "teacher": "Бондарь А.С." }
+        }
+      }
+    }
+    ```
+*   `data-manager.js` делает `fetch()` к этому файлу при каждой загрузке расписания (с обходом кэша через `?t=Date.now()`), чтобы всегда брать актуальные замены.
+*   Если `subject` пустой (`""`), пара автоматически удаляется из расписания на этот день.
 
-### Ключевые модули
-- **`state.js`**: `state.get()`, `state.set()`, `state.on()`, `state.determineWeek()`, `state.initStreak()`.
-- **`config.js`**: `CONFIG.SEMESTER_START_DATE`, `CONFIG.DEFAULT_SETTINGS`.
-- **`data-manager.js`**: `getLessonsForDay(week, day, group)`.
-- **`themes.js`**: `applyTheme()`, `applyFont()`, `applyTextScale()`, `initThemes()`.
+### 🛠 Обновленный Конструктор (`builder.js`)
+*   Теперь имеет **два режима**: `schedule` (генерация файла группы) и `substitution` (генерация замен).
+*   **Транслитерация:** Умеет переводить `26ATP-2Bo` <-> `26 АТП-2Бо` в обе стороны. Генерирует правильное имя файла (латиницей) и красивый ключ (кириллицей).
+*   **Авто-очистка замен:** Когда пользователь генерирует новые замены, скрипт скачивает текущий `data.json`, удаляет оттуда все прошедшие даты (`dateKey < todayStr`), добавляет новые и выдает пользователю готовый файл на скачивание.
 
 ---
 
@@ -161,8 +159,6 @@ GitHub Pages пересоберёт сайт за 1-2 минуты.
 | `timehub_settings` | Тема, шрифт, группа, обои, масштаб | ❌ НЕТ |
 | `timehub_builder_state` | Состояние Конструктора | ❌ НЕТ |
 
-**Правило:** Настройки на телефоне и ПК могут отличаться. Это фича.
-
 ### 5.2. Облачные данные (Telegram CloudStorage)
 | Ключ | Что хранит | Синхронизация |
 |------|-----------|---------------|
@@ -170,11 +166,7 @@ GitHub Pages пересоберёт сайт за 1-2 минуты.
 | `timehub_checklist` | Массив задач | ✅ ДА |
 | `timehub_streak` | `{ count, lastVisit }` | ✅ ДА |
 
-**Правило:** Если сайт открыт в браузере, облако недоступно → данные идут в `localStorage`.
-
-**Модуль `telegram-storage.js`:**
-- `smartStorage.getItem()` / `setItem()` — асинхронные (всегда `await`).
-- **Лимит:** 4096 символов на ключ.
+**Модуль `telegram-storage.js`:** методы асинхронные (всегда `await`). Лимит: 4096 символов на ключ.
 
 ---
 
@@ -185,24 +177,20 @@ GitHub Pages пересоберёт сайт за 1-2 минуты.
 - **`ui/header.js`**: При клике на логотип открывается меню с огоньком. Цвет зависит от `count`: 10+ (красный), 30+ (синий), 60+ (фиолетовый), 100+ (золотой).
 - **Секретка:** 5 кликов по логотипу → тема `matrix`, 10 кликов → `nothing`.
 
-### 6.2. Конструктор — `builder.js` + `builder.html`
-- Генерирует `.js` файл и сохраняет состояние в `timehub_builder_state`.
-- **Транслитерация:** `transliterate()` переводит `26 АТП-2Бо` → `26ATP-2Bo.js`.
-- Модалка скачивания: 2 шага (скачать файл → перейти в ТГ-группу).
-
-### 6.3. Темы, шрифты, масштаб — `themes.js` + `ui/settings.js`
+### 6.2. Темы, шрифты, масштаб — `themes.js` + `ui/settings.js`
 - `applyTheme(name)`, `applyFont(name)`, `applyTextScale(scale)`.
 - Шрифты: `minecraft`, `tsap`, `inter`, `roboto`, `rubik`, `play`, `montserrat`.
-- Google Fonts подключены в `index.html`.
 - Масштаб через CSS-переменную `--text-scale` (в конце `style.css`).
+- В самом низу модалки настроек выводится версия из `config.js`.
 
-### 6.4. Скелетоны — `ui/skeleton.js` + `ui/schedule.js`
-- `renderScheduleSkeleton()` возвращает HTML с 3 псевдо-карточками.
-- Анимация `.shimmer::after` — переливающийся градиент.
+### 6.3. Скелетоны — `ui/skeleton.js` + `ui/schedule.js`
+- `renderScheduleSkeleton()` возвращает HTML с псевдо-карточками.
+- Анимация `.shimmer::after` — переливающийся градиент. Вставляется в `schedule.js` перед загрузкой данных.
 
-### 6.5. Service Worker — `sw.js`
+### 6.4. Service Worker — `sw.js` и `pwa.js`
 - Стратегия: **Network First**.
-- **ПРАВИЛО:** При любых изменениях CSS/JS **обязательно** изменить `CACHE_NAME` (`v4` → `v5`).
+- **ПРАВИЛО:** При любых изменениях CSS/JS нужно менять `CACHE_NAME`. (Git-хук делает это автоматически).
+- `pwa.js` слушает обновления и перезагружает страницу при активации нового воркера (`controllerchange`).
 
 ---
 
@@ -227,26 +215,24 @@ export const SCHEDULE_26ATP_2Bo = {
     }
 };
 ```
-- Ключ — название группы с пробелами.
+- Ключ — название группы (может быть с пробелами/кириллицей).
 - `customTimes`: `[week, day, pair, start, end]`.
 
 ### 7.3. `data/schedule/manifest.json`
 ```json
 { "files": ["26ATP-1Bo.js", "26ATP-2Bo.js"] }
 ```
-- Без файла в манифесте расписание не загрузится.
 
-### 7.4. `data/substitutions/index.js`
-```javascript
-export const SUBSTITUTIONS = {
-    "2026-11-02": {
-        "26 АТП-2Бо": {
-            1: { subject: "Математика", room: "2-213", teacher: "Зайцева Н.Н." }
-        }
+### 7.4. `data/substitutions/data.json` (ЗАМЕНЫ)
+```json
+{
+  "2026-11-02": {
+    "26 АТП-2Бо": {
+      "4": { "subject": "Физика", "room": "2-107", "teacher": "Бондарь А.С." }
     }
-};
+  }
+}
 ```
-- Если `subject` пустой — пара удаляется.
 
 ### 7.5. `data/dictionary.js`
 ```javascript
@@ -262,7 +248,6 @@ export const DICTIONARY = {
 ---
 
 ## 8. Логика расчётов
-
 ### Вычисление недели
 ```javascript
 determineWeek() {
@@ -279,13 +264,13 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 ```
 
 ### Таймер
-- Пара = 90 минут (45 + 5 + 40).
-- Если ≤ 45 минут — без поиска перемены.
+- Пара = 95 минут (45 минут первая полупара + 5 минут перемена + 45 минут вторая полупара).
+- Если фактическая длительность ≤ 45 минут — таймер не ищет перемену внутри.
+- Прогресс-бар показывает оставшееся время до конца текущего отрезка.
 
 ---
 
-## 9. CSS-переменные (шпаргалка)
-
+## 9. CSS-переменные и стили
 ```css
 --bg-color, --bg-gradient, --surface-color
 --text-main, --text-muted
@@ -294,93 +279,52 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 --shadow, --border-radius
 --font-family, --text-scale, --transition-speed
 ```
-Все цвета — только через переменные. Хардкод запрещён.
+Все цвета — только через переменные.
 
 ---
 
-## 10. Service Worker — правила
-
-- Стратегия: Network First.
-- При изменениях в CSS/JS/HTML — **менять `CACHE_NAME`**.
-- Игнорирует: `telegram.org`, `open-meteo.com`, `wttr.in`, `esm.sh`.
-
----
-
-## 11. Настройки пользователя — полная таблица
-
-| Ключ | Где хранится | Что внутри |
-|------|--------------|-----------|
-| `timehub_settings` | localStorage | `{ theme, font, group, particles, liquidGlass, bgUrl, bgDarkness, bgBlur, textScale, weatherApi, course }` |
-| `timehub_notes` | CloudStorage | Текст заметок |
-| `timehub_checklist` | CloudStorage | `[{ text, done }]` |
-| `timehub_streak` | CloudStorage | `{ count, lastVisit }` |
-| `timehub_builder_state` | localStorage | `{ groupName, week, day, schedule }` |
-
----
-
-## 12. Рецепты частых задач
-
+## 10. Рецепты частых задач
 ### Добавить группу
-1. Скачать файл из Билдера.
+1. Сгенерировать файл в Билдере.
 2. Положить в `data/schedule/`.
-3. Добавить в `manifest.json`.
-4. `git push`.
+3. Добавить имя файла в `data/schedule/manifest.json`.
 
 ### Добавить замену
-1. Открыть `data/substitutions/index.js`.
-2. Добавить дату в `SUBSTITUTIONS`.
-3. `git push`.
+1. В Билдере выбрать режим «Замены».
+2. Выбрать дату, добавить пары.
+3. Нажать «Скачать data.json».
+4. Заменить старый файл `data/substitutions/data.json` новым.
 
 ### Изменить звонки
 1. Открыть `data/bells.js`.
-2. Отредактировать `course1` / `course2plus`.
 
 ### Добавить преподавателя/кабинет
 1. Открыть `data/dictionary.js`.
-2. Добавить в массив.
 
 ### Сменить дату старта семестра
 1. Открыть `config.js`.
-2. Изменить `SEMESTER_START_DATE`.
 
 ### Добавить тему
 1. В `themes.css` — `body.theme-mytheme { ... }`.
 2. В `ui/settings.js` — в массив `THEMES`.
 
-### Добавить шрифт
-1. Закинуть `.woff2` и `.ttf` в `assets/fonts/`.
-2. В `index.html` — Google Fonts (если облачный) или `@font-face` в `style.css`.
-3. В `themes.js` — обработка в `applyFont()`.
-4. В `ui/settings.js` — кнопка с `data-font`.
-
 ---
 
-## 13. Правила стиля и антипаттерны
-
+## 11. Правила стиля и антипаттерны
 ### ✅ Делать
 - Использовать `state.getNow()`.
-- Данные — в `localStorage` или CloudStorage.
 - Изменения стейта — через `state.set()`.
 - DOM — через `document.createElement()`.
-- Стили — в CSS-файлах.
-- Комментарии — на русском.
 - Цвета — через CSS-переменные.
-- Асинхронные операции — через `await`.
-- Менять `CACHE_NAME` после правок CSS/JS.
 
 ### ❌ Не делать
 - Не использовать фреймворки (React/Vue) и сборщики.
-- Не писать всё в одном файле.
-- Не трогать `.git`.
-- Не добавлять тяжёлые библиотеки.
-- Не использовать `innerHTML` для пользовательских данных (только `textContent`).
-- Не хардкодить цвета.
-- Не писать код «вслепую» без актуальных файлов.
+- Не использовать `innerHTML` для пользовательских данных.
+- **Не создавать файл `data/substitutions/index.js`**. Только `data.json`.
 
 ---
 
-## 14. Известные баги и их фиксы
-
+## 12. Известные баги и их фиксы
 | Симптом | Причина | Решение |
 |---------|---------|---------|
 | Старая версия сайта | Не обновлён `CACHE_NAME` | Изменить версию в `sw.js` |
@@ -389,11 +333,11 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 | Ошибка `Script error` в TG | Внутренняя ошибка WebView | Игнорируется в `main.js` |
 | Стрик не растёт | `lastVisit` не совпадает | Проверить `initStreak()` |
 | Файл из Билдера не грузится | Нет в `manifest.json` | Добавить в `files` |
+| Замены не отображаются | Ошибка в `data.json` | Проверить валидность JSON и дату `YYYY-MM-DD` |
 
 ---
 
-## 15. Контакты
-
+## 13. Контакты
 - **Telegram-группа:** `https://t.me/+sq9RDqa2I2A3M2Iy`
 - **Почта:** `gemg944@gmail.com`
 - **GitHub:** `https://github.com/si2hay`

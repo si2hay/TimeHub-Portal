@@ -1,7 +1,6 @@
 // data-manager.js: Управление данными (расписание + замены + время)
 
 import { ALL_SCHEDULES } from '../../data/schedule/index.js';
-import { SUBSTITUTIONS } from '../../data/substitutions/index.js';
 
 export async function getLessonsForDay(week, day, group) {
     // 1. Получаем базовое расписание
@@ -11,31 +10,42 @@ export async function getLessonsForDay(week, day, group) {
     const weekData = week === 1 ? groupData.week1 : groupData.week2;
     let lessons = JSON.parse(JSON.stringify(weekData[day] || []));
 
-    // 2. Проверяем наличие замен на сегодня
-    const today = new Date(); 
-    const offset = today.getTimezoneOffset() * 60000;
-    const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
-
-    const todayZamena = SUBSTITUTIONS[localISOTime];
-
-    if (todayZamena && todayZamena[group]) {
-        const groupZamena = todayZamena[group];
+    // 2. Загружаем замены из JSON
+    let todayZamena = null;
+    try {
+        const url = new URL('../../data/substitutions/data.json', import.meta.url);
+        url.searchParams.set('t', Date.now()); // Обход кэша браузера
+        const response = await fetch(url);
         
-        for (const pairNum in groupZamena) {
+        if (response.ok) {
+            const SUBSTITUTIONS = await response.json();
+            
+            const today = new Date(); 
+            const offset = today.getTimezoneOffset() * 60000;
+            const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
+
+            if (SUBSTITUTIONS[localISOTime] && SUBSTITUTIONS[localISOTime][group]) {
+                todayZamena = SUBSTITUTIONS[localISOTime][group];
+            }
+        }
+    } catch (e) {
+        console.warn('Ошибка загрузки замен:', e);
+    }
+
+    // 3. Применяем замены
+    if (todayZamena) {
+        for (const pairNum in todayZamena) {
             const pNum = parseInt(pairNum);
             const existingIndex = lessons.findIndex(l => l.pair === pNum);
-            const newLesson = { ...groupZamena[pairNum], isSubstitution: true };
+            const newLesson = { ...todayZamena[pairNum], isSubstitution: true };
             
             if (existingIndex !== -1) {
-                // Если предмет пустой — удаляем пару
                 if (!newLesson.subject || newLesson.subject.trim() === '') {
-                    lessons.splice(existingIndex, 1);
+                    lessons.splice(existingIndex, 1); // Отмена пары
                 } else {
-                    // Иначе заменяем, ОБЯЗАТЕЛЬНО сохраняя номер пары (pNum)
                     lessons[existingIndex] = { ...newLesson, pair: pNum };
                 }
             } else {
-                // Если пары не было, но в замене есть — добавляем (только если предмет не пустой)
                 if (newLesson.subject && newLesson.subject.trim() !== '') {
                     lessons.push({ ...newLesson, pair: pNum });
                 }
@@ -44,20 +54,13 @@ export async function getLessonsForDay(week, day, group) {
         lessons.sort((a, b) => a.pair - b.pair);
     }
 
-    // 3. ПРИМЕНЯЕМ КАСТОМНОЕ ВРЕМЯ
+    // 4. ПРИМЕНЯЕМ КАСТОМНОЕ ВРЕМЯ
     const customTimes = groupData.customTimes || [];
-    
     lessons = lessons.map(lesson => {
-        // Ищем в массиве совпадение по неделе, дню и номеру пары
-        // Структура: [week, day, pair, start, end]
         const custom = customTimes.find(t => 
             t[0] === week && t[1] === day && t[2] === lesson.pair
         );
-        
-        if (custom) {
-            // Если нашли, перезаписываем время в объекте пары
-            return { ...lesson, start: custom[3], end: custom[4] };
-        }
+        if (custom) return { ...lesson, start: custom[3], end: custom[4] };
         return lesson;
     });
 
