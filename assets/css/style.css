@@ -143,12 +143,19 @@ body.no-glass .glass-panel {
     align-items: center;
     padding: 12px 16px;
     margin-bottom: 8px;
+    position: relative;
+    z-index: 100; /* Шапка поверх остальных панелей */
 }
+
 .header-logo {
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative;
+    z-index: 101; /* Логотип и его меню поверх всего в шапке */
+    cursor: pointer;
 }
+
 .logo-icon {
     width: 36px;
     height: 36px;
@@ -160,7 +167,6 @@ body.no-glass .glass-panel {
     border-radius: 8px;
     font-size: 24px;
     font-weight: bold;
-    cursor: pointer;
     user-select: none;
 }
 .logo-text h1 {
@@ -191,6 +197,93 @@ body.no-glass .glass-panel {
 }
 .icon-btn:hover {
     transform: rotate(45deg);
+}
+
+/* --- СТРИК (ОГОНЕК) --- */
+.header-streak-badge {
+    font-size: 12px;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 4px;
+    font-weight: bold;
+    vertical-align: middle;
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.streak-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    width: 140px;
+    padding: 16px;
+    text-align: center;
+    z-index: 9999; /* Максимальный приоритет, чтобы перекрывать всё */
+    
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.streak-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.streak-title {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.streak-count-text {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-main);
+}
+
+.streak-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 10px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+}
+
+.fire-svg-container {
+    width: 100%;
+    height: 100%;
+    animation: fire-flicker 1.5s infinite alternate ease-in-out;
+}
+
+@keyframes fire-flicker {
+    0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+    50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1.1) rotate(0deg); opacity: 0.9; }
+}
+
+.fire-svg-container { color: #f97316; }
+.fire-lvl-2 { color: #ef4444; animation-duration: 1.2s; }
+.fire-lvl-3 { color: #3b82f6; animation-duration: 1s; }
+.fire-lvl-4 { color: #a855f7; animation-duration: 0.8s; }
+.fire-lvl-5 { 
+    color: #fbbf24; 
+    animation-duration: 0.6s; 
+    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));
 }
 
 /* --- Панель управления --- */
@@ -335,7 +428,7 @@ body.no-glass .glass-panel {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     margin-bottom: 12px;
-    height: 80px; /* Примерная высота карточки */
+    height: 80px;
 }
 
 .skeleton-time {
@@ -387,7 +480,6 @@ body.no-glass .glass-panel {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Анимация Шиммера (переливания) */
 .shimmer {
     position: relative;
     overflow: hidden;
@@ -414,7 +506,6 @@ body.no-glass .glass-panel {
         transform: translateX(100%);
     }
 }
-/* --------------------------------- */
 
 /* --- Расписание --- */
 .schedule-container {
@@ -557,7 +648,6 @@ body.no-glass .glass-panel {
     flex-grow: 1;
 }
 
-/* Умная подсветка недели */
 .week-label {
     cursor: pointer;
     padding: 4px 10px;
@@ -1349,175 +1439,3 @@ body.font-tsap .header-date { font-size: calc(16px * var(--text-scale)); }
 body.font-tsap .week-label { font-size: calc(18px * var(--text-scale)); }
 body.font-tsap .group-trigger { font-size: calc(16px * var(--text-scale)); }
 body.font-tsap .weather-advice { font-size: calc(12px * var(--text-scale)); }
-/* =========================================
-   СТИЛИ ДЛЯ СТРИКА (ОГОНЬКА)
-   ========================================= */
-
-/* Бейдж в шапке */
-.header-streak-badge {
-    font-size: 12px;
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    padding: 2px 6px;
-    border-radius: 6px;
-    margin-left: 4px;
-    font-weight: bold;
-    vertical-align: middle;
-    animation: pulse-badge 2s infinite;
-}
-
-@keyframes pulse-badge {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* Выпадающее меню */
-.streak-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 8px;
-    width: 140px;
-    padding: 16px;
-    text-align: center;
-    z-index: 100;
-    
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px) scale(0.95);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.streak-dropdown.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-}
-
-.streak-title {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-}
-
-.streak-count-text {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--text-main);
-}
-
-.streak-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 10px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
-}
-
-/* Анимация огонька */
-.fire-svg-container {
-    width: 100%;
-    height: 100%;
-    animation: fire-flicker 1.5s infinite alternate ease-in-out;
-}
-
-@keyframes fire-flicker {
-    0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
-    50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
-    100% { transform: scale(1.1) rotate(0deg); opacity: 0.9; }
-}
-
-/* Цветовые уровни огня */
-.fire-svg-container { color: #f97316; } /* Базовый оранжевый */
-
-.fire-lvl-2 { color: #ef4444; animation-duration: 1.2s; } /* 10+ дней, красный */
-.fire-lvl-3 { color: #3b82f6; animation-duration: 1s; } /* 30+ дней, синий */
-.fire-lvl-4 { color: #a855f7; animation-duration: 0.8s; } /* 60+ дней, фиолетовый */
-.fire-lvl-5 { 
-    color: #fbbf24; 
-    animation-duration: 0.6s; 
-    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));
-} /* 100+ дней, золотой */
-/* =========================================
-   ФИКС ПОЗИЦИОНИРОВАНИЯ ДЛЯ СТРИКА
-   ========================================= */
-.header-logo {
-    position: relative; /* Это заставит меню открываться под логотипом, а не в углу экрана */
-    cursor: pointer;
-}
-
-/* Убедимся, что меню поверх всех остальных элементов */
-.streak-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 8px;
-    width: 140px;
-    padding: 16px;
-    text-align: center;
-    z-index: 1000; 
-    
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px) scale(0.95);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.streak-dropdown.open {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-}
-
-.streak-title {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-}
-
-.streak-count-text {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--text-main);
-}
-
-.streak-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 10px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
-}
-
-/* Анимация огонька */
-.fire-svg-container {
-    width: 100%;
-    height: 100%;
-    animation: fire-flicker 1.5s infinite alternate ease-in-out;
-}
-
-@keyframes fire-flicker {
-    0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
-    50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
-    100% { transform: scale(1.1) rotate(0deg); opacity: 0.9; }
-}
-
-/* Цветовые уровни огня */
-.fire-svg-container { color: #f97316; }
-.fire-lvl-2 { color: #ef4444; animation-duration: 1.2s; }
-.fire-lvl-3 { color: #3b82f6; animation-duration: 1s; }
-.fire-lvl-4 { color: #a855f7; animation-duration: 0.8s; }
-.fire-lvl-5 { 
-    color: #fbbf24; 
-    animation-duration: 0.6s; 
-    filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8));
-}
