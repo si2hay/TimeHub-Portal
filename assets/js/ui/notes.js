@@ -38,19 +38,27 @@ export function createNotes() {
     const status = container.querySelector('#notes-status');
     
     let tasks = [];
-    let isLoaded = false; // Флаг, чтобы не перезаписать облако пустым массивом до его загрузки
+    let isLoaded = false;
+
+    // ФУНКЦИЯ АВТО-РЕСАЙЗА: подстраивает высоту под текст
+    function autoResizeTextarea() {
+        textarea.style.height = 'auto';
+        // Ограничиваем максимальную высоту, чтобы не сломать верстку (400px)
+        const newHeight = Math.min(textarea.scrollHeight, 400);
+        textarea.style.height = newHeight + 'px';
+    }
 
     async function loadData() {
-        // 1. Загружаем чек-лист
         const saved = await smartStorage.getItem('timehub_checklist');
         tasks = saved ? JSON.parse(saved) : [];
         renderChecklist();
 
-        // 2. Загружаем текст
         const savedNotes = await smartStorage.getItem('timehub_notes') || '';
         textarea.value = savedNotes;
         
-        // Разрешаем сохранение
+        // ВАЖНО: Подгоняем высоту под загруженный текст при старте
+        setTimeout(autoResizeTextarea, 10);
+        
         isLoaded = true;
     }
 
@@ -82,7 +90,7 @@ export function createNotes() {
     }
 
     function saveTasks() {
-        if (!isLoaded) return; // Блокируем сохранение, пока не загрузились данные
+        if (!isLoaded) return;
         smartStorage.setItem('timehub_checklist', JSON.stringify(tasks));
     }
 
@@ -106,7 +114,10 @@ export function createNotes() {
 
     let saveTimeout;
     textarea.addEventListener('input', (e) => {
-        if (!isLoaded) return; // Ждем загрузки
+        if (!isLoaded) return;
+
+        // Вызываем авто-ресайз при каждом вводе буквы
+        autoResizeTextarea();
 
         const originalValue = e.target.value;
         const cleanValue = originalValue.replace(/[^a-zA-Zа-яА-Я0-9\s.,!?\-]/g, '');

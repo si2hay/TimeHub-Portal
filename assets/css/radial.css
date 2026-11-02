@@ -1,6 +1,5 @@
-/* radial.css: Меню выбора дней недели (все варианты) */
+/* radial.css: Меню выбора дней недели (Круглое и Минимализм) */
 
-/* --- ОБЩИЙ КОНТЕЙНЕР --- */
 .day-picker-wrapper {
     position: fixed;
     bottom: 30px;
@@ -20,7 +19,7 @@
 }
 
 /* =========================================
-   ВАРИАНТ 1: РАДИАЛЬНОЕ МЕНЮ (ТЕКУЩЕЕ)
+   ВАРИАНТ 1: РАДИАЛЬНОЕ МЕНЮ
    ========================================= */
 .radial-menu-container {
     position: relative;
@@ -109,136 +108,7 @@
 }
 
 /* =========================================
-   ВАРИАНТ 2: ТАБЫ С ПОЛЗУНКОМ (tabs)
-   ========================================= */
-.tabs-container {
-    display: flex;
-    position: relative;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow);
-    padding: 6px;
-    border-radius: 99px;
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
-}
-
-.tabs-container input[type="radio"] {
-    display: none;
-}
-
-.tabs-container label {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    font-size: 14px;
-    color: var(--text-muted);
-    font-weight: bold;
-    border-radius: 99px;
-    cursor: pointer;
-    transition: color 0.15s ease-in;
-    z-index: 2;
-}
-
-.tabs-container input:checked + label {
-    color: white;
-}
-
-.tabs-container .glider {
-    position: absolute;
-    display: flex;
-    height: 40px;
-    width: calc((100% - 12px) / 5);
-    background-color: var(--accent-color);
-    z-index: 1;
-    border-radius: 99px;
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    left: 6px;
-    top: 6px;
-}
-
-#tab-1:checked ~ .glider { transform: translateX(0%); }
-#tab-2:checked ~ .glider { transform: translateX(100%); }
-#tab-3:checked ~ .glider { transform: translateX(200%); }
-#tab-4:checked ~ .glider { transform: translateX(300%); }
-#tab-5:checked ~ .glider { transform: translateX(400%); }
-
-/* =========================================
-   ВАРИАНТ 3: СТЕКЛЯННЫЕ ТАБЫ (glass)
-   ========================================= */
-.glass-radio-group {
-    display: flex;
-    position: relative;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 1rem;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-        inset 1px 1px 4px rgba(255, 255, 255, 0.2),
-        inset -1px -1px 6px rgba(0, 0, 0, 0.3),
-        0 4px 12px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
-    border: 1px solid var(--glass-border);
-}
-
-.glass-radio-group input {
-    display: none;
-}
-
-.glass-radio-group label {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    padding: 12px 0;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-muted);
-    position: relative;
-    z-index: 2;
-    transition: color 0.3s ease-in-out;
-}
-
-.glass-radio-group label:hover {
-    color: var(--text-main);
-}
-
-.glass-radio-group input:checked + label {
-    color: white;
-}
-
-.glass-glider {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: calc(100% / 5);
-    border-radius: 1rem;
-    z-index: 1;
-    transition:
-        transform 0.5s cubic-bezier(0.37, 1.95, 0.66, 0.56),
-        background 0.4s ease-in-out,
-        box-shadow 0.4s ease-in-out;
-    background: var(--accent-color);
-    box-shadow: 0 0 15px var(--accent-color);
-}
-
-#glass-1:checked ~ .glass-glider { transform: translateX(0%); }
-#glass-2:checked ~ .glass-glider { transform: translateX(100%); }
-#glass-3:checked ~ .glass-glider { transform: translateX(200%); }
-#glass-4:checked ~ .glass-glider { transform: translateX(300%); }
-#glass-5:checked ~ .glass-glider { transform: translateX(400%); }
-
-/* =========================================
-   ВАРИАНТ 4: МИНИМАЛИЗМ (minimal)
+   ВАРИАНТ 2: МИНИМАЛИЗМ С ПЛАВНЫМ ПОЛЗУНКОМ
    ========================================= */
 .minimal-tabs {
     display: flex;
@@ -253,32 +123,47 @@
     width: 100%;
     max-width: 350px;
     margin: 0 auto;
-    gap: 4px;
 }
 
-.minimal-tabs button {
+.minimal-tabs .minimal-glider {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: calc((100% - 12px) / 5);
+    background: var(--accent-color);
+    border-radius: 99px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1;
+    left: 6px;
+}
+
+#day-minimal-1:checked ~ .minimal-glider { transform: translateX(0%); }
+#day-minimal-2:checked ~ .minimal-glider { transform: translateX(100%); }
+#day-minimal-3:checked ~ .minimal-glider { transform: translateX(200%); }
+#day-minimal-4:checked ~ .minimal-glider { transform: translateX(300%); }
+#day-minimal-5:checked ~ .minimal-glider { transform: translateX(400%); }
+
+.minimal-tabs input[type="radio"] {
+    display: none;
+}
+
+.minimal-tabs label {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 40px;
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
     font-size: 14px;
+    color: var(--text-muted);
     font-weight: bold;
     border-radius: 99px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: color 0.2s ease;
+    z-index: 2;
+    position: relative;
 }
 
-.minimal-tabs button:hover {
-    color: var(--text-main);
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.minimal-tabs button.active {
+.minimal-tabs input:checked + label {
     color: white;
-    background: var(--accent-color);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }

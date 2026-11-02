@@ -1,4 +1,4 @@
-// ui/radial-day-picker.js: Меню выбора дня (мульти-стиль)
+// ui/radial-day-picker.js: Меню выбора дня (Круглое и Минимализм)
 
 import { state } from '../state.js';
 
@@ -49,87 +49,57 @@ export function createRadialDayPicker() {
             container.appendChild(radialContainer);
         }
 
-        // === ВАРИАНТ 2: ТАБЫ С ПОЛЗУНКОМ ===
-        else if (currentStyle === 'tabs') {
-            const tabs = document.createElement('div');
-            tabs.className = 'tabs-container';
-            
-            // ИСПРАВЛЕНИЕ: Сначала создаем пустую строку
-            let html = '';
-            
-            days.forEach((day, index) => {
-                const val = index + 1;
-                const isChecked = val === currentDay ? 'checked' : '';
-                html += `
-                    <input type="radio" name="day-tab" id="tab-${val}" value="${val}" ${isChecked}>
-                    <label for="tab-${val}">${day}</label>
-                `;
-            });
-            
-            // ИСПРАВЛЕНИЕ: Ползунок добавляем В САМЫЙ КОНЕЦ, чтобы CSS-правило "~" сработало
-            html += '<div class="glider"></div>';
-            
-            tabs.innerHTML = html;
-
-            tabs.querySelectorAll('input').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    if (e.target.checked) state.set('currentDay', parseInt(e.target.value));
-                });
-            });
-            container.appendChild(tabs);
-        }
-
-        // === ВАРИАНТ 3: СТЕКЛО ===
-        else if (currentStyle === 'glass') {
-            const glass = document.createElement('div');
-            glass.className = 'glass-radio-group';
-            
-            // ИСПРАВЛЕНИЕ: Сначала создаем пустую строку
-            let html = '';
-            
-            days.forEach((day, index) => {
-                const val = index + 1;
-                const isChecked = val === currentDay ? 'checked' : '';
-                html += `
-                    <input type="radio" name="day-glass" id="glass-${val}" value="${val}" ${isChecked}>
-                    <label for="glass-${val}">${day}</label>
-                `;
-            });
-            
-            // ИСПРАВЛЕНИЕ: Стеклянный ползунок добавляем В САМЫЙ КОНЕЦ
-            html += '<div class="glass-glider"></div>';
-            
-            glass.innerHTML = html;
-
-            glass.querySelectorAll('input').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    if (e.target.checked) state.set('currentDay', parseInt(e.target.value));
-                });
-            });
-            container.appendChild(glass);
-        }
-
-        // === ВАРИАНТ 4: МИНИМАЛИЗМ ===
+        // === ВАРИАНТ 2: МИНИМАЛИЗМ (с плавным ползунком) ===
         else if (currentStyle === 'minimal') {
             const minimal = document.createElement('div');
             minimal.className = 'minimal-tabs';
             
+            let html = '';
             days.forEach((day, index) => {
-                const btn = document.createElement('button');
-                btn.textContent = day;
-                if (index + 1 === currentDay) btn.classList.add('active');
-                
-                btn.addEventListener('click', () => {
-                    state.set('currentDay', index + 1);
+                const val = index + 1;
+                const isChecked = val === currentDay ? 'checked' : '';
+                html += `
+                    <input type="radio" name="day-minimal" id="day-minimal-${val}" value="${val}" ${isChecked}>
+                    <label for="day-minimal-${val}">${day}</label>
+                `;
+            });
+            // Добавляем ползунок в конец, чтобы CSS-правило ~ работало
+            html += '<div class="minimal-glider"></div>';
+            
+            minimal.innerHTML = html;
+
+            minimal.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    if (e.target.checked) state.set('currentDay', parseInt(e.target.value));
                 });
-                minimal.appendChild(btn);
             });
             container.appendChild(minimal);
         }
     }
 
-    state.on('change:currentDay', render);
+    // ВАЖНО: Не вызываем render() при смене дня, чтобы не ломать анимацию ползунка!
+    state.on('change:currentDay', (newDay) => {
+        if (currentStyle === 'radial') {
+            // Для радиального просто обновляем активный класс
+            const items = container.querySelectorAll('.radial-item');
+            items.forEach((item, index) => {
+                if (index + 1 === newDay) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+            // Закрываем меню, если оно было открыто
+            const menu = container.querySelector('.radial-menu-container');
+            if (menu) menu.classList.remove('open');
+            
+        } else if (currentStyle === 'minimal') {
+            // Для минимализма просто переключаем radio-кнопки
+            const inputs = container.querySelectorAll('input[name="day-minimal"]');
+            inputs.forEach(input => {
+                input.checked = parseInt(input.value) === newDay;
+            });
+        }
+    });
     
+    // А вот если пользователь меняет сам стиль в настройках — тогда перерисовываем
     state.on('change:settings', (newSettings) => {
         if (newSettings.dayPickerStyle !== currentStyle) {
             currentStyle = newSettings.dayPickerStyle || 'radial';

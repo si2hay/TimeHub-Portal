@@ -15,7 +15,7 @@ class State {
             settings: { ...CONFIG.DEFAULT_SETTINGS, ...savedSettings },
             schedule: null,
             substitutions: null,
-            streak: { count: 0, lastVisit: '' }
+            streak: { count: 0, lastVisit: '', status: 'alive' }
         };
         
         this.listeners = {};
@@ -34,14 +34,11 @@ class State {
             const cloudUpdatedAt = cloudSettings._updatedAt || 0;
             const localUpdatedAt = this.data.settings._updatedAt || 0;
             
-            // Если облачные настройки новее (или локальных вообще нет метки времени) — применяем
             if (cloudUpdatedAt > localUpdatedAt || !this.data.settings._updatedAt) {
                 this.data.settings = { ...CONFIG.DEFAULT_SETTINGS, ...cloudSettings };
                 localStorage.setItem('timehub_settings', JSON.stringify(this.data.settings));
                 this.emit('change:settings', this.data.settings);
                 console.log('[State] ✅ Настройки обновлены из облака');
-            } else {
-                console.log('[State] Локальные настройки новее, оставляем их');
             }
         } catch (e) {
             console.warn('[State] Не удалось восстановить настройки из облака:', e);
@@ -51,44 +48,68 @@ class State {
     async initStreak() {
         try {
             const savedStreakStr = await smartStorage.getItem('timehub_streak');
-            let streakData = savedStreakStr ? JSON.parse(savedStreakStr) : { count: 0, lastVisit: '' };
-
-            const today = new Date();
-            const offset = today.getTimezoneOffset() * 60000;
-            const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
-
-            if (streakData.lastVisit !== localISOTime) {
+            let streakData = savedStreakStr ? JSON.parse(savedStreakStr) : { count: 0, lastVisit: '', status: 'alive' };
+            
+            const now = new Date();
+            const nowTime = now.getTime();
+            
+            if (!streakData.lastVisit || streakData.lastVisit.length === 10) {
+                streakData = { count: 1, lastVisit: now.toISOString(), status: 'alive' };
+            } else {
                 const lastVisitDate = new Date(streakData.lastVisit);
-                const currentDate = new Date(localISOTime);
+                const diffHours = (nowTime - lastVisitDate.getTime()) / (1000 * 60 * 60);
                 
-                const diffTime = Math.abs(currentDate - lastVisitDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays === 1 && streakData.lastVisit !== '') {
-                    streakData.count += 1;
+                const offset = now.getTimezoneOffset() * 60000;
+                const localToday = (new Date(now - offset)).toISOString().split('T')[0];
+                const localLastVisit = (new Date(lastVisitDate - offset)).toISOString().split('T')[0];
+                
+                if (localToday === localLastVisit) {
+                    // Уже заходил сегодня, статус не меняем
                 } else {
-                    streakData.count = 1;
+                    if (diffHours > 48) {
+                        streakData.count = 0; // Полностью сгорел
+                        streakData.status = 'dead';
+                    } else if (diffHours > 36) {
+                        streakData.status = 'dying';
+                    } else {
+                        streakData.count += 1;
+                        streakData.status = 'alive';
+                        streakData.lastVisit = now.toISOString();
+                    }
                 }
-                streakData.lastVisit = localISOTime;
-                
-                await smartStorage.setItem('timehub_streak', JSON.stringify(streakData));
             }
 
             this.data.streak = streakData;
             this.emit('change:streak', streakData);
+            await smartStorage.setItem('timehub_streak', JSON.stringify(streakData));
         } catch (e) {
             console.warn('Ошибка при загрузке стрика:', e);
         }
+    }
+
+    async reviveStreak() {
+        if (this.data.streak.status === 'dying') {
+            this.data.streak.status = 'alive';
+            this.data.streak.lastVisit = new Date().toISOString();
+            this.emit('change:streak', this.data.streak);
+            await smartStorage.setItem('timehub_streak', JSON.stringify(this.data.streak));
+            return true;
+        }
+        return false;
+    }
+
+    async resetStreak() {
+        this.data.streak = { count: 1, lastVisit: new Date().toISOString(), status: 'alive' };
+        this.emit('change:streak', this.data.streak);
+        await smartStorage.setItem('timehub_streak', JSON.stringify(this.data.streak));
     }
 
     determineWeek() {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const start = CONFIG.SEMESTER_START_DATE;
-        
         const diffTime = Math.abs(today - start);
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
         const weekIndex = Math.floor(diffDays / 7) % 2;
         return weekIndex + 1;
     }
@@ -99,42 +120,28 @@ class State {
 
     set(key, value) {
         if (key === 'settings') {
-            // Добавляем метку времени, чтобы знать, какие настройки новее
             const settingsWithTimestamp = { ...value, _updatedAt: Date.now() };
             this.data[key] = settingsWithTimestamp;
             this.emit(`change:${key}`, settingsWithTimestamp);
-            
-            // 1. Пишем локально полные настройки (с обоями)
             localStorage.setItem('timehub_settings', JSON.stringify(settingsWithTimestamp));
-            
-            // 2. Пишем в облако, но вырезаем base64-обои (не влезут в лимит)
             const cloudSettings = { ...settingsWithTimestamp };
-            if (cloudSettings.bgUrl && cloudSettings.bgUrl.startsWith('data:')) {
-                delete cloudSettings.bgUrl;
-            }
+            if (cloudSettings.bgUrl && cloudSettings.bgUrl.startsWith('data:')) delete cloudSettings.bgUrl;
             smartStorage.setItem('timehub_settings', JSON.stringify(cloudSettings));
             return;
         }
-        
-        // Для остальных ключей
         this.data[key] = value;
         this.emit(`change:${key}`, value);
     }
 
     on(event, callback) {
-        if (!this.listeners[event]) {
-            this.listeners[event] = [];
-        }
+        if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(callback);
     }
 
     emit(event, data) {
-        if (this.listeners[event]) {
-            this.listeners[event].forEach(callback => callback(data));
-        }
+        if (this.listeners[event]) this.listeners[event].forEach(callback => callback(data));
     }
 }
 
 export const state = new State();
-
 export {};

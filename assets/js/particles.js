@@ -1,11 +1,11 @@
-// particles.js: Интерактивная анимация (соединение точек и реакция на мышь)
+// particles.js: Оптимизированная анимация частиц (без паутины)
 
 import { state } from './state.js';
 
 let canvas, ctx;
 let particles = [];
 let animationId = null;
-const PARTICLE_COUNT = 100;
+const PARTICLE_COUNT = 40; // УМЕНЬШИЛИ КОЛИЧЕСТВО
 
 const mouse = {
     x: null,
@@ -17,9 +17,9 @@ class Particle {
     constructor(w, h) {
         this.x = Math.random() * w;
         this.y = Math.random() * h;
-        this.vx = (Math.random() - 0.5) * 1;
-        this.vy = (Math.random() - 0.5) * 1;
-        this.radius = Math.random() * 2 + 1;
+        this.vx = (Math.random() - 0.5) * 1.5;
+        this.vy = (Math.random() - 0.5) * 1.5;
+        this.radius = Math.random() * 2 + 1.5;
     }
     
     update(w, h) {
@@ -51,7 +51,9 @@ class Particle {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = color;
+        ctx.globalAlpha = 0.8;
         ctx.fill();
+        ctx.globalAlpha = 1;
     }
 }
 
@@ -62,47 +64,12 @@ function loop() {
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
     
-    // ИСПРАВЛЕНО: Берем цвет с body, чтобы подхватить классы тем
     const color = getComputedStyle(document.body).getPropertyValue('--accent-color').trim() || '#0062b1';
 
-    particles.forEach((p, index) => {
+    particles.forEach((p) => {
         p.update(w, h);
         p.draw(ctx, color);
-
-        for (let j = index + 1; j < particles.length; j++) {
-            const p2 = particles[j];
-            const dx = p.x - p2.x;
-            const dy = p.y - p2.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < 120) {
-                ctx.beginPath();
-                ctx.strokeStyle = color;
-                ctx.globalAlpha = 1 - (distance / 120);
-                ctx.lineWidth = 1;
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-                ctx.globalAlpha = 1;
-            }
-        }
-
-        if (mouse.x != null && mouse.y != null) {
-            const dx = p.x - mouse.x;
-            const dy = p.y - mouse.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < mouse.radius) {
-                ctx.beginPath();
-                ctx.strokeStyle = color;
-                ctx.globalAlpha = 1 - (distance / mouse.radius);
-                ctx.lineWidth = 1;
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(mouse.x, mouse.y);
-                ctx.stroke();
-                ctx.globalAlpha = 1;
-            }
-        }
+        // ПАУТИНУ (ЛИНИИ) УБРАЛИ, ЧТОБЫ НЕ ЛАГАЛО
     });
     
     animationId = requestAnimationFrame(loop);

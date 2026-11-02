@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <h1 style="margin-bottom: 0;" id="builder-title">TimeHub Builder</h1>
-                    <span style="font-size: 12px; color: var(--text-muted);" id="builder-subtitle">Редактор расписаний</span>
+                    <span style="font-size: 12px; color: var(--text-muted);" id="builder-subtitle">Редактор данных</span>
                 </div>
             </div>
             <div class="header-controls">
@@ -39,14 +39,13 @@
 
         <div class="builder-layout">
             <aside class="builder-sidebar glass-panel">
-                <!-- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА -->
                 <h3>Режим</h3>
-                <div class="week-nav" style="margin-bottom: 20px;">
+                <div class="week-nav" style="margin-bottom: 20px; flex-direction: column;">
                     <button class="week-btn mode-btn active" data-mode="schedule" style="font-size: 13px;">📅 Расписание</button>
                     <button class="week-btn mode-btn" data-mode="substitution" style="font-size: 13px;">⚡ Замены</button>
+                    <button class="week-btn mode-btn" data-mode="consultation" style="font-size: 13px;">🗣 Консультации</button>
                 </div>
 
-                <!-- БЛОК РАСПИСАНИЯ -->
                 <div id="schedule-controls">
                     <h3>Неделя</h3>
                     <div class="week-nav" style="margin-bottom: 20px;">
@@ -63,11 +62,15 @@
                     </div>
                 </div>
 
-                <!-- БЛОК ЗАМЕН (Скрыт по умолчанию) -->
                 <div id="substitution-controls" class="hidden">
                     <h3>Дата замены</h3>
                     <input type="date" id="sub-date" class="builder-input" style="width: 100%; margin-bottom: 15px;">
                     <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Добавь только те пары, которые изменились. Если нужно отменить пару, оставь "Предмет" пустым.</p>
+                </div>
+
+                <div id="consultation-controls" class="hidden">
+                    <h3>Консультации</h3>
+                    <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 15px;">Добавь консультации преподавателей. Скачанный файл автоматически объединится со старыми данными.</p>
                 </div>
                 
                 <div class="sidebar-info">
@@ -77,7 +80,7 @@
 
             <main class="builder-main">
                 <div class="lessons-list" id="lessons-container"></div>
-                <button id="btn-add-lesson" class="builder-btn dashed">+ Добавить пару</button>
+                <button id="btn-add-lesson" class="builder-btn dashed">+ Добавить запись</button>
             </main>
         </div>
     </div>
@@ -95,16 +98,12 @@
                 <button id="tab-manifest" class="builder-btn" style="flex: 1; background: rgba(255,255,255,0.1);">2. Строка для manifest.json</button>
             </div>
 
-            <!-- Вкладка для файла -->
             <div id="content-file">
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;" id="hint-file">
-                    Скачай этот файл и положи его в папку <b id="filename-hint">...</b>
-                </p>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;" id="hint-file">...</p>
                 <textarea id="code-output" class="builder-input" style="height: 250px; font-family: monospace; font-size: 12px; margin-bottom: 15px; color: #10b981;" readonly></textarea>
                 <button id="btn-download-js" class="builder-btn success" style="width: 100%;">💾 Скачать файл</button>
             </div>
 
-            <!-- Вкладка для манифеста -->
             <div id="content-manifest" class="hidden">
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
                     Скопируй эту строчку и добавь в массив <code>"files"</code> в файле <code>data/schedule/manifest.json</code>:
@@ -115,18 +114,16 @@
                 </div>
             </div>
 
-            <!-- НОВЫЙ БЛОК: Ссылка на Telegram-группу -->
             <div class="tg-share-block">
                 <p>Не забудь скинуть готовый файл в Telegram-группу, чтобы админ добавил его на сайт!</p>
                 <a href="https://t.me/+sq9RDqa2I2A3M2Iy" target="_blank" class="builder-btn tg-group-btn">
                     ✈️ Перейти в группу
                 </a>
             </div>
-
         </div>
     </div>
 
-    <!-- Модалка с инструкцией -->
+    <!-- Модалка с инструкцией (ОБНОВЛЕНА) -->
     <div id="modal-help" class="modal-overlay hidden">
         <div class="modal-content glass-panel" style="max-width: 700px;">
             <div class="modal-header">
@@ -135,10 +132,15 @@
             </div>
             <div style="font-size: 14px; line-height: 1.6; color: var(--text-main);">
                 <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 12px;">
-                    <li><strong>Выбери режим:</strong> «Расписание» для новой группы или «Замены» для конкретного дня.</li>
-                    <li><strong>Введи группу</strong> в шапке. Можно писать как угодно (латиницей или кириллицей), Билдер сам сделает красиво.</li>
-                    <li><strong>Для замен:</strong> выбери дату и добавь только те пары, которые поменялись (например, 4-я пара Физика, кабинет 2-107).</li>
-                    <li><strong>Сгенерируй код:</strong> скачай файл и положи его в нужную папку. Если это расписание — не забудь скопировать строку для манифеста.</li>
+                    <li><strong>Выбери режим:</strong> «Расписание» (для своей группы), «Замены» (для конкретного дня) или «Консультации» (график преподавателей).</li>
+                    <li><strong>Введи группу</strong> в шапке (для расписаний и замен). Билдер сам сделает красивое имя файла.</li>
+                    <li><strong>Заполни данные:</strong> 
+                        <br>- <i>Для пар:</i> номер, предмет, кабинет, препода.
+                        <br>- <i>Для замен:</i> выбери дату, укажи только измененные пары.
+                        <br>- <i>Для консультаций:</i> выбери предмет, преподавателя, день недели, номер пары (после которой начнется консультация) и кабинет.
+                    </li>
+                    <li><strong>Сгенерируй код:</strong> скачай файл. Расписание кладем в <code>data/schedule/</code>, замены в <code>data/substitutions/</code>, а консультации в <code>data/consultations.js</code>.</li>
+                    <li><strong>Отправь в Telegram:</strong> скинь файл в нашу группу, мы добавим его на сайт!</li>
                 </ol>
             </div>
         </div>

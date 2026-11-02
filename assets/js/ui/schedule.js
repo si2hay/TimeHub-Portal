@@ -1,4 +1,4 @@
-// ui/schedule.js: Отрисовка карточек расписания (Главная страница)
+// ui/schedule.js: Отрисовка карточек с FLIP-анимацией для соседних блоков
 
 import { state } from '../state.js';
 import { BELLS } from '../../../data/bells.js';
@@ -24,7 +24,6 @@ export function createSchedule() {
         const group = state.get('settings').group; 
         const animType = state.get('settings').dayChangeAnimation || 'slide-up'; 
 
-        // Если ничего не изменилось — вообще не трогаем DOM!
         if (week === lastWeek && day === lastDay && group === lastGroup && container.children.length > 0) {
             updateHighlightOnly(week, day, group);
             return;
@@ -32,25 +31,27 @@ export function createSchedule() {
 
         isRendering = true;
         
-        // Показываем скелетоны ТОЛЬКО при первой загрузке страницы
         const isFirstLoad = container.children.length === 0;
         if (isFirstLoad) {
             container.innerHTML = renderScheduleSkeleton();
         }
 
+        // --- FLIP ШАГ 1: Запоминаем позиции всех элементов ПОД расписанием ---
+        const siblings = [
+            document.querySelector('.reference-widget'),
+            document.querySelector('.notes-widget'),
+            document.querySelector('.app-footer')
+        ].filter(Boolean);
+        
+        const firstRects = siblings.map(el => el.getBoundingClientRect());
+
+        // Загружаем данные
         const lessons = await getLessonsForDay(week, day, group);
         
-        // ФИКСАЦИЯ ВЫСОТЫ: чтобы страница не прыгала, когда скелетоны сменятся карточками
-        const prevHeight = container.offsetHeight;
-        if (prevHeight > 0 && !isFirstLoad) {
-            container.style.minHeight = `${prevHeight}px`;
-        }
-
         if (lessons === null) {
             container.innerHTML = `<div class="glass-panel" style="text-align:center; color: var(--text-muted);">Расписание для группы ${group} пока не добавлено 😔</div>`;
             lastWeek = week; lastDay = day; lastGroup = group;
             isRendering = false;
-            setTimeout(() => { container.style.minHeight = ''; }, 100);
             return;
         }
 
@@ -63,7 +64,6 @@ export function createSchedule() {
             container.innerHTML = `<div class="glass-panel" style="text-align:center; color: var(--text-muted);">На этот день пар нет 🎉</div>`;
             lastWeek = week; lastDay = day; lastGroup = group;
             isRendering = false;
-            setTimeout(() => { container.style.minHeight = ''; }, 100);
             return;
         }
 
@@ -86,10 +86,7 @@ export function createSchedule() {
 
             const card = document.createElement('div');
             card.className = `schedule-card glass-panel schedule-card-anim anim-${animType} ${isNow ? 'current-lesson animate-pulse' : ''} ${lesson.isSubstitution ? 'is-substitution' : ''}`;
-            
-            // Оставляем красивую задержку, чтобы они выезжали по очереди
             card.style.animationDelay = `${index * 0.05}s`; 
-            
             card.dataset.pair = lesson.pair;
             card.dataset.start = startMins;
             card.dataset.end = endMins;
@@ -116,7 +113,6 @@ export function createSchedule() {
             `;
             container.appendChild(card);
 
-            // Убираем класс анимации после её завершения, чтобы не было багов
             setTimeout(() => {
                 card.classList.remove('schedule-card-anim');
                 card.classList.remove(`anim-${animType}`);
@@ -128,13 +124,28 @@ export function createSchedule() {
         lastGroup = group;
         isRendering = false;
 
-        // Снимаем фиксацию высоты после того, как анимация завершится
-        setTimeout(() => {
-            container.style.minHeight = '';
-        }, 600);
+        // --- FLIP ШАГ 2 и 3: Вычисляем разницу и анимируем ---
+        requestAnimationFrame(() => {
+            siblings.forEach((el, index) => {
+                const lastRect = el.getBoundingClientRect();
+                const deltaY = firstRects[index].top - lastRect.top;
+
+                if (deltaY !== 0) {
+                    // Мгновенно возвращаем на старое место
+                    el.style.transform = `translateY(${deltaY}px)`;
+                    el.style.transition = 'none';
+                    
+                    // Форсируем перерисовку браузера
+                    el.offsetHeight; 
+
+                    // Плавно двигаем на новое место
+                    el.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                    el.style.transform = 'translateY(0)';
+                }
+            });
+        });
     }
 
-    // Обновляет ТОЛЬКО подсветку (рамку), не трогая DOM
     function updateHighlightOnly(week, day, group) {
         const now = new Date(); 
         const currentMins = now.getHours() * 60 + now.getMinutes();
@@ -166,7 +177,6 @@ export function createSchedule() {
         }
     });
 
-    // Обновляем подсветку раз в 10 секунд
     setInterval(() => {
         if (lastWeek !== -1) {
             updateHighlightOnly(lastWeek, lastDay, lastGroup);

@@ -55,8 +55,6 @@ export function openSettings() {
                 <h3>Вид переключателя дней</h3>
                 <div class="theme-grid" style="grid-template-columns: 1fr 1fr;">
                     <button class="theme-btn ${settings.dayPickerStyle === 'radial' || !settings.dayPickerStyle ? 'active' : ''}" data-daypicker="radial">Круглое меню</button>
-                    <button class="theme-btn ${settings.dayPickerStyle === 'tabs' ? 'active' : ''}" data-daypicker="tabs">Ползунок</button>
-                    <button class="theme-btn ${settings.dayPickerStyle === 'glass' ? 'active' : ''}" data-daypicker="glass">Стекло</button>
                     <button class="theme-btn ${settings.dayPickerStyle === 'minimal' ? 'active' : ''}" data-daypicker="minimal">Минимализм</button>
                 </div>
             </div>

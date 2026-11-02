@@ -71,11 +71,14 @@ export function createTimer() {
 
     widget.addEventListener('click', () => {
         widget.classList.toggle('fullscreen');
+        
         if (widget.classList.contains('fullscreen')) {
+            document.body.style.overflow = 'hidden'; // Блокируем прокрутку страницы
             tHint.textContent = 'Нажми, чтобы свернуть';
             initLocalParticles();
             animateLocalParticles();
         } else {
+            document.body.style.overflow = ''; // Возвращаем прокрутку
             tHint.textContent = 'Нажми, чтобы раскрыть';
             if (particleAnimId) {
                 cancelAnimationFrame(particleAnimId);
@@ -212,7 +215,6 @@ export function createTimer() {
     state.on('change:currentWeek', loadLessons);
     
     state.on('change:settings', (newSettings) => {
-        // Загружаем заново ТОЛЬКО если сменилась группа
         if (newSettings && newSettings.group && newSettings.group !== lastGroup) {
             loadLessons();
         }

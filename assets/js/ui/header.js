@@ -1,4 +1,4 @@
-// ui/header.js: Отрисовка верхней панели (лого, дата, кнопка настроек)
+// ui/header.js: Отрисовка верхней панели
 
 import { openSettings } from './settings.js';
 import { applyTheme } from '../themes.js';
@@ -34,40 +34,43 @@ export function createHeader() {
                 <span>Portal</span>
             </div>
             
-            <!-- Выпадающее меню стрика -->
             <div class="streak-dropdown glass-panel" id="streak-dropdown">
                 <div class="streak-icon-wrapper" id="streak-fire-container"></div>
                 <div class="streak-title">Твоя серия</div>
                 <div class="streak-count-text"><span id="streak-days">0</span> дней подряд</div>
+                <div class="streak-timer" id="streak-timer-text"></div>
+                <button id="btn-revive-streak" class="streak-revive-btn" style="display:none;">Спасти огонь</button>
+                <button id="btn-reset-streak" class="streak-revive-btn" style="display:none; background: var(--accent-color);">Начать заново</button>
             </div>
         </div>
         <div class="header-date"></div>
-        <button id="btn-settings" class="icon-btn" aria-label="Настройки">
-            ⚙️
-        </button>
+        <button id="btn-settings" class="icon-btn" aria-label="Настройки">⚙️</button>
     `;
 
     updateDate();
     state.on('change:debugDate', updateDate);
 
     const settingsBtn = header.querySelector('#btn-settings');
-    settingsBtn.addEventListener('click', () => {
-        openSettings();
-    });
+    settingsBtn.addEventListener('click', () => openSettings());
 
-    // --- ЛОГИКА СТРИКА ---
     const streakBadge = header.querySelector('#header-streak-val');
     const streakDropdown = header.querySelector('#streak-dropdown');
     const fireContainer = header.querySelector('#streak-fire-container');
     const streakDays = header.querySelector('#streak-days');
+    const streakTimerText = header.querySelector('#streak-timer-text');
+    const reviveBtn = header.querySelector('#btn-revive-streak');
+    const resetBtn = header.querySelector('#btn-reset-streak');
     let isDropdownOpen = false;
 
-    function getFireSVG(level) {
+    function getFireSVG(level, status) {
         let colorClass = 'fire-lvl-1';
-        if (level >= 100) colorClass = 'fire-lvl-5';
-        else if (level >= 60) colorClass = 'fire-lvl-4';
-        else if (level >= 30) colorClass = 'fire-lvl-3';
-        else if (level >= 10) colorClass = 'fire-lvl-2';
+        if (status === 'dying' || status === 'dead') colorClass = 'fire-dead';
+        else {
+            if (level >= 100) colorClass = 'fire-lvl-5';
+            else if (level >= 60) colorClass = 'fire-lvl-4';
+            else if (level >= 30) colorClass = 'fire-lvl-3';
+            else if (level >= 10) colorClass = 'fire-lvl-2';
+        }
 
         return `
             <div class="fire-svg-container ${colorClass}">
@@ -81,22 +84,62 @@ export function createHeader() {
 
     function renderStreak(streakData) {
         const count = streakData.count || 0;
+        const status = streakData.status || 'alive';
         
-        if (count > 0) {
+        if (status === 'dead') {
+            streakBadge.textContent = `🔥 0`;
+            streakBadge.style.display = 'inline-block';
+            streakBadge.style.opacity = '0.5';
+            streakBadge.style.filter = 'grayscale(1)';
+            
+            streakDays.textContent = 0;
+            fireContainer.innerHTML = getFireSVG(0, 'dead');
+            streakTimerText.innerHTML = `Огонь погас 😢<br>Не заходил больше 48 часов.`;
+            reviveBtn.style.display = 'none';
+            resetBtn.style.display = 'block';
+        } else if (status === 'dying') {
             streakBadge.textContent = `🔥 ${count}`;
             streakBadge.style.display = 'inline-block';
+            streakBadge.style.opacity = '0.5';
+            streakBadge.style.filter = 'grayscale(1)';
             
             streakDays.textContent = count;
-            fireContainer.innerHTML = getFireSVG(count);
+            fireContainer.innerHTML = getFireSVG(count, 'dying');
+            streakTimerText.innerHTML = `⚠️ Огонь затух!<br>Зайди сейчас, чтобы спасти серию.`;
+            reviveBtn.style.display = 'block';
+            resetBtn.style.display = 'none';
         } else {
-            streakBadge.style.display = 'none';
+            streakBadge.textContent = `🔥 ${count}`;
+            streakBadge.style.display = 'inline-block';
+            streakBadge.style.opacity = '1';
+            streakBadge.style.filter = 'none';
+            
+            streakDays.textContent = count;
+            fireContainer.innerHTML = getFireSVG(count, 'alive');
+            streakTimerText.innerHTML = `Зайди завтра, чтобы<br>получить <b>+1 огонек</b>!`;
+            reviveBtn.style.display = 'none';
+            resetBtn.style.display = 'none';
         }
     }
 
+    reviveBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const revived = await state.reviveStreak();
+        if (revived) {
+            reviveBtn.style.display = 'none';
+            reviveBtn.textContent = '✅ Огонь спасен!';
+            setTimeout(() => { reviveBtn.textContent = 'Спасти огонь'; }, 2000);
+        }
+    });
+
+    resetBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await state.resetStreak();
+        resetBtn.style.display = 'none';
+    });
+
     state.on('change:streak', renderStreak);
-    if (state.get('streak')) {
-        renderStreak(state.get('streak'));
-    }
+    if (state.get('streak')) renderStreak(state.get('streak'));
 
     // --- КЛИКИ (Меню + Секретные темы) ---
     const mainLogoArea = header.querySelector('#main-logo-area');
@@ -104,13 +147,10 @@ export function createHeader() {
     let clickTimeout;
 
     mainLogoArea.addEventListener('click', (e) => {
-        // Если кликнули внутри выпадающего меню, ничего не делаем
         if (e.target.closest('.streak-dropdown')) return;
-
         logoClicks++;
         clearTimeout(clickTimeout);
 
-        // Ждем 300мс. Если за это время не было 5 кликов, открываем/закрываем меню
         clickTimeout = setTimeout(() => {
             if (logoClicks === 1) {
                 isDropdownOpen = !isDropdownOpen;
@@ -119,7 +159,6 @@ export function createHeader() {
             logoClicks = 0;
         }, 300);
 
-        // Секретные темы
         if (logoClicks === 5) {
             applyTheme('matrix');
             logoClicks = 0;
@@ -135,7 +174,6 @@ export function createHeader() {
         }
     });
 
-    // Закрываем меню по клику в любое другое место
     document.addEventListener('click', (e) => {
         if (!mainLogoArea.contains(e.target)) {
             streakDropdown.classList.remove('open');
@@ -145,5 +183,3 @@ export function createHeader() {
 
     return header;
 }
-
-export {};

@@ -1,4 +1,4 @@
-// assets/js/builder.js: Логика Конструктора расписания и замен
+// assets/js/builder.js: Логика Конструктора
 
 import { ALL_TEACHERS, ALL_ROOMS, ALL_SUBJECTS, DICTIONARY } from '../../data/dictionary.js';
 import { CONFIG } from './config.js';
@@ -9,10 +9,8 @@ let state = {
     week: "1",
     day: "1",
     subDate: new Date().toISOString().split('T')[0],
-    schedule: {
-        "1": { "1": [], "2": [], "3": [], "4": [], "5": [] },
-        "2": { "1": [], "2": [], "3": [], "4": [], "5": [] }
-    }
+    schedule: { "1": { "1": [], "2": [], "3": [], "4": [], "5": [] }, "2": { "1": [], "2": [], "3": [], "4": [], "5": [] } },
+    consultations: []
 };
 
 const saved = localStorage.getItem('timehub_builder_state');
@@ -30,9 +28,9 @@ const modalCode = document.getElementById('modal-code');
 const subDateInput = document.getElementById('sub-date');
 const scheduleControls = document.getElementById('schedule-controls');
 const substitutionControls = document.getElementById('substitution-controls');
+const consultationControls = document.getElementById('consultation-controls');
 const builderTitle = document.getElementById('builder-title');
 const builderSubtitle = document.getElementById('builder-subtitle');
-const filenameHint = document.getElementById('filename-hint');
 const btnDownloadJs = document.getElementById('btn-download-js');
 const tabManifest = document.getElementById('tab-manifest');
 const hintFile = document.getElementById('hint-file');
@@ -113,18 +111,24 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
         if (state.mode === 'schedule') {
             scheduleControls.classList.remove('hidden');
             substitutionControls.classList.add('hidden');
+            consultationControls.classList.add('hidden');
             builderTitle.textContent = "TimeHub Builder";
             builderSubtitle.textContent = "Редактор расписаний";
-            state.week = "1"; state.day = "1";
             tabManifest.style.display = 'block';
-        } else {
+        } else if (state.mode === 'substitution') {
             scheduleControls.classList.add('hidden');
             substitutionControls.classList.remove('hidden');
+            consultationControls.classList.add('hidden');
             builderTitle.textContent = "TimeHub Замены";
             builderSubtitle.textContent = "Редактор замен на день";
             tabManifest.style.display = 'none';
-            const { week, day } = getWeekAndDayFromDate(state.subDate);
-            state.schedule[week][day] = []; 
+        } else {
+            scheduleControls.classList.add('hidden');
+            substitutionControls.classList.add('hidden');
+            consultationControls.classList.remove('hidden');
+            builderTitle.textContent = "TimeHub Консультации";
+            builderSubtitle.textContent = "График консультаций";
+            tabManifest.style.display = 'none';
         }
         saveState();
         renderLessons();
@@ -133,8 +137,6 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 
 subDateInput.addEventListener('change', (e) => {
     state.subDate = e.target.value;
-    const { week, day } = getWeekAndDayFromDate(state.subDate);
-    state.schedule[week][day] = [];
     saveState();
     renderLessons();
 });
@@ -152,66 +154,71 @@ function getWeekAndDayFromDate(dateStr) {
 }
 
 function getCurrentLessons() {
-    if (state.mode === 'schedule') {
-        return state.schedule[state.week][state.day] || [];
-    } else {
+    if (state.mode === 'schedule') return state.schedule[state.week][state.day] || [];
+    if (state.mode === 'substitution') {
         const { week, day } = getWeekAndDayFromDate(state.subDate);
         return state.schedule[week][day] || [];
     }
+    return state.consultations || [];
 }
 
 function renderLessons() {
     lessonsContainer.innerHTML = '';
-    const currentLessons = getCurrentLessons();
+    const currentData = getCurrentLessons();
 
-    if (currentLessons.length === 0) {
+    if (currentData.length === 0) {
         lessonsContainer.innerHTML = `
             <div style="text-align: center; color: var(--text-muted); padding: 40px; border: 2px dashed var(--border-color); border-radius: 8px;">
-                ${state.mode === 'schedule' ? 'На этот день пар пока нет.' : 'Добавь только те пары, которые поменялись.'}
+                ${state.mode === 'schedule' ? 'На этот день пар пока нет.' : state.mode === 'substitution' ? 'Добавь только те пары, которые поменялись.' : 'Добавь консультации преподавателей.'}
             </div>
         `;
         return;
     }
 
-    currentLessons.sort((a, b) => (a.pair || 0) - (b.pair || 0));
-
-    currentLessons.forEach((lesson, index) => {
+    currentData.forEach((item, index) => {
         const card = document.createElement('div');
         card.className = 'lesson-edit-card';
         
         const cardHeader = document.createElement('div');
         cardHeader.className = 'card-header';
-
-        const numBadge = document.createElement('input');
-        numBadge.type = 'text'; 
-        numBadge.inputMode = 'numeric';
-        numBadge.maxLength = 1; 
-        numBadge.className = 'pair-num-input';
-        numBadge.value = lesson.pair || index + 1;
         
-        numBadge.addEventListener('focus', (e) => e.target.select());
-        numBadge.addEventListener('change', (e) => {
-            let newVal = parseInt(e.target.value);
-            if (isNaN(newVal) || newVal < 1 || newVal > 7) {
-                e.target.value = lesson.pair || index + 1;
-                return;
-            }
-            lesson.pair = newVal;
-            e.target.value = newVal;
-            saveState();
-            renderLessons(); 
-        });
-        numBadge.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
-        });
-
-        cardHeader.appendChild(numBadge);
+        const titleSpan = document.createElement('span');
+        titleSpan.style.fontWeight = 'bold';
+        titleSpan.style.color = 'var(--accent-color)';
+        
+        if (state.mode === 'consultation') {
+            titleSpan.textContent = `Консультация #${index + 1}`;
+        } else {
+            const numBadge = document.createElement('input');
+            numBadge.type = 'text'; 
+            numBadge.inputMode = 'numeric';
+            numBadge.maxLength = 1; 
+            numBadge.className = 'pair-num-input';
+            numBadge.value = item.pair || index + 1;
+            
+            numBadge.addEventListener('focus', (e) => e.target.select());
+            numBadge.addEventListener('change', (e) => {
+                let newVal = parseInt(e.target.value);
+                if (isNaN(newVal) || newVal < 1 || newVal > 7) {
+                    e.target.value = item.pair || index + 1;
+                    return;
+                }
+                item.pair = newVal;
+                e.target.value = newVal;
+                saveState();
+                renderLessons(); 
+            });
+            numBadge.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
+            cardHeader.appendChild(numBadge);
+        }
 
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '🗑️';
         deleteBtn.addEventListener('click', () => {
-            currentLessons.splice(index, 1);
+            currentData.splice(index, 1);
             saveState();
             renderLessons();
         });
@@ -221,22 +228,22 @@ function renderLessons() {
         const fieldsDiv = document.createElement('div');
         fieldsDiv.className = 'lesson-fields';
 
+        if (state.mode === 'consultation') {
+            fieldsDiv.style.gridTemplateColumns = '1fr 1fr';
+        }
+
         const createField = (labelText, placeholder, value, datalistId, onChange) => {
             const group = document.createElement('div');
             group.className = 'input-group';
             
             const label = document.createElement('label');
-            if (labelText === 'КАБИНЕТ' || labelText === 'ПРЕПОДАВАТЕЛЬ') {
-                label.innerHTML = `${labelText} <span style="text-transform: none; font-size: 10px; opacity: 0.6; letter-spacing: 0;">(можно через /)</span>`;
-            } else {
-                label.textContent = labelText;
-            }
+            label.textContent = labelText;
             
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'builder-input';
             input.placeholder = placeholder;
-            input.setAttribute('list', datalistId);
+            if (datalistId) input.setAttribute('list', datalistId);
             input.value = value || '';
             input.addEventListener('input', onChange);
             
@@ -245,99 +252,174 @@ function renderLessons() {
             return { group, input };
         };
 
-        const subjectField = createField('ПРЕДМЕТ', 'Например: Математика', lesson.subject, 'list-subjects', (e) => {
-            lesson.subject = sanitizeInput(e.target.value); saveState();
-        });
-        
-        subjectField.input.addEventListener('change', (e) => {
-            const val = e.target.value;
-            lesson.subject = val;
+        if (state.mode === 'consultation') {
+            const subjectField = createField('ПРЕДМЕТ', 'Например: Информатика', item.subject, 'list-subjects', (e) => {
+                item.subject = e.target.value; saveState();
+            });
+
+            const teacherField = createField('ПРЕПОДАВАТЕЛЬ', 'ФИО', item.teacher, 'list-teachers', (e) => {
+                item.teacher = e.target.value; saveState();
+            });
+
+            const roomField = createField('КАБИНЕТ', '2-213', item.room, 'list-rooms', (e) => {
+                item.room = e.target.value; saveState();
+            });
+
+            subjectField.input.addEventListener('change', (e) => {
+                const val = e.target.value;
+                item.subject = val;
+                if (DICTIONARY[val]) {
+                    if (!teacherField.input.value && DICTIONARY[val].teachers.length > 0) {
+                        teacherField.input.value = DICTIONARY[val].teachers[0];
+                        item.teacher = teacherField.input.value;
+                        flashAutofill(teacherField.input);
+                    }
+                    if (!roomField.input.value && DICTIONARY[val].rooms.length > 0) {
+                        roomField.input.value = DICTIONARY[val].rooms[0];
+                        item.room = roomField.input.value;
+                        flashAutofill(roomField.input);
+                    }
+                }
+                saveState();
+            });
             
-            if (DICTIONARY[val]) {
-                if (!roomField.input.value && DICTIONARY[val].rooms.length > 0) {
-                    roomField.input.value = DICTIONARY[val].rooms[0];
-                    lesson.room = roomField.input.value;
-                    flashAutofill(roomField.input);
-                }
-                if (!teacherField.input.value && DICTIONARY[val].teachers.length > 0) {
-                    teacherField.input.value = DICTIONARY[val].teachers[0];
-                    lesson.teacher = teacherField.input.value;
-                    flashAutofill(teacherField.input);
-                }
+            const daySelectGroup = document.createElement('div');
+            daySelectGroup.className = 'input-group';
+            const dayLabel = document.createElement('label');
+            dayLabel.textContent = 'ДЕНЬ НЕДЕЛИ';
+            const daySelect = document.createElement('select');
+            daySelect.className = 'builder-input';
+            ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].forEach((d, i) => {
+                const opt = document.createElement('option');
+                opt.value = i + 1;
+                opt.textContent = d;
+                if (item.day == i + 1) opt.selected = true;
+                daySelect.appendChild(opt);
+            });
+            daySelect.addEventListener('change', (e) => {
+                item.day = parseInt(e.target.value); saveState();
+            });
+            daySelectGroup.appendChild(dayLabel);
+            daySelectGroup.appendChild(daySelect);
+
+            const pairSelectGroup = document.createElement('div');
+            pairSelectGroup.className = 'input-group';
+            const pairLabel = document.createElement('label');
+            pairLabel.textContent = 'ПОСЛЕ КАКОЙ ПАРЫ';
+            const pairSelect = document.createElement('select');
+            pairSelect.className = 'builder-input';
+            for (let i = 1; i <= 7; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `${i}-я пара`;
+                if (item.afterPair == i) opt.selected = true;
+                pairSelect.appendChild(opt);
             }
-            saveState();
-        });
+            pairSelect.addEventListener('change', (e) => {
+                item.afterPair = parseInt(e.target.value); saveState();
+            });
+            pairSelectGroup.appendChild(pairLabel);
+            pairSelectGroup.appendChild(pairSelect);
 
-        const roomField = createField('КАБИНЕТ', '2-213 / 212', lesson.room, 'list-rooms', (e) => {
-            lesson.room = sanitizeInput(e.target.value); saveState();
-        });
+            fieldsDiv.appendChild(subjectField.group);
+            fieldsDiv.appendChild(teacherField.group);
+            fieldsDiv.appendChild(daySelectGroup);
+            fieldsDiv.appendChild(pairSelectGroup);
+            fieldsDiv.appendChild(roomField.group);
 
-        const teacherField = createField('ПРЕПОДАВАТЕЛЬ', 'Ушакова Е.П. / Процок М.П.', lesson.teacher, 'list-teachers', (e) => {
-            lesson.teacher = sanitizeInput(e.target.value); saveState();
-        });
-
-        fieldsDiv.appendChild(subjectField.group);
-        fieldsDiv.appendChild(roomField.group);
-        fieldsDiv.appendChild(teacherField.group);
-        card.appendChild(fieldsDiv);
-
-        const cardFooter = document.createElement('div');
-        cardFooter.className = 'card-footer';
-
-        if (state.mode === 'schedule') {
-            const checkboxLabel = document.createElement('label');
-            checkboxLabel.className = 'checkbox-label';
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = !!lesson.start;
-            checkboxLabel.appendChild(checkbox);
-            checkboxLabel.appendChild(document.createTextNode('Свое время'));
-            cardFooter.appendChild(checkboxLabel);
-
-            const timeInputs = document.createElement('div');
-            timeInputs.className = 'lesson-time-inputs';
-            timeInputs.style.display = checkbox.checked ? 'flex' : 'none';
-
-            const startInput = document.createElement('input');
-            startInput.type = 'text';
-            startInput.className = 'builder-input time-input';
-            startInput.style.width = '80px';
-            startInput.value = lesson.start || '';
+        } else {
+            const subjectField = createField('ПРЕДМЕТ', 'Например: Математика', item.subject, 'list-subjects', (e) => {
+                item.subject = sanitizeInput(e.target.value); saveState();
+            });
             
-            const endInput = document.createElement('input');
-            endInput.type = 'text';
-            endInput.className = 'builder-input time-input';
-            endInput.style.width = '80px';
-            endInput.value = lesson.end || '';
-
-            setupTimeMask(startInput, endInput);
-            setupTimeMask(endInput, null);
-
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    timeInputs.style.display = 'flex';
-                    lesson.start = startInput.value || "09:20";
-                    lesson.end = endInput.value || "10:05";
-                    startInput.value = lesson.start;
-                    endInput.value = lesson.end;
-                } else {
-                    timeInputs.style.display = 'none';
-                    delete lesson.start;
-                    delete lesson.end;
+            subjectField.input.addEventListener('change', (e) => {
+                const val = e.target.value;
+                item.subject = val;
+                if (DICTIONARY[val]) {
+                    if (!roomField.input.value && DICTIONARY[val].rooms.length > 0) {
+                        roomField.input.value = DICTIONARY[val].rooms[0];
+                        item.room = roomField.input.value;
+                        flashAutofill(roomField.input);
+                    }
+                    if (!teacherField.input.value && DICTIONARY[val].teachers.length > 0) {
+                        teacherField.input.value = DICTIONARY[val].teachers[0];
+                        item.teacher = teacherField.input.value;
+                        flashAutofill(teacherField.input);
+                    }
                 }
                 saveState();
             });
 
-            startInput.addEventListener('input', (e) => { lesson.start = e.target.value; saveState(); });
-            endInput.addEventListener('input', (e) => { lesson.end = e.target.value; saveState(); });
+            const roomField = createField('КАБИНЕТ', '2-213 / 212', item.room, 'list-rooms', (e) => {
+                item.room = sanitizeInput(e.target.value); saveState();
+            });
 
-            timeInputs.appendChild(startInput);
-            timeInputs.appendChild(document.createTextNode('—'));
-            timeInputs.appendChild(endInput);
-            cardFooter.appendChild(timeInputs);
-            card.appendChild(cardFooter);
+            const teacherField = createField('ПРЕПОДАВАТЕЛЬ', 'Ушакова Е.П.', item.teacher, 'list-teachers', (e) => {
+                item.teacher = sanitizeInput(e.target.value); saveState();
+            });
+
+            fieldsDiv.appendChild(subjectField.group);
+            fieldsDiv.appendChild(roomField.group);
+            fieldsDiv.appendChild(teacherField.group);
+
+            if (state.mode === 'schedule') {
+                const cardFooter = document.createElement('div');
+                cardFooter.className = 'card-footer';
+                const checkboxLabel = document.createElement('label');
+                checkboxLabel.className = 'checkbox-label';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = !!item.start;
+                checkboxLabel.appendChild(checkbox);
+                checkboxLabel.appendChild(document.createTextNode('Свое время'));
+                cardFooter.appendChild(checkboxLabel);
+
+                const timeInputs = document.createElement('div');
+                timeInputs.className = 'lesson-time-inputs';
+                timeInputs.style.display = checkbox.checked ? 'flex' : 'none';
+
+                const startInput = document.createElement('input');
+                startInput.type = 'text';
+                startInput.className = 'builder-input time-input';
+                startInput.style.width = '80px';
+                startInput.value = item.start || '';
+                
+                const endInput = document.createElement('input');
+                endInput.type = 'text';
+                endInput.className = 'builder-input time-input';
+                endInput.style.width = '80px';
+                endInput.value = item.end || '';
+
+                setupTimeMask(startInput, endInput);
+                setupTimeMask(endInput, null);
+
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        timeInputs.style.display = 'flex';
+                        item.start = startInput.value || "09:20";
+                        item.end = endInput.value || "10:05";
+                        startInput.value = item.start;
+                        endInput.value = item.end;
+                    } else {
+                        timeInputs.style.display = 'none';
+                        delete item.start;
+                        delete item.end;
+                    }
+                    saveState();
+                });
+
+                startInput.addEventListener('input', (e) => { item.start = e.target.value; saveState(); });
+                endInput.addEventListener('input', (e) => { item.end = e.target.value; saveState(); });
+
+                timeInputs.appendChild(startInput);
+                timeInputs.appendChild(document.createTextNode('—'));
+                timeInputs.appendChild(endInput);
+                cardFooter.appendChild(timeInputs);
+                card.appendChild(cardFooter);
+            }
         }
 
+        card.appendChild(fieldsDiv);
         lessonsContainer.appendChild(card);
     });
 }
@@ -357,99 +439,133 @@ function getFilenames() {
 }
 
 async function generateCode() {
-    const { cleanGroupName, fileBaseName, varName, displayGroupName } = getFilenames();
-    
-    if (!cleanGroupName) {
-        alert('Введи нормальное название группы!');
-        return;
-    }
+    try {
+        const { cleanGroupName, fileBaseName, varName, displayGroupName } = getFilenames();
 
-    if (state.mode === 'schedule') {
-        let code = `// data/schedule/${fileBaseName}.js: Расписание для группы ${displayGroupName}\n\n`;
-        code += `export const SCHEDULE_${varName} = {\n`;
-        code += `    "${displayGroupName}": {\n`;
+        if (state.mode === 'schedule') {
+            if (!cleanGroupName) { alert('Введи нормальное название группы!'); return; }
+            let code = `// data/schedule/${fileBaseName}.js: Расписание для группы ${displayGroupName}\n\n`;
+            code += `export const SCHEDULE_${varName} = {\n`;
+            code += `    "${displayGroupName}": {\n`;
+            let customTimes = [];
+            [1, 2].forEach(weekNum => {
+                code += `        week${weekNum}: {\n`;
+                [1, 2, 3, 4, 5].forEach(dayNum => {
+                    const lessons = state.schedule[weekNum][dayNum] || [];
+                    if (lessons.length === 0) {
+                        code += `            ${dayNum}: [],\n`;
+                    } else {
+                        lessons.sort((a, b) => (a.pair || 0) - (b.pair || 0));
+                        code += `            ${dayNum}: [\n`;
+                        lessons.forEach((lesson) => {
+                            const pairNum = lesson.pair || 1;
+                            code += `                { pair: ${pairNum}, subject: "${lesson.subject || ''}", room: "${lesson.room || ''}", teacher: "${lesson.teacher || ''}" },\n`;
+                            if (lesson.start && lesson.end) {
+                                customTimes.push(`            [${weekNum}, ${dayNum}, ${pairNum}, "${lesson.start}", "${lesson.end}"]`);
+                            }
+                        });
+                        code += `            ],\n`;
+                    }
+                });
+                code += `        },\n`;
+            });
+            code += `        customTimes: [\n`;
+            if (customTimes.length > 0) code += customTimes.join(',\n') + '\n';
+            code += `        ]\n    }\n};\n`;
+            
+            codeOutput.value = code;
+            manifestOutput.value = `"${fileBaseName}.js"`;
+            hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/schedule/</b>`;
+            
+        } else if (state.mode === 'substitution') {
+            if (!cleanGroupName) { alert('Введи нормальное название группы!'); return; }
+            const { week, day } = getWeekAndDayFromDate(state.subDate);
+            const currentLessons = state.schedule[week][day] || [];
+            const newSubs = {};
+            currentLessons.sort((a, b) => (a.pair || 0) - (b.pair || 0)).forEach(lesson => {
+                newSubs[lesson.pair] = { subject: lesson.subject || "", room: lesson.room || "", teacher: lesson.teacher || "" };
+            });
 
-        let customTimes = [];
-        [1, 2].forEach(weekNum => {
-            code += `        week${weekNum}: {\n`;
-            [1, 2, 3, 4, 5].forEach(dayNum => {
-                const lessons = state.schedule[weekNum][dayNum] || [];
-                if (lessons.length === 0) {
-                    code += `            ${dayNum}: [],\n`;
+            try {
+                const url = new URL('../../data/substitutions/data.json', import.meta.url);
+                url.searchParams.set('t', Date.now());
+                const response = await fetch(url);
+                let allSubs = response.ok ? await response.json() : {};
+                const todayStr = new Date().toISOString().split('T')[0];
+                for (const dateKey in allSubs) { if (dateKey < todayStr) delete allSubs[dateKey]; }
+                if (!allSubs[state.subDate]) allSubs[state.subDate] = {};
+                if (!allSubs[state.subDate][displayGroupName]) allSubs[state.subDate][displayGroupName] = {};
+                Object.assign(allSubs[state.subDate][displayGroupName], newSubs);
+
+                codeOutput.value = JSON.stringify(allSubs, null, 2);
+                manifestOutput.value = "// Для замен manifest.json менять не нужно";
+                hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/substitutions/</b>, заменив старый`;
+            } catch (e) {
+                console.warn("Ошибка загрузки замен, создаем новый файл.", e);
+                codeOutput.value = JSON.stringify({ [state.subDate]: { [displayGroupName]: newSubs } }, null, 2);
+                manifestOutput.value = "// Для замен manifest.json менять не нужно";
+                hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/substitutions/</b>`;
+            }
+        } else if (state.mode === 'consultation') {
+            // 1. Получаем текущие консультации из файла (если есть)
+            let existingConsultations = [];
+            try {
+                const module = await import(`../../data/consultations.js?t=${Date.now()}`);
+                existingConsultations = module.CONSULTATIONS || [];
+            } catch (e) {
+                console.warn("Не удалось загрузить старые консультации (возможно, файл пуст).", e);
+            }
+
+            // 2. Получаем новые консультации (из текущего состояния)
+            const newData = state.consultations.filter(c => c.teacher && c.afterPair);
+
+            // 3. Объединяем (если консультация с таким же преподавателем, днем и парой уже есть, обновляем её)
+            const combinedData = [...existingConsultations];
+            newData.forEach(newC => {
+                const index = combinedData.findIndex(c => 
+                    c.teacher === newC.teacher && 
+                    c.day === newC.day && 
+                    c.afterPair === newC.afterPair
+                );
+                if (index !== -1) {
+                    combinedData[index] = newC; // Обновляем существующую
                 } else {
-                    lessons.sort((a, b) => (a.pair || 0) - (b.pair || 0));
-                    code += `            ${dayNum}: [\n`;
-                    lessons.forEach((lesson) => {
-                        const pairNum = lesson.pair || 1;
-                        code += `                { pair: ${pairNum}, subject: "${lesson.subject || ''}", room: "${lesson.room || ''}", teacher: "${lesson.teacher || ''}" },\n`;
-                        if (lesson.start && lesson.end) {
-                            customTimes.push(`            [${weekNum}, ${dayNum}, ${pairNum}, "${lesson.start}", "${lesson.end}"]`);
-                        }
-                    });
-                    code += `            ],\n`;
+                    combinedData.push(newC); // Добавляем новую
                 }
             });
-            code += `        },\n`;
-        });
 
-        code += `        customTimes: [\n`;
-        if (customTimes.length > 0) code += customTimes.join(',\n') + '\n';
-        code += `        ]\n`;
-        code += `    }\n};\n`;
-        
-        codeOutput.value = code;
-        manifestOutput.value = `"${fileBaseName}.js"`;
-        filenameHint.textContent = `${fileBaseName}.js`;
-        hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/schedule/</b>`;
-        
-    } else {
-        const { week, day } = getWeekAndDayFromDate(state.subDate);
-        const currentLessons = state.schedule[week][day] || [];
-
-        const newSubs = {};
-        currentLessons.sort((a, b) => (a.pair || 0) - (b.pair || 0)).forEach(lesson => {
-            newSubs[lesson.pair] = { 
-                subject: lesson.subject || "", 
-                room: lesson.room || "", 
-                teacher: lesson.teacher || "" 
-            };
-        });
-
-        try {
-            const url = new URL('../../data/substitutions/data.json', import.meta.url);
-            url.searchParams.set('t', Date.now());
-            const response = await fetch(url);
+            // 4. Генерируем JS-файл
+            let code = `// data/consultations.js: График консультаций\n`;
+            code += `// \n`;
+            code += `// 📌 ПУТЬ К ФАЙЛУ: data/consultations.js\n`;
+            code += `// 📝 ЧТО ЭТО: Этот файл хранит график консультаций для Справочника на главной странице.\n`;
+            code += `// 🛠 КАК ОБНОВИТЬ: Сгенерируй новый файл в builder.html (режим "Консультации"), скачай его и замени этот файл целиком.\n`;
+            code += `// \n`;
+            code += `// Структура объекта:\n`;
+            code += `// subject: Название предмета (строка)\n`;
+            code += `// teacher: ФИО преподавателя (строка)\n`;
+            code += `// day: День недели (1 - Пн, 2 - Вт, 3 - Ср, 4 - Чт, 5 - Пт, 6 - Сб)\n`;
+            code += `// afterPair: После какой пары начнется консультация (число от 1 до 7)\n`;
+            code += `// room: Кабинет (строка)\n\n`;
             
-            let allSubs = {};
-            if (response.ok) {
-                allSubs = await response.json();
-            }
+            code += `export const CONSULTATIONS = [\n`;
+            combinedData.forEach(c => {
+                code += `    { subject: "${c.subject || ''}", teacher: "${c.teacher}", day: ${c.day}, afterPair: ${c.afterPair}, room: "${c.room || ''}" },\n`;
+            });
+            code += `];\n`;
 
-            const todayStr = new Date().toISOString().split('T')[0];
-            for (const dateKey in allSubs) {
-                if (dateKey < todayStr) {
-                    delete allSubs[dateKey];
-                }
-            }
-
-            if (!allSubs[state.subDate]) allSubs[state.subDate] = {};
-            if (!allSubs[state.subDate][displayGroupName]) allSubs[state.subDate][displayGroupName] = {};
-            
-            Object.assign(allSubs[state.subDate][displayGroupName], newSubs);
-
-            codeOutput.value = JSON.stringify(allSubs, null, 2);
-            manifestOutput.value = "// Для замен manifest.json менять не нужно";
-            filenameHint.textContent = "data.json";
-            hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/substitutions/</b>, заменив старый`;
-            
-        } catch (e) {
-            console.error("Не удалось скачать старые замены", e);
-            codeOutput.value = JSON.stringify({ [state.subDate]: { [displayGroupName]: newSubs } }, null, 2);
+            codeOutput.value = code;
+            manifestOutput.value = "// Для консультаций manifest.json менять не нужно";
+            hintFile.innerHTML = `Скачай этот файл и положи его в папку <b>data/</b>, заменив старый`;
         }
+        modalCode.classList.remove('hidden');
+    } catch (err) {
+        console.error(err);
+        alert('Произошла ошибка при генерации: ' + err.message);
     }
-    modalCode.classList.remove('hidden');
 }
 
+// Tabs setup
 document.getElementById('tab-file').addEventListener('click', () => {
     document.getElementById('tab-file').style.background = 'var(--accent-color)';
     document.getElementById('tab-manifest').style.background = 'rgba(255,255,255,0.1)';
@@ -490,15 +606,15 @@ document.querySelectorAll('.day-btn').forEach(btn => {
 });
 
 btnAddLesson.addEventListener('click', () => {
-    const { week, day } = state.mode === 'schedule' ? { week: state.week, day: state.day } : getWeekAndDayFromDate(state.subDate);
-    const currentLessons = state.schedule[week][day];
-    let nextPairNum = currentLessons.length > 0 ? Math.max(...currentLessons.map(l => l.pair || 0)) + 1 : 1;
-
-    if (nextPairNum > 7) {
-        alert("В один день не может быть больше 7 пар!");
-        return;
+    if (state.mode === 'consultation') {
+        state.consultations.push({ subject: "", teacher: "", day: 1, afterPair: 1, room: "" });
+    } else {
+        const { week, day } = state.mode === 'schedule' ? { week: state.week, day: state.day } : getWeekAndDayFromDate(state.subDate);
+        const currentLessons = state.schedule[week][day];
+        let nextPairNum = currentLessons.length > 0 ? Math.max(...currentLessons.map(l => l.pair || 0)) + 1 : 1;
+        if (nextPairNum > 7) { alert("В один день не может быть больше 7 пар!"); return; }
+        currentLessons.push({ pair: nextPairNum, subject: "", room: "", teacher: "" });
     }
-    currentLessons.push({ pair: nextPairNum, subject: "", room: "", teacher: "" });
     saveState();
     renderLessons();
 });
@@ -508,12 +624,10 @@ document.getElementById('btn-close-modal').addEventListener('click', () => modal
 
 btnDownloadJs.addEventListener('click', () => {
     let filename = 'data.json';
-    if (state.mode === 'schedule') {
-        const { fileBaseName } = getFilenames();
-        filename = `${fileBaseName}.js`;
-    }
+    if (state.mode === 'schedule') filename = `${getFilenames().fileBaseName}.js`;
+    else if (state.mode === 'consultation') filename = 'consultations.js';
 
-    const mimeType = state.mode === 'schedule' ? 'text/javascript' : 'application/json';
+    const mimeType = 'text/javascript';
     const blob = new Blob([codeOutput.value], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -524,10 +638,7 @@ btnDownloadJs.addEventListener('click', () => {
 
     btnDownloadJs.innerHTML = '✅ Файл скачан!';
     btnDownloadJs.style.background = '#10b981';
-    setTimeout(() => {
-        btnDownloadJs.innerHTML = '💾 Скачать файл';
-        btnDownloadJs.style.background = '';
-    }, 3000);
+    setTimeout(() => { btnDownloadJs.innerHTML = '💾 Скачать файл'; btnDownloadJs.style.background = ''; }, 3000);
 });
 
 document.getElementById('btn-copy-manifest').addEventListener('click', async () => {
@@ -535,12 +646,8 @@ document.getElementById('btn-copy-manifest').addEventListener('click', async () 
         await navigator.clipboard.writeText(manifestOutput.value);
         const btn = document.getElementById('btn-copy-manifest');
         btn.innerHTML = '✅';
-        setTimeout(() => {
-            btn.innerHTML = '📋';
-        }, 2000);
-    } catch (err) {
-        alert('Не удалось скопировать. Выдели текст и нажми Ctrl+C');
-    }
+        setTimeout(() => { btn.innerHTML = '📋'; }, 2000);
+    } catch (err) { alert('Не удалось скопировать. Выдели текст и нажми Ctrl+C'); }
 });
 
 document.getElementById('btn-help').addEventListener('click', () => document.getElementById('modal-help').classList.remove('hidden'));
@@ -553,8 +660,16 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 if (state.mode === 'substitution') {
     scheduleControls.classList.add('hidden');
     substitutionControls.classList.remove('hidden');
+    consultationControls.classList.add('hidden');
     builderTitle.textContent = "TimeHub Замены";
     builderSubtitle.textContent = "Редактор замен на день";
+    tabManifest.style.display = 'none';
+} else if (state.mode === 'consultation') {
+    scheduleControls.classList.add('hidden');
+    substitutionControls.classList.add('hidden');
+    consultationControls.classList.remove('hidden');
+    builderTitle.textContent = "TimeHub Консультации";
+    builderSubtitle.textContent = "График консультаций";
     tabManifest.style.display = 'none';
 }
 

@@ -1,5 +1,8 @@
 // ui/reference.js: Справочник (библиотеки, консультации, калькулятор)
 
+// Импортируем консультации прямо из JS-файла
+import { CONSULTATIONS } from '../../../data/consultations.js';
+
 export function createReference() {
     const container = document.createElement('div');
     container.className = 'reference-widget glass-panel';
@@ -11,84 +14,113 @@ export function createReference() {
         </div>
         
         <div class="accordion">
-            <!-- Вкладка 1: Библиотеки -->
             <div class="accordion-item">
                 <button class="accordion-trigger">
                     <span>Библиотеки</span>
                     <span class="accordion-arrow">▼</span>
                 </button>
                 <div class="accordion-content">
-                    <a href="https://e.lanbook.com" target="_blank" class="ref-link">
-                        <span class="link-icon">🌐</span> ЭБС Лань
-                    </a>
-                    <a href="https://academia-moscow.ru" target="_blank" class="ref-link">
-                        <span class="link-icon">🌐</span> Академия-Москва
-                    </a>
+                    <div class="accordion-inner">
+                        <a href="https://e.lanbook.com" target="_blank" class="ref-link">
+                            <span class="link-icon">🌐</span> ЭБС Лань
+                        </a>
+                        <a href="https://academia-moscow.ru" target="_blank" class="ref-link">
+                            <span class="link-icon">🌐</span> Академия-Москва
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Вкладка 2: Консультации -->
             <div class="accordion-item">
                 <button class="accordion-trigger">
                     <span>Консультации</span>
                     <span class="accordion-arrow">▼</span>
                 </button>
                 <div class="accordion-content">
-                    <div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 10px;">
-                        Здесь скоро появятся графики консультаций 📅
+                    <div class="accordion-inner" id="consultations-list">
+                        <!-- Сюда вставится список -->
                     </div>
                 </div>
             </div>
 
-            <!-- Вкладка 3: Калькулятор оценок -->
             <div class="accordion-item">
                 <button class="accordion-trigger">
                     <span>Калькулятор оценок</span>
                     <span class="accordion-arrow">▼</span>
                 </button>
                 <div class="accordion-content">
-                    <div class="calc-container">
-                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Введи оценки через запятую (например: 5, 4, 3, 5)</p>
-                        <input type="text" id="grades-input" class="settings-select" placeholder="5, 4, 5, 3...">
-                        <button id="btn-calc-grades" class="theme-btn" style="width:100%; margin-top:10px; padding:10px; background:var(--accent-color); color:white;">Посчитать</button>
-                        <div id="grades-result" class="calc-result"></div>
+                    <div class="accordion-inner">
+                        <div class="calc-container">
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Введи оценки через запятую (например: 5, 4, 3, 5)</p>
+                            <input type="text" id="grades-input" class="settings-select" placeholder="5, 4, 5, 3...">
+                            <button id="btn-calc-grades" class="theme-btn" style="width:100%; margin-top:10px; padding:10px; background:var(--accent-color); color:white;">Посчитать</button>
+                            <div id="grades-result" class="calc-result"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
-    // Логика аккордеона
     const triggers = container.querySelectorAll('.accordion-trigger');
     triggers.forEach(trigger => {
         trigger.addEventListener('click', () => {
             const item = trigger.parentElement;
-            const content = item.querySelector('.accordion-content');
-            
             container.querySelectorAll('.accordion-item').forEach(otherItem => {
-                if (otherItem !== item) {
-                    otherItem.classList.remove('active');
-                    otherItem.querySelector('.accordion-content').style.maxHeight = null;
-                }
+                if (otherItem !== item) otherItem.classList.remove('active');
             });
-
             item.classList.toggle('active');
-            if (item.classList.contains('active')) {
-                content.style.maxHeight = content.scrollHeight + "px";
-            } else {
-                content.style.maxHeight = null;
-            }
         });
     });
 
-    // Логика калькулятора
+    // --- ОТРИСОВКА КОНСУЛЬТАЦИЙ ---
+    function renderConsultations() {
+        const listContainer = container.querySelector('#consultations-list');
+        
+        if (!CONSULTATIONS || CONSULTATIONS.length === 0) {
+            listContainer.innerHTML = `
+                <div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 15px;">
+                    График консультаций пока не добавлен.<br>
+                    <a href="./builder.html" target="_blank" style="color: var(--accent-color); text-decoration: underline; margin-top: 5px; display: inline-block;">Добавить в Конструкторе</a>
+                </div>
+            `;
+            return;
+        }
+
+        const days = ['', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+        
+        // Сортируем по дню, затем по номеру пары
+        const sortedData = [...CONSULTATIONS].sort((a, b) => {
+            if (a.day !== b.day) return a.day - b.day;
+            return a.afterPair - b.afterPair;
+        });
+
+        let html = '';
+        sortedData.forEach(c => {
+            html += `
+                <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 14px; font-weight: bold; color: var(--text-main); margin-bottom: 2px;">${c.subject}</div>
+                    <div style="font-size: 13px; color: var(--accent-color); margin-bottom: 6px;">${c.teacher}</div>
+                    <div style="display: flex; gap: 10px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap;">
+                        <span>📅 ${days[c.day]}</span>
+                        <span>🕒 После ${c.afterPair}-й пары</span>
+                        <span>📍 ${c.room}</span>
+                    </div>
+                </div>
+            `;
+        });
+        listContainer.innerHTML = html;
+    }
+    
+    renderConsultations();
+
+    // --- КАЛЬКУЛЯТОР ---
     const calcBtn = container.querySelector('#btn-calc-grades');
     const gradesInput = container.querySelector('#grades-input');
     const gradesResult = container.querySelector('#grades-result');
 
     calcBtn.addEventListener('click', () => {
         const rawText = gradesInput.value;
-        // Разделяем по запятой, пробелу или точке с запятой
         const parts = rawText.split(/[,;\s]+/).filter(Boolean);
         
         let sum = 0;
@@ -117,13 +149,7 @@ export function createReference() {
 
         gradesResult.innerHTML = `Средний балл: <strong>${average}</strong><br><span style="font-size: 12px; font-weight: normal;">${comment}</span>`;
         gradesResult.style.color = "var(--accent-color)";
-
-        // Обновляем высоту аккордеона, чтобы текст не обрезался
-        const content = calcBtn.closest('.accordion-content');
-        if (content) content.style.maxHeight = content.scrollHeight + "px";
     });
 
     return container;
 }
-
-export {};
