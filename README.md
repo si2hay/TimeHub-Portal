@@ -1,3 +1,6 @@
+Вот полный и готовый `README.md` со всеми добавлениями про лицензию и защиту. Просто скопируй его целиком и замени свой файл:
+
+```markdown
 <div align="center">
 
 # 📚 TimeHub-Portal
@@ -12,6 +15,7 @@
 [![Vanilla JS](https://img.shields.io/badge/Vanilla_JS-ES6_Modules-f7df1e?style=flat-square&logo=javascript&logoColor=black)]()
 [![PWA](https://img.shields.io/badge/PWA-Устанавливается_на_ПК_и_Android-5A0FC8?style=flat-square&logo=pwa)]()
 [![Telegram Mini App](https://img.shields.io/badge/Telegram-Mini_App-2AABEE?style=flat-square&logo=telegram&logoColor=white)]()
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC_BY--NC_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 </div>
 
@@ -103,6 +107,20 @@
 
 ---
 
+## 📄 Лицензия
+
+Этот проект распространяется под лицензией **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**. 
+
+**Что это значит:**
+* ✅ **МОЖНО:** Использовать, копировать и изменять код для личных, учебных или некоммерческих проектов (с указанием авторства).
+* ❌ **НЕЛЬЗЯ:** Использовать код или его части в коммерческих целях (продажа доступа, размещение рекламы, взимание платы) без письменного разрешения автора.
+
+Подробнее с условиями можно ознакомиться в файле [LICENSE](./LICENSE) или на [сайте Creative Commons](https://creativecommons.org/licenses/by-nc/4.0/).
+
+**Использованные ресурсы:** Фоны,шрифты и прочие данные взяты из открытых бесплатных источников .
+
+---
+
 ## 👤 Автор
 
 Проект создан студентом **Газпром колледжа Волгограда** (группа 26 АТП-2Бо).  
@@ -111,3 +129,4 @@
 <div align="center">
   <i>Сделано с ❤️ для студентов</i>
 </div>
+```
