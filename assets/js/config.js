@@ -2,7 +2,7 @@
 
 export const CONFIG = {
     APP_NAME: "TimeHub-Portal",
-    VERSION: "1.0.0",
+    VERSION: "02.11.2026-04:16", // <-- ВЕРСИЯ ПРИЛОЖЕНИЯ (меняй при крупных обновлениях)
     
     // Точка отсчета: 26 октября 2026 (Начало 1-й недели)
     SEMESTER_START_DATE: new Date("2026-10-26T00:00:00"),
@@ -17,7 +17,7 @@ export const CONFIG = {
         weatherApi: "open-meteo",
         group: "26 АТП-2Бо", 
         course: 1,
-        textScale: 1 // <--- НОВАЯ НАСТРОЙКА (1 = обычный)
+        textScale: 1
     }
 };
 

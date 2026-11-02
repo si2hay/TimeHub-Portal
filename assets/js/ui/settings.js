@@ -5,6 +5,7 @@ import { applyTheme, applyFont, applyTextScale } from '../themes.js';
 import { toggleParticles } from '../particles.js';
 import { openFullSchedule } from './full-schedule.js';
 import { promptInstall } from '../pwa.js';
+import { CONFIG } from '../config.js'; // <-- ИМПОРТ КОНФИГА
 
 export function openSettings() {
     if (document.getElementById('settings-modal')) return;
@@ -144,6 +145,13 @@ export function openSettings() {
                         📧 gemg944@gmail.com
                     </a>
                 </div>
+            </div>
+
+            <!-- ПЛАШКА ВЕРСИИ -->
+            <div style="text-align: center; margin-top: 10px; margin-bottom: 10px; opacity: 0.4;">
+                <span style="font-size: 11px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">
+                    TimeHub-Portal • v${CONFIG.VERSION}
+                </span>
             </div>
         </div>
     `;
