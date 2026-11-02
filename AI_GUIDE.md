@@ -15,7 +15,20 @@
 
 *"Привет! Чтобы я не сломал проект, скинь мне, пожалуйста, актуальную структуру файлов. Открой терминал в корне проекта и введи команду: `find . -not -path '*/.*' -not -path '*/node_modules/*'`"*
 
-Если задача касается конкретных модулей (например, настройки, стейт, билдер, data-manager), необходимо также запросить их актуальное содержимое текстом. Только после получения кода можно приступать к работе.
+Если задача касается конкретных модулей (например, настройки, стейт, билдер, data-manager, main), необходимо также запросить их актуальное содержимое текстом. Только после получения кода можно приступать к работе. Не пиши код «вслепую».
+
+---
+
+## 🛑 ПРАВИЛО №2: Как отвечать пользователю
+
+- Пользователь — студент, не профессиональный разработчик. Объясняй просто, без сложных терминов, но при этом пиши рабочий код.
+- Если пользователь просит «сделать красиво» — предлагай CSS-анимации, но не перегружай интерфейс.
+- Если пользователь просит полный файл — давай полный файл (от первой до последней строки), а не куски с «... тут твой код ...». Пользователь копирует и вставляет всё целиком.
+- Всегда проверяй, что ты не сломал импорты при изменении кода.
+- Если ты удаляешь что-то из кода (комментарии, функции), предупреди об этом и объясни, почему.
+- Комментарии в коде — только на русском языке.
+- Не сокращай важные пояснения. Если пользователь просит подробно — пиши подробно.
+- Если пользователь просит «просто скажи что добавить» — давай точечные правки с указанием, куда их вставить.
 
 ---
 
@@ -23,54 +36,62 @@
 
 **TimeHub-Portal** — учебный SPA-портал для студента. Изначально создан для Газпром колледжа Волгограда (группа 26 АТП-2Бо), но теперь позиционируется как **универсальная платформа для любого учебного заведения**. Любой студент может собрать свое расписание в Конструкторе, отправить его в Telegram-группу, и админ добавит его на сайт.
 
-### Функционал
+### 1.1. Функционал
 - **Расписание пар** с учётом чётной/нечётной недели и замен.
 - **Таймер** до конца/начала пары с адаптивным полноэкранным режимом.
-- **Погода** в Волгограде с советами по одежде.
+- **Погода** в Волгограде с советами по одежде (можно выбрать API: Open-Meteo или wttr.in).
 - **Заметки + чек-лист** с синхронизацией в Telegram CloudStorage.
 - **Стрик (огонёк)** — счётчик дней подряд с визуальной эволюцией (оранжевый → красный → синий → фиолетовый → золотой).
 - **Справочник** (библиотеки, консультации, калькулятор оценок).
-- **12+ тем оформления**, 7 шрифтов, настройка размера текста, установка своих обоев (картинка/видео).
+- **12+ тем оформления**, 7 шрифтов, настройка размера текста, установка своих обоев (картинка/видео/URL).
 - **Офлайн-режим** через Service Worker.
 - **Установка как PWA** на Android и ПК.
 - **Работа как Telegram Mini App** (бот `@timehub_portal_bot`).
 - **Конструктор** для добавления расписаний любых групп (файл `.js`) и замен (файл `data.json`).
 
-### Технологический стек
+### 1.2. Технологический стек
 - Чистый **Vanilla JS (ES6 Modules)**. Запрещено использовать React, Vue, jQuery, TypeScript или сборщики (Webpack/Vite).
 - **HTML5 + CSS3** (CSS-переменные, Grid, Flexbox, анимации).
 - **Хостинг:** GitHub Pages (чистая статика, без бэкенда).
 - **Интеграция:** Telegram Web App API + CloudStorage.
-- **Хранение:** `localStorage` (локальные настройки) + `Telegram CloudStorage` (заметки, чек-лист, стрик).
+- **Хранение:** `localStorage` (локальные настройки) + `Telegram CloudStorage` (настройки, заметки, чек-лист, стрик).
 
-### Ссылки
+### 1.3. Ссылки
 - **Репозиторий:** `https://github.com/si2hay/TimeHub-Portal`
 - **Сайт:** `https://si2hay.github.io/TimeHub-Portal/`
 - **Конструктор:** `https://si2hay.github.io/TimeHub-Portal/builder.html`
 - **Бот:** `https://t.me/timehub_portal_bot/portal`
+- **Telegram-группа:** `https://t.me/+sq9RDqa2I2A3M2Iy`
 - **Локальный путь:** `/home/si2hay/Documents/TimeHub-Portal/`
+- **Автор:** студент Газпром колледжа Волгограда, группа 26 АТП-2Бо.
 
 ---
 
 ## 2. Быстрый старт
 
-### Локальный запуск
+### 2.1. Локальный запуск
 1. Открыть папку в VS Code / VSCodium.
 2. Установить расширение **Live Server**.
 3. ПКМ по `index.html` → **Open with Live Server** (порт 5500).
 4. Для Конструктора: ПКМ по `builder.html` → **Open with Live Server**.
+5. Открыть в браузере `http://127.0.0.1:5500/index.html`.
 
-### Деплой на GitHub Pages
+### 2.2. Деплой на GitHub Pages
 ```bash
 git add .
 git commit -m "описание изменений"
 git push origin master
 ```
 
-**Важно про Git-хук:** В проекте настроен `.git/hooks/pre-commit`, который автоматически меняет `CACHE_NAME` в `sw.js` на текущий timestamp (`timehub-v<unixtime>`). Это сбрасывает кэш у пользователей при каждом пуше. Пользователю не нужно менять версию вручную.
+**Важно про Git-хук:** В проекте настроен `.git/hooks/pre-commit`, который автоматически меняет `CACHE_NAME` в `sw.js` на текущий timestamp (`timehub-v<unixtime>`). Это сбрасывает кэш у пользователей при каждом пуше. Пользователю не нужно менять версию вручную. Хук также делает `git add sw.js`, чтобы изменённый файл попал в коммит.
 
-### Service Worker и авто-обновление
-`pwa.js` использует `updateViaCache: 'none'` — браузер всегда проверяет `sw.js` на сервере. Каждые 60 секунд вызывается `registration.update()`. При активации нового воркера страница автоматически перезагружается через событие `controllerchange`.
+### 2.3. Service Worker и авто-обновление
+`pwa.js` использует `updateViaCache: 'none'` — браузер всегда проверяет `sw.js` на сервере. Каждые 60 секунд вызывается `registration.update()`. При активации нового воркера страница автоматически перезагружается через событие `controllerchange` (флаг `refreshing` предотвращает зацикливание).
+
+### 2.4. Где смотреть результат
+- После `git push` подождать 1-2 минуты — GitHub Pages пересоберёт сайт.
+- В Telegram: закрыть и открыть мини-апп заново, чтобы подтянулся новый Service Worker.
+- Локально: обновить страницу (Ctrl+F5 или Ctrl+Shift+R).
 
 ---
 
@@ -83,12 +104,12 @@ git push origin master
 ├── sw.js                   # Service Worker (офлайн-режим, авто-обновление)
 ├── README.md               # Документация для GitHub
 ├── AI_GUIDE.md             # Этот файл
-├── .nojekyll               # Отключает Jekyll на GitHub Pages (иначе папки с _ игнорируются)
+├── .nojekyll               # Отключает Jekyll на GitHub Pages
 │
 ├── assets/
 │   ├── css/
 │   │   ├── style.css       # Все базовые стили (скелетоны, масштабирование, стрик, модалки)
-│   │   ├── themes.css      # CSS-переменные для всех тем (dark, dota, minecraft, ocean и т.д.)
+│   │   ├── themes.css      # CSS-переменные для всех тем
 │   │   ├── radial.css      # Стили для радиального меню дней недели
 │   │   └── builder.css     # Стили Конструктора
 │   │
@@ -97,12 +118,12 @@ git push origin master
 │   │   └── Tsap-Tsarap.ttf / .woff2    # Альтернативный шрифт
 │   │
 │   ├── icons/              # (зарезервировано, сейчас пусто)
-│   ├── img/                # (зарезервировано)
+│   ├── img/                # (зарезервировано, сейчас пусто)
 │   │
 │   └── js/
-│       ├── main.js         # Точка входа: сборка UI, Telegram-фишки, applyBackground
+│       ├── main.js         # Точка входа: сборка UI, Telegram-фишки, applyAllSettings
 │       ├── config.js       # Константы (SEMESTER_START_DATE, VERSION, DEFAULT_SETTINGS)
-│       ├── state.js        # Singleton (стейт, стрик, шина событий)
+│       ├── state.js        # Singleton (стейт, стрик, шина событий, restoreSettingsFromCloud)
 │       ├── telegram-storage.js # Обёртка над localStorage и TG CloudStorage
 │       ├── storage.js      # (устарел, оставлен для совместимости)
 │       ├── themes.js       # applyTheme, applyFont, applyTextScale, initThemes
@@ -110,8 +131,8 @@ git push origin master
 │       ├── pwa.js          # Регистрация SW + авто-обновление + promptInstall
 │       ├── data-manager.js # Склейка расписания и замен (из JSON, ТОЛЬКО на сегодня)
 │       ├── builder.js      # Логика Конструктора + транслитерация + автоподстановка
-│       ├── debug.js        # Отладочный режим (см. ниже)
-│       ├── router.js       # (зарезервировано)
+│       ├── debug.js        # Отладочный режим (см. код)
+│       ├── router.js       # (зарезервировано, SPA-роутер не реализован)
 │       ├── utils.js        # Утилиты (timeToMinutes, formatTimeLeft)
 │       │
 │       └── ui/
@@ -120,7 +141,7 @@ git push origin master
 │           ├── timer.js            # Таймер пар (обычный + полноэкранный режим)
 │           ├── schedule.js         # Карточки расписания (использует skeleton.js)
 │           ├── skeleton.js         # Заглушки загрузки (shimmer)
-│           ├── weather.js          # (может не использоваться, погода внутри controls.js)
+│           ├── weather.js          # (возможно, устарел, погода внутри controls.js)
 │           ├── reference.js        # Справочник (аккордеон)
 │           ├── notes.js            # Заметки + чек-лист (облако)
 │           ├── footer.js           # Подвал (дисклеймер, контакты)
@@ -155,9 +176,9 @@ git push origin master
 
 ---
 
-## 4. Ключевые архитектурные изменения (Версия 1.3+)
+## 4. Ключевые архитектурные изменения (Версия 1.4+)
 
-### 🚨 Система замен переведена на JSON
+### 4.1. 🚨 Система замен переведена на JSON
 
 **ВНИМАНИЕ:** Файла `data/substitutions/index.js` больше НЕТ. Если вы видите его в старых коммитах — он устарел и удалён.
 
@@ -192,11 +213,32 @@ git push origin master
 3. Если `isToday === true` — идёт `fetch()` к `data.json` с обходом кэша через `?t=Date.now()`.
 4. Весь `fetch` обёрнут в `try/catch` (если файла нет — сайт не падает, просто показывает базовое расписание).
 
-### 🛠 Обновленный Конструктор (`builder.js`)
+### 4.2. ☁️ Синхронизация настроек с облаком
+
+- Все настройки (`timehub_settings`) дублируются в Telegram CloudStorage через `smartStorage.setItem`.
+- **Base64-обои НЕ синхронизируются** (вырезаются перед отправкой в облако из-за лимита 4096 символов). Синхронизируются только URL-обои.
+- При загрузке приоритет у `localStorage`. Если он пуст (Telegram Desktop чистит кэш при закрытии мини-аппа) — вызывается `restoreSettingsFromCloud()`, которая читает из облака через `smartStorage.getCloudOnly()` и применяет настройки.
+- В `main.js` есть подписка `state.on('change:settings', ...)` для мгновенного применения восстановленных настроек (тема, шрифт, обои, масштаб).
+
+### 4.3. 🛠 Обновленный Конструктор (`builder.js`)
 
 - Имеет **два режима** (переключатель в левой панели):
   - `schedule` — генерация файла группы (`.js`).
   - `substitution` — генерация замен (`.json`).
+- **Структура `state`** в `builder.js`:
+  ```javascript
+  let state = {
+      mode: 'schedule', // или 'substitution'
+      groupName: "",
+      week: "1", day: "1",
+      subDate: "2026-11-02",
+      schedule: {
+          "1": { "1": [], "2": [], "3": [], "4": [], "5": [] },
+          "2": { "1": [], "2": [], "3": [], "4": [], "5": [] }
+      }
+  };
+  ```
+  Сохраняется в `localStorage` под ключом `timehub_builder_state`.
 - **Транслитерация:** функция `transliterate()` переводит `26 АТП-2Бо` → `26ATP-2Bo` (для имени файла). Функция `formatGroupName()` переводит `26ATP-2Bo` → `26 АТП-2Бо` (для ключа внутри файла).
 - **Автоподстановка:** при выборе предмета из словаря (`DICTIONARY`), если поля «Кабинет» и «Преподаватель» пустые — они автоматически заполняются первым вариантом. Поля подсвечиваются зелёным классом `.autofilled` (анимация `fill-flash` в `builder.css`).
 - **Авто-очистка замен:** при генерации новых замен скрипт скачивает текущий `data.json`, удаляет все даты, которые меньше сегодняшней (`dateKey < todayStr`), добавляет новые и выдаёт пользователю готовый файл на скачивание.
@@ -204,8 +246,13 @@ git push origin master
   - Максимум **7 пар** в день (`nextPairNum > 7` → `alert`).
   - Проверка на дубликаты номеров пар (`isDuplicate`) — если номер занят, ищется первый свободный.
 - **Модалка:** после генерации открывается окно с двумя вкладками: «Код файла» и «Строка для manifest.json». В режиме замены кнопка меняется на «💾 Скачать data.json».
+- **Умный ввод времени (`setupTimeMask`):**
+  - Пользователь вводит только цифры.
+  - После ввода 2 цифр автоматически ставится двоеточие (`0830` → `08:30`).
+  - Как только введено 5 символов (`08:30`), фокус автоматически перескакивает на следующее поле (время окончания).
+  - Валидация: если часы > 23 или минуты > 59 — поле очищается при потере фокуса (`blur`).
 
-### 📱 QR-код и Поделиться (`ui/settings.js`)
+### 4.4. 📱 QR-код и Поделиться (`ui/settings.js`)
 
 Функция `openQRCodeModal()`:
 - **Внутри Telegram** (`window.Telegram?.WebApp?.initData`) генерирует QR-код на короткую ссылку бота: `https://t.me/timehub_portal_bot/portal`. Это нужно, чтобы код сканировался (длинная URL с параметрами Telegram делала QR слишком плотным).
@@ -214,7 +261,7 @@ git push origin master
 - Цвет QR подстраивается под тему через `ensureDarkEnough()` (затемняет слишком светлые акценты).
 - Логотип в центре QR — SVG-логотип проекта.
 
-### 🔥 Стрик (Огонек) и Шапка (`state.js` + `ui/header.js`)
+### 4.5. 🔥 Стрик (Огонек) и Шапка (`state.js` + `ui/header.js`)
 
 - **`state.js`:** `initStreak()` сравнивает `lastVisit` с текущей датой. Если разница 1 день → `count++`, иначе `count = 1`. Сохраняет в облако.
 - **`ui/header.js`:**
@@ -223,49 +270,72 @@ git push origin master
   - **Секретки:** 5 кликов по логотипу → тема `matrix`, 10 кликов → `nothing`.
 - **Z-index:** В `style.css` прописаны жёсткие `z-index`: `.app-header` (`z-index: 100`), `.header-logo` (`z-index: 101`), `.streak-dropdown` (`z-index: 9999`). Без этого огонек перекрывается панелью расписания на ПК.
 
+### 4.6. 🌤 Погода кнопками и API (`ui/settings.js` + `ui/controls.js`)
+
+- В настройках вместо `<select>` — кнопки `.theme-btn` в `.theme-grid` с `data-weather`.
+- Значения: `open-meteo` и `wttr-in`. Обработчик — `modal.querySelectorAll('.theme-btn[data-weather]')`.
+- **Загрузка погоды в `ui/controls.js`:**
+  - Если `weatherApi === 'open-meteo'`, используется API `https://api.open-meteo.com/v1/forecast?latitude=48.7&longitude=44.5&current_weather=true`.
+  - Если `weatherApi === 'wttr-in'`, используется `https://wttr.in/Volgograd?format=j1`.
+  - Совет по одежде генерируется на основе температуры (`temp > 20` → «Футболка», `temp < 0` → «Куртка» и т.д.).
+  - В `sw.js` запросы к этим API **игнорируются** (не кэшируются), чтобы всегда показывать свежие данные.
+
+### 4.7. 🧩 Скелетоны при загрузке
+
+- `ui/skeleton.js` возвращает HTML с 3 псевдо-карточками.
+- Класс `.shimmer` (в `style.css`) — анимация переливающегося градиента.
+- Вставляется в `ui/schedule.js` перед загрузкой данных.
+
 ---
 
 ## 5. Правила хранения данных (КРИТИЧЕСКИ ВАЖНО)
 
 ### 5.1. Локальные данные (только на устройстве)
-
 | Ключ | Что хранит | Синхронизация |
 |------|-----------|---------------|
-| `timehub_settings` | Тема, шрифт, группа, обои (URL, darkness, blur), textScale, liquidGlass, particles, weatherApi, course | ❌ НЕТ |
+| `timehub_settings` | Тема, шрифт, группа, обои (URL), textScale, liquidGlass, particles, weatherApi, course | ⚠️ ДА (но base64-обои не синхронизируются) |
 | `timehub_builder_state` | Состояние Конструктора (`{ mode, groupName, week, day, subDate, schedule }`) | ❌ НЕТ |
 
-**Правило:** Настройки на телефоне и ПК могут отличаться. Это фича, не баг.
+**Правило:** Настройки могут отличаться на разных устройствах (если `localStorage` не пуст). При сбросе — восстанавливаются из облака.
 
 ### 5.2. Облачные данные (Telegram CloudStorage)
-
 | Ключ | Что хранит | Синхронизация |
 |------|-----------|---------------|
 | `timehub_notes` | Текст заметок (строка) | ✅ ДА |
 | `timehub_checklist` | JSON-массив `[{ text, done }]` | ✅ ДА |
 | `timehub_streak` | `{ count: number, lastVisit: "YYYY-MM-DD" }` | ✅ ДА |
+| `timehub_settings` | Настройки (без base64-обоев) | ✅ ДА |
 
 ### 5.3. Модуль `telegram-storage.js`
-
 - Инициализация: при загрузке проверяет `window.Telegram?.WebApp`. Если есть — вызывает `tg.ready()` и `tg.expand()` (разворот на весь экран).
 - `smartStorage.getItem(key)` — сначала пытается взять из облака TG. Если пусто или ошибка — читает из `localStorage`.
 - `smartStorage.setItem(key, value)` — сначала пишет в `localStorage`, затем (если в TG) дублирует в облако.
+- `smartStorage.getCloudOnly(key)` — читает **только** из облака (без фолбэка в `localStorage`). Используется в `state.js` для восстановления настроек, если `localStorage` был очищен.
 - **Лимит Telegram CloudStorage:** 4000 символов на ключ (проверка: `value.length > 4000` → `console.warn`, сохранение только локально).
 - Все методы **асинхронные** (возвращают `Promise`). Всегда используйте `await`.
 
 ### 5.4. Ограничения синхронизации
-
-- Синхронизация заметок/чек-листа/стрика работает **только между клиентами Telegram** (Телефон, ПК, Веб).
+- Синхронизация заметок/чек-листа/стрика/настроек работает **только между клиентами Telegram** (Телефон, ПК, Веб).
 - В обычном браузере — только `localStorage` (данные не уходят на сервер).
 - При загрузке сайт сначала показывает локальные данные, а затем (если в TG) обновляет их облачными.
+- **Telegram Desktop** очищает `localStorage` при закрытии мини-аппа. Поэтому при следующем заходе настройки восстанавливаются из облака (`restoreSettingsFromCloud`).
 
 ---
 
 ## 6. Ключевые модули — подробный разбор
 
 ### 6.1. `main.js` — Точка входа
-
-- Импортирует все UI-компоненты и вызывает их функции: `createHeader()`, `createControls()`, `createTimer()`, `createSchedule()`, `createReference()`, `createNotes()`, `createFooter()`, `createRadialDayPicker()`.
-- **Фильтр ошибок:** `window.addEventListener('error', ...)` — игнорирует `Script error` (внутренние ошибки Telegram WebView).
+- Импортирует все UI-компоненты и вызывает их функции.
+- **Порядок вставки компонентов в `#app`:**
+  1. `createHeader()` — шапка
+  2. `createControls()` — неделя/группа/погода
+  3. `createTimer()` — таймер
+  4. `createSchedule()` — карточки пар
+  5. `createReference()` — справочник
+  6. `createNotes()` — заметки
+  7. `createFooter()` — подвал
+  8. `createRadialDayPicker()` — радиальное меню дней недели
+- **Фильтр ошибок:** `window.addEventListener('error', ...)` — если ошибка приходит без `filename` или содержит `Script error`, она игнорируется (это внутренние ошибки Telegram WebView). Все остальные ошибки выводятся в красном баннере сверху экрана.
 - **Telegram-фишки:**
   - `tg.BackButton.onClick()` — закрывает последнюю модалку.
   - `setInterval` каждые 500 мс — показывает/скрывает нативную кнопку «Назад» в зависимости от наличия `.modal-overlay`.
@@ -274,20 +344,20 @@ git push origin master
   - Если `bgUrl` пустой — скрывает контейнер, ставит стандартный фон.
   - Если задан — показывает `#custom-bg-container`, применяет `opacity` (затемнение) и `blur` (размытие).
   - Поддерживает видео (`.mp4`, `.webm`, `.ogg`) и картинки.
-  - Подписка: `state.on('change:settings', applyBackground)`.
+- **`applyAllSettings(newSettings)`** — применяет обои, тему (`applyTheme`), шрифт (`applyFont`), масштаб (`applyTextScale`). Вызывается при старте и при `change:settings` с защитой от рекурсии (сравнение `JSON.stringify` через `lastSettingsJson`).
 
 ### 6.2. `state.js` — Singleton
-
 - `state.get(key)` — получить значение.
 - `state.set(key, value)` — установить и оповестить подписчиков через `emit(`change:${key}`)`.
 - `state.on(event, callback)` — подписаться на событие.
 - `state.emit(event, data)` — вызвать событие.
 - `state.determineWeek()` — вычислить текущую неделю от `SEMESTER_START_DATE` (26.10.2026).
-- `state.initStreak()` — проверить и обновить стрик (см. раздел 4).
+- `state.initStreak()` — проверить и обновить стрик.
+- `state.restoreSettingsFromCloud()` — если `localStorage` пуст, читает настройки из облака через `smartStorage.getCloudOnly('timehub_settings')`, применяет их и оповещает UI через `emit('change:settings')`.
 - **ВНИМАНИЕ:** Метода `state.getNow()` НЕТ. Используйте обычный `new Date()`.
+- **В `set('settings', ...)`:** в `localStorage` пишутся полные настройки, в облако — копия без base64-обоев (проверка: `if (cloudSettings.bgUrl && cloudSettings.bgUrl.startsWith('data:')) delete cloudSettings.bgUrl;`).
 
 ### 6.3. `config.js` — Константы
-
 ```javascript
 export const CONFIG = {
     APP_NAME: "TimeHub-Portal",
@@ -306,18 +376,15 @@ export const CONFIG = {
     }
 };
 ```
-
 `VERSION` выводится в самом низу модалки настроек (`TimeHub-Portal • v1.1.0`).
 
 ### 6.4. `themes.js` — Применение тем/шрифтов/масштаба
-
 - `applyTheme(name)` — сбрасывает классы `body`, добавляет `theme-{name}`, вызывает `applyFont(currentFont)`, сохраняет в `state.set('settings', ...)`.
 - `applyFont(name)` — удаляет все классы шрифтов, добавляет `font-{name}`. Доступные: `minecraft`, `tsap`, `inter`, `roboto`, `rubik`, `play`, `montserrat`.
 - `applyTextScale(scale)` — ставит CSS-переменную `--text-scale` на `document.documentElement`.
 - `initThemes()` — применяет всё при старте из сохранённых настроек.
 
 ### 6.5. `data-manager.js` — Склейка данных
-
 Главная функция: `getLessonsForDay(week, day, group)`.
 
 **Алгоритм:**
@@ -332,7 +399,6 @@ export const CONFIG = {
 **Возвращает `null`, если группы нет в `ALL_SCHEDULES`.**
 
 ### 6.6. `data/schedule/index.js` — Агрегатор
-
 ```javascript
 let ALL_SCHEDULES = {};
 const response = await fetch(new URL('./manifest.json', import.meta.url));
@@ -346,42 +412,36 @@ modules.forEach(mod => {
 });
 export { ALL_SCHEDULES };
 ```
-
 **Как работает:** читает `manifest.json`, для каждого файла делает динамический `import()`, объединяет все `SCHEDULE_*` объекты в один `ALL_SCHEDULES`.
 
 ### 6.7. `ui/skeleton.js` — Скелетоны загрузки
-
 - `renderScheduleSkeleton()` — возвращает HTML с 3 псевдо-карточками.
 - Класс `.shimmer` (в `style.css`) — анимация переливающегося градиента.
 - Вызывается в `ui/schedule.js` перед загрузкой данных: `container.innerHTML = renderScheduleSkeleton()`.
 
 ### 6.8. `ui/notes.js` — Заметки и чек-лист
-
 - **HTML:** `.notes-grid` (2 колонки на ПК, 1 на телефоне через media query).
 - **Чек-лист:** массив `tasks`, рендерится в `.checklist`. При изменении — `saveTasks()` (через `smartStorage`).
 - **Текст заметок:** `textarea` с debounce-сохранением (500 мс). Статус «Сохранение...» → «Сохранено!».
 - **Флаг `isLoaded`:** блокирует сохранение, пока данные не загрузились из облака (иначе пустой массив перезапишет облако).
 - **XSS-защита:** регулярка `replace(/[^a-zA-Zа-яА-Я0-9\s.,!?\-]/g, '')`.
+- **Стили:** чек-лист тянется по высоте вместе с текстовым полем (нет внутреннего скроллбара, `max-height` и `overflow-y` убраны в `style.css`).
 
 ### 6.9. `ui/settings.js` — Настройки
-
-- Модалка со всеми настройками: темы, шрифты, размер текста, обои (URL или файл), эффекты, погода, PWA-установка, QR-код, связь с автором.
+- Модалка со всеми настройками: темы, шрифты, размер текста, обои (URL или файл), эффекты, погода (кнопки, не select), PWA-установка, QR-код, связь с автором, версия.
 - **QR-код:** `openQRCodeModal()` — генерирует QR через `qr-code-styling@1.5.0` (динамический импорт с `esm.sh`). Внутри TG — короткая ссылка на бота, в браузере — на GitHub Pages.
 - **Плашка версии:** в самом низу модалки (`v${CONFIG.VERSION}`).
 - **Обработчики:** все клики по кнопкам сохраняют настройки через `state.set('settings', ...)`.
 
 ### 6.10. `ui/header.js` — Шапка и стрик
-
 - Логотип, дата, шестерёнка.
 - **Стрик:** клик по логотипу открывает `#streak-dropdown`. Цвет огонька зависит от `count`.
 - **Секретки:** 5 кликов → `matrix`, 10 кликов → `nothing`.
 
 ### 6.11. `builder.js` — Конструктор
-
-Подробно описан в разделе 4.2.
+Подробно описан в разделе 4.3.
 
 ### 6.12. `pwa.js` — Service Worker и установка
-
 - `initPWA()`:
   - Слушает `beforeinstallprompt` → сохраняет `deferredPrompt`, меняет текст кнопки установки.
   - Слушает `appinstalled` → меняет текст на «✅ Приложение установлено».
@@ -392,7 +452,6 @@ export { ALL_SCHEDULES };
 - `promptInstall()` — вызывает `deferredPrompt.prompt()`. Если `deferredPrompt === null` — показывает `alert` с инструкцией по ручной установке.
 
 ### 6.13. `sw.js` — Service Worker
-
 - Стратегия: **Network First** (сначала сеть, потом кэш).
 - **`install`:** вызывает `skipWaiting()`, кэширует `ASSETS` (основные файлы).
 - **`activate`:** удаляет старые кэши (`cacheName !== CACHE_NAME`), вызывает `clients.claim()`.
@@ -405,7 +464,6 @@ export { ALL_SCHEDULES };
 ## 7. Форматы данных
 
 ### 7.1. `data/bells.js`
-
 ```javascript
 export const BELLS = {
     course1: [
@@ -421,14 +479,11 @@ export const BELLS = {
     ]
 };
 ```
-
-- `course1` — для групп на **26**.
-- `course2plus` — для **25/24/23**.
+- `course1` — для групп на **26**. `course2plus` — для **25/24/23**.
 - Время в формате `"HH:MM"`.
 - Пара = 95 минут (45 + 5 + 45).
 
 ### 7.2. `data/schedule/[группа].js`
-
 ```javascript
 export const SCHEDULE_26ATP_2Bo = {
     "26 АТП-2Бо": {
@@ -449,22 +504,18 @@ export const SCHEDULE_26ATP_2Bo = {
     }
 };
 ```
-
 - Ключ — название группы (может быть с пробелами/кириллицей).
 - `week1` / `week2` — дни от 1 (Пн) до 5 (Пт).
 - `customTimes`: `[week, day, pair, start, end]`.
 
 ### 7.3. `data/schedule/manifest.json`
-
 ```json
 { "files": ["26ATP-1Bo.js", "26ATP-2Bo.js", "26ATP-3Bo.js"] }
 ```
-
 - Без файла в манифесте расписание не загрузится.
 - При добавлении группы — добавить её файл в массив `files`.
 
 ### 7.4. `data/substitutions/data.json`
-
 ```json
 {
   "2026-11-02": {
@@ -474,13 +525,11 @@ export const SCHEDULE_26ATP_2Bo = {
   }
 }
 ```
-
 - Формат даты: `YYYY-MM-DD`.
 - Если `subject === ""` — пара удаляется.
 - Замены применяются только на сегодня (см. `data-manager.js`).
 
 ### 7.5. `data/dictionary.js`
-
 ```javascript
 export const DICTIONARY = {
     "Математика": {
@@ -501,7 +550,6 @@ export const ALL_TEACHERS = [...new Set(Object.values(DICTIONARY).flatMap(d => d
 export const ALL_ROOMS = [...new Set(Object.values(DICTIONARY).flatMap(d => d.rooms))].sort();
 export const ALL_SUBJECTS = Object.keys(DICTIONARY).sort();
 ```
-
 - Подгруппы через ` / `.
 - Пустые массивы (например, у `кл.час`) — чтобы автоподстановка не заполняла поля.
 
@@ -509,7 +557,7 @@ export const ALL_SUBJECTS = Object.keys(DICTIONARY).sort();
 
 ## 8. Логика расчётов
 
-### Вычисление недели
+### 8.1. Вычисление недели
 ```javascript
 determineWeek() {
     const now = new Date();
@@ -519,17 +567,16 @@ determineWeek() {
     return (Math.floor(diffDays / 7) % 2) + 1;
 }
 ```
-
 - 28 октября 2026 → 1-я неделя.
 - 02 ноября 2026 → 2-я неделя.
 
-### Определение курса
+### 8.2. Определение курса
 ```javascript
 const isSecondYear = group.startsWith('25');
 const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 ```
 
-### Таймер
+### 8.3. Таймер
 - Пара = 95 минут (45 минут первая полупара + 5 минут перемена + 45 минут вторая полупара).
 - Если фактическая длительность ≤ 45 минут — таймер не ищет перемену внутри.
 - Прогресс-бар показывает оставшееся время до конца текущего отрезка.
@@ -553,44 +600,50 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 1. В `themes.css` — `body.theme-mytheme { ... }` со всеми переменными.
 2. В `ui/settings.js` — добавить `{ id: 'mytheme', name: 'Моя тема' }` в массив `THEMES`.
 
+**Масштабирование текста:** в конце `style.css` все размеры обёрнуты в `calc(16px * var(--text-scale))`. Значение `--text-scale` задаётся через `applyTextScale()`.
+
 ---
 
 ## 10. Рецепты частых задач
 
-### Добавить группу
+### 10.1. Добавить группу
 1. Сгенерировать файл в Билдере (режим «Расписание»).
 2. Положить в `data/schedule/`.
 3. Добавить имя файла в `data/schedule/manifest.json`.
 4. `git push`.
 
-### Добавить замену
+### 10.2. Добавить замену
 1. В Билдере выбрать режим «Замены».
 2. Выбрать дату, добавить только изменённые пары.
 3. Нажать «Скачать data.json».
 4. Заменить старый файл `data/substitutions/data.json` новым.
 5. `git push`.
 
-### Изменить звонки
+### 10.3. Изменить звонки
 1. Открыть `data/bells.js`.
 2. Отредактировать `course1` / `course2plus`.
 
-### Добавить преподавателя/кабинет
+### 10.4. Добавить преподавателя/кабинет
 1. Открыть `data/dictionary.js`.
 2. Добавить в массив `teachers` или `rooms`.
 
-### Сменить дату старта семестра
+### 10.5. Сменить дату старта семестра
 1. Открыть `config.js`.
 2. Изменить `SEMESTER_START_DATE`.
 
-### Добавить тему
+### 10.6. Добавить тему
 1. В `themes.css` — `body.theme-mytheme { ... }`.
 2. В `ui/settings.js` — в массив `THEMES`.
 
-### Добавить шрифт
+### 10.7. Добавить шрифт
 1. Закинуть `.woff2` и `.ttf` в `assets/fonts/`.
 2. В `index.html` — Google Fonts (или `@font-face` в `style.css`).
 3. В `themes.js` — обработка в `applyFont()`.
 4. В `ui/settings.js` — кнопка с `data-font`.
+
+### 10.8. Изменить версию
+1. Открыть `config.js`.
+2. Поменять `VERSION: "1.1.0"` на новую.
 
 ---
 
@@ -604,14 +657,18 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 - Цвета — через CSS-переменные.
 - Асинхронные операции с облаком — через `await`.
 - Перед коммитом убедиться, что `CACHE_NAME` обновится (хук сделает это сам).
+- Всегда сохранять пользовательские данные через `smartStorage`, а не напрямую в `localStorage` (если это данные, которые должны синхронизироваться).
 
 ### ❌ Не делать
 - Не использовать фреймворки (React/Vue) и сборщики.
 - Не использовать `innerHTML` для пользовательских данных (только `textContent`).
 - **Не создавать файл `data/substitutions/index.js`**. Только `data.json`.
+- **Не реализовывать Deep Links** (`t.me/bot/portal?startapp=monday`). Мы обсуждали это, но решили отказаться. Мини-апп всегда открывается на текущем дне.
 - Не удалять `z-index` у шапки и меню стрика (иначе огонек будет перекрыт).
 - Не хардкодить цвета.
 - Не писать код «вслепую» без актуальных файлов.
+- Не сокращать важные комментарии в коде.
+- Не использовать `state.getNow()` — его нет.
 
 ---
 
@@ -620,14 +677,16 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 | Симптом | Причина | Решение |
 |---------|---------|---------|
 | Старая версия сайта | Не обновлён `CACHE_NAME` | Git-хук делает это автоматически |
-| Настройки не синхронизируются | Так и должно быть | Фича, не баг |
+| Тема сбрасывается на ПК при перезаходе в TG Desktop | CEF очищает `localStorage` при закрытии | Настройки дублируются в облако (`restoreSettingsFromCloud`) |
+| Base64-обои не синхронизируются | Лимит Telegram CloudStorage (4096) | Синхронизируются только URL-обои |
+| Погода выглядит некрасиво | Стандартный `<select>` не стилизуется | Заменён на кнопки `.theme-btn[data-weather]` |
 | Таймер вылезает за экран | `transform: scale()` | Использовать `clamp()` и `vw` |
 | Ошибка `Script error` в TG | Внутренняя ошибка WebView | Игнорируется в `main.js` |
 | Стрик не растёт | `lastVisit` не совпадает | Проверить `initStreak()` |
 | Замены не отображаются | Ошибка в `data.json` | Проверить валидность JSON и дату `YYYY-MM-DD` |
 | Замены показываются на все дни | Ошибка в `data-manager.js` | Проверить проверку `isToday` |
-| Чек-лист на ПК с полосой прокрутки | `max-height` и `overflow-y` в CSS | Убрать, чтобы тянулся вместе с заметками |
-| QR-код не сканируется в TG | Длинная ссылка с параметрами | Использовать короткую ссылку `https://t.me/timehub_portal_bot/portal` |
+| Чек-лист с полосой прокрутки на ПК | `max-height` и `overflow-y` в CSS | Убрать, чтобы тянулся вместе с заметками |
+| QR-код не сканируется в TG | Длинная ссылка с параметрами | Короткая ссылка `https://t.me/timehub_portal_bot/portal` |
 | Огонек перекрывается панелью | Нет `z-index` у шапки | Проверить `z-index: 100` у `.app-header` |
 | `state.getNow is not a function` | Метода нет в `state.js` | Использовать `new Date()` |
 
@@ -635,18 +694,31 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 
 ## 13. Устаревшие и зарезервированные файлы
 
-- `data/teachers.js` — возможно, устарел (база преподавателей теперь в `dictionary.js`).
+- `data/teachers.js` — устарел (база преподавателей теперь в `dictionary.js`).
 - `data/groups.js` — устарел (группы берутся из расписаний).
 - `assets/js/storage.js` — устарел, оставлен для совместимости.
 - `assets/js/router.js` — зарезервирован (SPA-роутер не реализован).
 - `assets/js/debug.js` — отладочный режим (см. код).
+- `assets/js/ui/weather.js` — возможно, устарел (погода внутри `controls.js`).
+- Класс `.settings-select` в `style.css` — больше не используется (был для `<select>`, теперь кнопки).
 
 ---
 
 ## 14. Служебные файлы
 
 - **`.nojekyll`** — отключает Jekyll на GitHub Pages (иначе папки с `_` игнорируются).
-- **`manifest.json`** — PWA-манифест (иконки, цвета, название, display: standalone).
+- **`manifest.json`** — PWA-манифест:
+  ```json
+  {
+    "name": "TimeHub Portal",
+    "short_name": "TimeHub",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#14161a",
+    "theme_color": "#14161a",
+    "icons": [ { "src": "data:image/svg+xml,...", "sizes": "512x512", "type": "image/svg+xml" } ]
+  }
+  ```
 - **`screenshots/`** — скриншоты для README.
 - **`.git/hooks/pre-commit`** — Git-хук, обновляет `CACHE_NAME` в `sw.js` перед каждым коммитом.
 
@@ -660,10 +732,27 @@ const bells = isSecondYear ? BELLS.course2plus : BELLS.course1;
 - **Нативная кнопка «Назад»:** `tg.BackButton` — закрывает модалки. Управляется из `main.js`.
 - **Защита от закрытия:** `tg.enableClosingConfirmation()` — при фокусе в `INPUT`/`TEXTAREA`.
 - **Кнопка меню:** настраивается в BotFather (`/setmenubutton`), открывает `https://si2hay.github.io/TimeHub-Portal/`.
+- **Короткая ссылка для шаринга:** `https://t.me/timehub_portal_bot/portal` — используется в QR-коде внутри Telegram.
 
 ---
 
-## 16. Контакты
+## 16. Git-хук (авто-обновление CACHE_NAME)
+
+В проекте настроен `.git/hooks/pre-commit`:
+```bash
+#!/bin/sh
+VERSION=$(date +%s)
+sed -i "s/CACHE_NAME = '[^']*'/CACHE_NAME = 'timehub-v${VERSION}'/" sw.js
+git add sw.js
+```
+- Перед каждым коммитом меняет `CACHE_NAME` в `sw.js` на текущий Unix-timestamp.
+- Добавляет `sw.js` в коммит, чтобы изменение попало в историю.
+- Пользователю не нужно менять версию вручную.
+- Если хук не срабатывает — проверить `chmod +x .git/hooks/pre-commit`.
+
+---
+
+## 17. Контакты
 
 - **Telegram-группа:** `https://t.me/+sq9RDqa2I2A3M2Iy`
 - **Почта:** `gemg944@gmail.com`

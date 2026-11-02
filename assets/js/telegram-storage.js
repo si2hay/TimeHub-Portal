@@ -1,12 +1,8 @@
 // assets/js/telegram-storage.js
 
-// Безопасно получаем объект Telegram
 const tg = window.Telegram?.WebApp;
-
-// Проверяем поддержку облака
 const isCloudSupported = !!(tg && tg.initData && tg.CloudStorage);
 
-// Если мы в Telegram — сообщаем ему, что мы готовы, и разворачиваем на весь экран
 if (isCloudSupported) {
     try {
         tg.ready();
@@ -31,11 +27,12 @@ const tgRemoveItem = (key) => new Promise((resolve) => {
 
 export const smartStorage = {
     async setItem(key, value) {
+        // 1. Всегда пишем в localStorage для мгновенной загрузки
         localStorage.setItem(key, value);
 
+        // 2. Дублируем в облако Telegram (если мы в ТГ)
         if (isCloudSupported) {
             try {
-                // Лимит Telegram CloudStorage - 4096 символов на ключ
                 if (value.length > 4000) {
                     console.warn(`[TelegramStorage] ⚠️ Данные "${key}" слишком большие для облака. Сохранено только локально.`);
                 } else {
@@ -49,19 +46,35 @@ export const smartStorage = {
     },
 
     async getItem(key) {
+        // 1. Сначала пробуем облако (приоритет облака)
         if (isCloudSupported) {
             try {
                 const cloudValue = await tgGetItem(key);
                 if (cloudValue !== null && cloudValue !== '') {
                     console.log(`[TelegramStorage] 📥 Загружено из облака TG: ${key}`);
-                    localStorage.setItem(key, cloudValue);
+                    localStorage.setItem(key, cloudValue); // Синхронизируем локально
                     return cloudValue;
                 }
             } catch (e) {
                 console.warn('[TelegramStorage] Ошибка чтения из облака:', e);
             }
         }
+        // 2. Если облако пусто или мы не в ТГ — берем локально
         return localStorage.getItem(key);
+    },
+
+    // Специальный метод: читает ТОЛЬКО из облака (без фолбэка в localStorage)
+    // Нужен для восстановления настроек, если localStorage был очищен
+    async getCloudOnly(key) {
+        if (isCloudSupported) {
+            try {
+                const cloudValue = await tgGetItem(key);
+                return cloudValue || null;
+            } catch (e) {
+                console.warn('[TelegramStorage] Ошибка чтения из облака:', e);
+            }
+        }
+        return null;
     },
 
     async removeItem(key) {

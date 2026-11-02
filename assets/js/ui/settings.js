@@ -108,12 +108,13 @@ export function openSettings() {
                 </div>
             </div>
 
+            <!-- НОВЫЙ БЛОК: ПОГОДА (КНОПКИ ВМЕСТО SELECT) -->
             <div class="settings-group">
                 <h3>Погода (API)</h3>
-                <select id="select-weather" class="settings-select">
-                    <option value="open-meteo" ${settings.weatherApi === 'open-meteo' ? 'selected' : ''}>Open-Meteo</option>
-                    <option value="wttr-in" ${settings.weatherApi === 'wttr-in' ? 'selected' : ''}>wttr.in</option>
-                </select>
+                <div class="theme-grid">
+                    <button class="theme-btn ${settings.weatherApi === 'open-meteo' ? 'active' : ''}" data-weather="open-meteo">Open-Meteo</button>
+                    <button class="theme-btn ${settings.weatherApi === 'wttr-in' ? 'active' : ''}" data-weather="wttr-in">wttr.in</button>
+                </div>
             </div>
 
             <div class="settings-group">
@@ -269,10 +270,15 @@ export function openSettings() {
         });
     });
 
-    // Погода
-    modal.querySelector('#select-weather').addEventListener('change', (e) => {
-        const newSettings = { ...state.get('settings'), weatherApi: e.target.value };
-        state.set('settings', newSettings);
+    // ПОГОДА (КНОПКИ)
+    modal.querySelectorAll('.theme-btn[data-weather]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const weather = e.target.dataset.weather;
+            modal.querySelectorAll('.theme-btn[data-weather]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            const newSettings = { ...state.get('settings'), weatherApi: weather };
+            state.set('settings', newSettings);
+        });
     });
 
     // Тумблеры

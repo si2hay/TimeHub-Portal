@@ -2,7 +2,7 @@
 
 import { state } from './state.js';
 import { CONFIG } from './config.js';
-import { initThemes, applyTextScale } from './themes.js'; // <-- ДОБАВИЛИ ИМПОРТ
+import { initThemes, applyTextScale, applyTheme, applyFont } from './themes.js'; 
 import { initParticles } from './particles.js';
 import { initPWA } from './pwa.js';
 import { createHeader } from './ui/header.js';
@@ -96,12 +96,21 @@ function applyBackground() {
     }
 }
 
+// ФУНКЦИЯ ДЛЯ ПРИМЕНЕНИЯ ВСЕХ НАСТРОЕК
+// (Вызывается при старте и при синхронизации из облака)
+function applyAllSettings(newSettings) {
+    applyBackground();
+    if (newSettings.theme) applyTheme(newSettings.theme);
+    if (newSettings.font) applyFont(newSettings.font);
+    if (newSettings.textScale) applyTextScale(newSettings.textScale);
+}
+
 const appDiv = document.getElementById('app');
 if (appDiv) {
     appDiv.innerHTML = ''; 
     
-    initThemes(); // Тема загрузится из локального хранилища
-    initParticles(); // Частицы тоже
+    initThemes(); 
+    initParticles(); 
     initPWA(); 
     
     appDiv.appendChild(createHeader());
@@ -114,14 +123,19 @@ if (appDiv) {
     appDiv.appendChild(createRadialDayPicker());
 }
 
-// Слушаем изменения настроек
-state.on('change:settings', (newSettings) => {
-    applyBackground();
-    if (newSettings.textScale) {
-        applyTextScale(newSettings.textScale);
-    }
-});
+// Применяем настройки при старте
+applyAllSettings(state.get('settings'));
 
-applyBackground(); 
+// Слушаем изменения настроек (включая синхронизацию из облака)
+let lastSettingsJson = JSON.stringify(state.get('settings'));
+
+state.on('change:settings', (newSettings) => {
+    // Защита от рекурсии (чтобы не вызывать applyTheme бесконечно)
+    const newJson = JSON.stringify(newSettings);
+    if (newJson === lastSettingsJson) return; 
+    lastSettingsJson = newJson;
+    
+    applyAllSettings(newSettings);
+});
 
 export {};
