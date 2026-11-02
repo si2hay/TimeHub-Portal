@@ -356,3 +356,32 @@ body {
     box-shadow: 0 0 8px var(--accent-color);
     background: rgba(255, 255, 255, 0.1);
 }
+/* Анимация автоподстановки */
+.builder-input {
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.builder-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 8px rgba(0, 98, 177, 0.3);
+}
+
+.builder-input.autofilled {
+    border-color: #10b981;
+    background-color: rgba(16, 185, 129, 0.1);
+    animation: fill-flash 1s ease-out forwards;
+}
+
+@keyframes fill-flash {
+    0% { background-color: rgba(16, 185, 129, 0.4); border-color: #10b981; }
+    100% { background-color: rgba(0, 0, 0, 0.2); border-color: var(--border-color); }
+}
+
+/* Красивые подсказки (Datalist) - работает только в некоторых браузерах, но все равно добавим */
+datalist {
+    background-color: var(--surface-color);
+    color: var(--text-main);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}

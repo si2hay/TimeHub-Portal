@@ -1,5 +1,5 @@
 // sw.js: Умный Service Worker (Network First)
-const CACHE_NAME = 'timehub-v1793584465'; // Это значение теперь обновляется автоматически Git-хуком
+const CACHE_NAME = 'timehub-v1793586080'; // Это значение теперь обновляется автоматически Git-хуком
 const ASSETS = [
     './',
     './index.html',

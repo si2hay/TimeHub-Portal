@@ -1,7 +1,6 @@
 // assets/js/builder.js: Логика Конструктора расписания и замен
 
 import { ALL_TEACHERS, ALL_ROOMS, ALL_SUBJECTS, DICTIONARY } from '../../data/dictionary.js';
-import { BELLS } from '../../data/bells.js';
 import { CONFIG } from './config.js';
 
 let state = {
@@ -47,13 +46,22 @@ function transliterate(word) {
     return word.split('').map(char => map[char] || char).join('');
 }
 
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ ФОРМАТИРОВАНИЯ (убирает лишние пробелы)
 function formatGroupName(rawName) {
     let name = rawName.trim();
-    if (/[а-яА-Я]/.test(name)) {
-        return name.replace(/(\d+)([А-Яа-я])/g, '$1 $2');
+    
+    // Обратная транслитерация для латиницы
+    if (!/[а-яА-Я]/.test(name)) {
+        name = name.replace(/ATP/gi, 'АТП').replace(/AT/gi, 'АТ').replace(/Bo/gi, 'Бо').replace(/Ba/gi, 'Ба').replace(/Bu/gi, 'Бу').replace(/PNG/gi, 'ПНГ').replace(/EBS/gi, 'ЭБС').replace(/IST/gi, 'ИСТ').replace(/M/gi, 'М').replace(/T/gi, 'Т').replace(/P/gi, 'П').replace(/H/gi, 'Х');
     }
-    name = name.replace(/ATP/gi, 'АТП').replace(/AT/gi, 'АТ').replace(/Bo/gi, 'Бо').replace(/Ba/gi, 'Ба').replace(/Bu/gi, 'Бу').replace(/PNG/gi, 'ПНГ').replace(/EBS/gi, 'ЭБС').replace(/IST/gi, 'ИСТ').replace(/M/gi, 'М').replace(/T/gi, 'Т').replace(/P/gi, 'П').replace(/H/gi, 'Х');
-    return name.replace(/(\d+)([А-Яа-я])/g, '$1 $2');
+
+    // Убираем ВСЕ пробелы для нормализации (26 АТП-2 Бо -> 26АТП-2Бо)
+    name = name.replace(/\s+/g, '');
+    
+    // Вставляем ОДИН пробел после первых цифр (26АТП-2Бо -> 26 АТП-2Бо)
+    name = name.replace(/^(\d+)([А-Яа-я])/g, '$1 $2');
+    
+    return name;
 }
 
 function setupTimeMask(input, nextInput = null) {
@@ -74,6 +82,12 @@ function setupTimeMask(input, nextInput = null) {
             if (parseInt(h) > 23 || parseInt(m) > 59) e.target.value = '';
         } else if (val.length > 0 && val.length < 5) e.target.value = '';
     });
+}
+
+// Вспомогательная функция для подсветки автоподстановки
+function flashAutofill(input) {
+    input.classList.add('autofilled');
+    setTimeout(() => input.classList.remove('autofilled'), 1000);
 }
 
 groupInput.value = state.groupName;
@@ -242,17 +256,24 @@ function renderLessons() {
             lesson.subject = sanitizeInput(e.target.value); saveState();
         });
         
+        // ЛОГИКА АВТОПОДСТАНОВКИ
         subjectField.input.addEventListener('change', (e) => {
             const val = e.target.value;
             lesson.subject = val;
+            
             if (DICTIONARY[val]) {
-                if (!roomField.input.value) {
-                    roomField.input.value = DICTIONARY[val].rooms[0] || '';
+                let filled = false;
+                if (!roomField.input.value && DICTIONARY[val].rooms.length > 0) {
+                    roomField.input.value = DICTIONARY[val].rooms[0];
                     lesson.room = roomField.input.value;
+                    flashAutofill(roomField.input); // Зеленая подсветка
+                    filled = true;
                 }
-                if (!teacherField.input.value) {
-                    teacherField.input.value = DICTIONARY[val].teachers[0] || '';
+                if (!teacherField.input.value && DICTIONARY[val].teachers.length > 0) {
+                    teacherField.input.value = DICTIONARY[val].teachers[0];
                     lesson.teacher = teacherField.input.value;
+                    flashAutofill(teacherField.input); // Зеленая подсветка
+                    filled = true;
                 }
             }
             saveState();
@@ -262,6 +283,7 @@ function renderLessons() {
             lesson.room = sanitizeInput(e.target.value); saveState();
         });
 
+        // Исправил плейсхолдер на Ушакова Е.П.
         const teacherField = createField('ПРЕПОДАВАТЕЛЬ', 'Ушакова Е.П. / Процок М.П.', lesson.teacher, 'list-teachers', (e) => {
             lesson.teacher = sanitizeInput(e.target.value); saveState();
         });
@@ -354,6 +376,8 @@ async function generateCode() {
         return;
     }
 
+    const hintText = document.querySelector('#content-file p');
+
     if (state.mode === 'schedule') {
         let code = `// data/schedule/${fileBaseName}.js: Расписание для группы ${displayGroupName}\n\n`;
         code += `export const SCHEDULE_${varName} = {\n`;
@@ -390,6 +414,7 @@ async function generateCode() {
         codeOutput.value = code;
         manifestOutput.value = `"${fileBaseName}.js"`;
         filenameHint.textContent = `${fileBaseName}.js`;
+        hintText.innerHTML = `Скопируй это и вставь в файл <b>${fileBaseName}.js</b> в папке <code>data/schedule/</code>`;
         
     } else {
         // ГЕНЕРАЦИЯ ЗАМЕН С АВТО-ОЧИСТКОЙ
@@ -431,8 +456,9 @@ async function generateCode() {
             Object.assign(allSubs[state.subDate][displayGroupName], newSubs);
 
             codeOutput.value = JSON.stringify(allSubs, null, 2);
-            manifestOutput.value = "// Для замен этот файл скачивается целиком";
+            manifestOutput.value = "// Для замен manifest.json менять не нужно";
             filenameHint.textContent = "data/substitutions/data.json";
+            hintText.innerHTML = `Скачай этот файл и положи его в папку <code>data/substitutions/</code>, заменив старый <code>data.json</code>`;
             
         } catch (e) {
             console.error("Не удалось скачать старые замены", e);
@@ -502,7 +528,6 @@ document.getElementById('btn-close-modal').addEventListener('click', () => modal
 // Обработчик кнопки в модалке (копирование или скачивание)
 btnCopyJs.addEventListener('click', async () => {
     if (state.mode === 'substitution') {
-        // Скачиваем файл
         const blob = new Blob([codeOutput.value], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -518,7 +543,6 @@ btnCopyJs.addEventListener('click', async () => {
             btnCopyJs.style.background = '';
         }, 3000);
     } else {
-        // Копируем код
         try {
             await navigator.clipboard.writeText(codeOutput.value);
             btnCopyJs.innerHTML = '✅ Скопировано!';
