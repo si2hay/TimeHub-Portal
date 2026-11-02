@@ -1,4 +1,3 @@
-```markdown
 <div align="center">
 
 # 📚 TimeHub-Portal
@@ -102,4 +101,3 @@
 <div align="center">
   <i>Сделано с ❤️ для студентов</i>
 </div>
-```
