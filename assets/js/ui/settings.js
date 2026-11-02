@@ -108,7 +108,7 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- НОВЫЙ БЛОК: ПОГОДА (КНОПКИ ВМЕСТО SELECT) -->
+            <!-- БЛОК: ПОГОДА (КНОПКИ) -->
             <div class="settings-group">
                 <h3>Погода (API)</h3>
                 <div class="theme-grid">
@@ -260,12 +260,17 @@ export function openSettings() {
         });
     });
 
-    // Темы
+    // Темы (ВАЖНО: сохраняем в state.set, чтобы улетело в облако)
     modal.querySelectorAll('.theme-btn[data-theme]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const theme = e.target.dataset.theme;
             modal.querySelectorAll('.theme-btn[data-theme]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
+            
+            // Сохраняем новую тему в state и в облако (через state.set)
+            const newSettings = { ...state.get('settings'), theme: theme };
+            state.set('settings', newSettings);
+            
             applyTheme(theme);
         });
     });
@@ -349,7 +354,7 @@ async function openQRCodeModal() {
     const qrModal = document.createElement('div');
     qrModal.className = 'modal-overlay';
     
-    // ИСПРАВЛЕНИЕ: Умная генерация ссылки (короткая в ТГ, обычная в браузере)
+    // Умная генерация ссылки (короткая в ТГ, обычная в браузере)
     let currentUrl;
     if (window.Telegram?.WebApp?.initData) {
         currentUrl = 'https://t.me/timehub_portal_bot/portal';

@@ -25,27 +25,32 @@ class State {
         // Запускаем асинхронную проверку стрика в облаке
         this.initStreak();
 
-        // Если localStorage пуст (например, Telegram Desktop почистил кэш) — восстанавливаем из облака
-        if (Object.keys(savedSettings).length === 0) {
-            this.restoreSettingsFromCloud();
-        }
+        // ВСЕГДА запускаем проверку облака (асинхронно, в фоне).
+        // Применит облачные настройки, только если они новее локальных (сравнение по _updatedAt).
+        this.restoreSettingsFromCloud();
     }
 
     async restoreSettingsFromCloud() {
         try {
-            // Читаем ТОЛЬКО из облака
+            // Читаем ТОЛЬКО из облака (без фолбэка в localStorage)
             const cloudSettingsStr = await smartStorage.getCloudOnly('timehub_settings');
             if (!cloudSettingsStr) return;
 
             const cloudSettings = JSON.parse(cloudSettingsStr);
             
-            // Объединяем с дефолтными и сохраняем локально
-            this.data.settings = { ...CONFIG.DEFAULT_SETTINGS, ...cloudSettings };
-            localStorage.setItem('timehub_settings', JSON.stringify(this.data.settings));
+            // Сравниваем timestamp'ы (время последнего изменения)
+            const cloudUpdatedAt = cloudSettings._updatedAt || 0;
+            const localUpdatedAt = this.data.settings._updatedAt || 0;
             
-            // Оповещаем UI: применить тему, шрифт, обои
-            this.emit('change:settings', this.data.settings);
-            console.log('[State] ✅ Настройки восстановлены из облака');
+            // Применяем облачные, только если они новее локальных
+            if (cloudUpdatedAt > localUpdatedAt) {
+                this.data.settings = { ...CONFIG.DEFAULT_SETTINGS, ...cloudSettings };
+                localStorage.setItem('timehub_settings', JSON.stringify(this.data.settings));
+                this.emit('change:settings', this.data.settings);
+                console.log('[State] ✅ Настройки обновлены из облака (новее локальных)');
+            } else {
+                console.log('[State] Локальные настройки новее или равны облачным');
+            }
         } catch (e) {
             console.warn('[State] Не удалось восстановить настройки из облака:', e);
         }
@@ -103,22 +108,27 @@ class State {
     }
 
     set(key, value) {
-        this.data[key] = value;
-        this.emit(`change:${key}`, value);
-        
+        // Специальная обработка для настроек: добавляем _updatedAt и дублируем в облако
         if (key === 'settings') {
-            const fullStr = JSON.stringify(value);
+            const settingsWithTimestamp = { ...value, _updatedAt: Date.now() };
+            this.data[key] = settingsWithTimestamp;
+            this.emit(`change:${key}`, settingsWithTimestamp);
             
-            // 1. Всегда пишем полные настройки в localStorage (с обоями)
-            localStorage.setItem('timehub_settings', fullStr);
+            // 1. Всегда пишем полные настройки в localStorage
+            localStorage.setItem('timehub_settings', JSON.stringify(settingsWithTimestamp));
             
-            // 2. Отправляем в облако, но без base64-обоев (чтобы не превысить лимит 4096 символов)
-            const cloudSettings = { ...value };
+            // 2. В облако — без base64-обоев (не влезут в лимит 4096)
+            const cloudSettings = { ...settingsWithTimestamp };
             if (cloudSettings.bgUrl && cloudSettings.bgUrl.startsWith('data:')) {
-                delete cloudSettings.bgUrl; // Вырезаем тяжелую картинку
+                delete cloudSettings.bgUrl;
             }
             smartStorage.setItem('timehub_settings', JSON.stringify(cloudSettings));
+            return;
         }
+        
+        // Для остальных ключей — обычное поведение
+        this.data[key] = value;
+        this.emit(`change:${key}`, value);
     }
 
     on(event, callback) {
