@@ -5,7 +5,7 @@ import { applyTheme, applyFont, applyTextScale } from '../themes.js';
 import { toggleParticles } from '../particles.js';
 import { openFullSchedule } from './full-schedule.js';
 import { promptInstall } from '../pwa.js';
-import { CONFIG } from '../config.js'; // <-- ИМПОРТ КОНФИГА
+import { CONFIG } from '../config.js'; 
 
 export function openSettings() {
     if (document.getElementById('settings-modal')) return;
@@ -343,7 +343,13 @@ async function openQRCodeModal() {
     const qrModal = document.createElement('div');
     qrModal.className = 'modal-overlay';
     
-    const currentUrl = window.location.href.split('?')[0];
+    // ИСПРАВЛЕНИЕ: Умная генерация ссылки (короткая в ТГ, обычная в браузере)
+    let currentUrl;
+    if (window.Telegram?.WebApp?.initData) {
+        currentUrl = 'https://t.me/timehub_portal_bot/portal';
+    } else {
+        currentUrl = window.location.origin + window.location.pathname;
+    }
 
     qrModal.innerHTML = `
         <div class="modal-content glass-panel" style="max-width: 400px; text-align: center;">
