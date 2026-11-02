@@ -85,10 +85,20 @@ export function createTimer() {
         update();
     });
 
+    let lastLoadKey = '';
+    let lastGroup = '';
+
     async function loadLessons() {
         const week = state.get('currentWeek');
         const day = state.get('currentDay');
         const group = state.get('settings').group;
+        
+        const key = `${week}-${day}-${group}`;
+        if (key === lastLoadKey) return;
+        
+        lastLoadKey = key;
+        lastGroup = group;
+
         const lessons = await getLessonsForDay(week, day, group);
         currentLessons = lessons || [];
         update();
@@ -109,7 +119,6 @@ export function createTimer() {
 
         const realDay = now.getDay(); 
         
-        // Формируем актуальный список пар с кастомным временем
         const todaySchedule = currentLessons.map(lesson => {
             const stdBell = bells.find(b => b.pair === lesson.pair);
             return {
@@ -140,7 +149,6 @@ export function createTimer() {
                 const end = timeToMinutes(pair.endTime);
                 const duration = end - start;
 
-                // Если пара короткая (45 минут) - не ищем внутри перемену
                 if (duration <= 45) {
                     if (currentMins >= start && currentMins < end) {
                         status = 'lesson'; currentPairNum = pair.pair;
@@ -150,7 +158,6 @@ export function createTimer() {
                         break;
                     }
                 } else {
-                    // Стандартная пара
                     const half1End = start + 45; 
                     const half2Start = end - 45; 
 
@@ -175,7 +182,6 @@ export function createTimer() {
                     }
                 }
 
-                // Перемена между парами
                 if (currentMins >= end && i < todaySchedule.length - 1) {
                     const nextStart = timeToMinutes(todaySchedule[i+1].startTime);
                     if (currentMins < nextStart) {
@@ -204,8 +210,13 @@ export function createTimer() {
 
     state.on('change:currentDay', loadLessons);
     state.on('change:currentWeek', loadLessons);
-    state.on('change:settings', loadLessons);
-    state.on('change:debugDate', loadLessons);
+    
+    state.on('change:settings', (newSettings) => {
+        // Загружаем заново ТОЛЬКО если сменилась группа
+        if (newSettings && newSettings.group && newSettings.group !== lastGroup) {
+            loadLessons();
+        }
+    });
 
     loadLessons();
     timerInterval = setInterval(update, 1000);

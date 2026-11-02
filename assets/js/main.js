@@ -59,6 +59,8 @@ if (tg && tg.initData) {
 function applyBackground() {
     const settings = state.get('settings');
     const container = document.getElementById('custom-bg-container');
+    if (!container) return;
+    
     const media = container.querySelector('.custom-bg-media');
     const overlay = container.querySelector('.custom-bg-overlay');
 
@@ -120,11 +122,16 @@ if (appDiv) {
 
 applyAllSettings(state.get('settings'));
 
-// Слушаем изменения настроек
-let lastSettingsJson = JSON.stringify(state.get('settings'));
+// ИСПРАВЛЕНИЕ: Инициализируем строку ДО начала работы, вырезав _updatedAt
+const initial = state.get('settings');
+const { _updatedAt: _, ...initialClean } = initial;
+let lastSettingsJson = JSON.stringify(initialClean);
 
 state.on('change:settings', (newSettings) => {
-    const newJson = JSON.stringify(newSettings);
+    const { _updatedAt, ...cleanSettings } = newSettings;
+    const newJson = JSON.stringify(cleanSettings);
+    
+    // Если настройки реально не изменились (кроме метки времени) — ничего не делаем
     if (newJson === lastSettingsJson) return; 
     lastSettingsJson = newJson;
     

@@ -52,6 +52,26 @@ export function openSettings() {
             </div>
 
             <div class="settings-group">
+                <h3>Вид переключателя дней</h3>
+                <div class="theme-grid" style="grid-template-columns: 1fr 1fr;">
+                    <button class="theme-btn ${settings.dayPickerStyle === 'radial' || !settings.dayPickerStyle ? 'active' : ''}" data-daypicker="radial">Круглое меню</button>
+                    <button class="theme-btn ${settings.dayPickerStyle === 'tabs' ? 'active' : ''}" data-daypicker="tabs">Ползунок</button>
+                    <button class="theme-btn ${settings.dayPickerStyle === 'glass' ? 'active' : ''}" data-daypicker="glass">Стекло</button>
+                    <button class="theme-btn ${settings.dayPickerStyle === 'minimal' ? 'active' : ''}" data-daypicker="minimal">Минимализм</button>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3>Анимация смены дней</h3>
+                <div class="theme-grid" style="grid-template-columns: 1fr 1fr;">
+                    <button class="theme-btn ${settings.dayChangeAnimation === 'slide-up' || !settings.dayChangeAnimation ? 'active' : ''}" data-anim="slide-up">Снизу</button>
+                    <button class="theme-btn ${settings.dayChangeAnimation === 'slide-left' ? 'active' : ''}" data-anim="slide-left">Слева</button>
+                    <button class="theme-btn ${settings.dayChangeAnimation === 'fade' ? 'active' : ''}" data-anim="fade">Затухание</button>
+                    <button class="theme-btn ${settings.dayChangeAnimation === 'zoom' ? 'active' : ''}" data-anim="zoom">Масштаб</button>
+                </div>
+            </div>
+
+            <div class="settings-group">
                 <h3>Размер шрифта</h3>
                 <div class="theme-grid" style="grid-template-columns: 1fr 1fr 1fr;">
                     <button class="theme-btn ${settings.textScale === 0.9 ? 'active' : ''}" data-scale="0.9">Мелкий</button>
@@ -108,7 +128,6 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- БЛОК: ПОГОДА (КНОПКИ) -->
             <div class="settings-group">
                 <h3>Погода (API)</h3>
                 <div class="theme-grid">
@@ -148,7 +167,6 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- ПЛАШКА ВЕРСИИ -->
             <div style="text-align: center; margin-top: 10px; margin-bottom: 10px; opacity: 0.4;">
                 <span style="font-size: 11px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">
                     TimeHub-Portal • v${CONFIG.VERSION}
@@ -159,14 +177,12 @@ export function openSettings() {
 
     document.body.appendChild(modal);
 
-    // --- Обработчики ---
     const closeBtn = modal.querySelector('#btn-close-settings');
     closeBtn.addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.remove();
     });
 
-    // PWA
     const installBtn = modal.querySelector('#btn-install-pwa');
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
@@ -178,19 +194,40 @@ export function openSettings() {
         });
     }
 
-    // Поделиться (открывает QR-модалку)
     modal.querySelector('#btn-share-app').addEventListener('click', () => {
         modal.remove();
         openQRCodeModal();
     });
 
-    // Расписание
     modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => {
         modal.remove();
         openFullSchedule();
     });
 
-    // РАЗМЕР ШРИФТА
+    // Выбор стиля переключателя дней
+    modal.querySelectorAll('.theme-btn[data-daypicker]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const style = e.target.dataset.daypicker;
+            modal.querySelectorAll('.theme-btn[data-daypicker]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const newSettings = { ...state.get('settings'), dayPickerStyle: style };
+            state.set('settings', newSettings);
+        });
+    });
+
+    // Выбор анимации смены дней
+    modal.querySelectorAll('.theme-btn[data-anim]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const anim = e.target.dataset.anim;
+            modal.querySelectorAll('.theme-btn[data-anim]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            const newSettings = { ...state.get('settings'), dayChangeAnimation: anim };
+            state.set('settings', newSettings);
+        });
+    });
+
     modal.querySelectorAll('.theme-btn[data-scale]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const scale = parseFloat(e.target.dataset.scale);
@@ -203,7 +240,6 @@ export function openSettings() {
         });
     });
 
-    // ОБОИ
     modal.querySelector('#bg-url').addEventListener('input', (e) => {
         const newSettings = { ...state.get('settings'), bgUrl: e.target.value };
         state.set('settings', newSettings);
@@ -248,7 +284,6 @@ export function openSettings() {
         modal.querySelector('#bg-blur').value = 0;
     });
 
-    // Шрифты
     modal.querySelectorAll('.theme-btn[data-font]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const font = e.target.dataset.font;
@@ -260,22 +295,17 @@ export function openSettings() {
         });
     });
 
-    // Темы (ВАЖНО: сохраняем в state.set, чтобы улетело в облако)
     modal.querySelectorAll('.theme-btn[data-theme]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const theme = e.target.dataset.theme;
             modal.querySelectorAll('.theme-btn[data-theme]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            
-            // Сохраняем новую тему в state и в облако (через state.set)
             const newSettings = { ...state.get('settings'), theme: theme };
             state.set('settings', newSettings);
-            
             applyTheme(theme);
         });
     });
 
-    // ПОГОДА (КНОПКИ)
     modal.querySelectorAll('.theme-btn[data-weather]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const weather = e.target.dataset.weather;
@@ -286,7 +316,6 @@ export function openSettings() {
         });
     });
 
-    // Тумблеры
     const setupToggle = (id, settingName, callback) => {
         const toggle = modal.querySelector(`#${id}`);
         toggle.addEventListener('change', (e) => {
@@ -304,7 +333,6 @@ export function openSettings() {
     });
 }
 
-// Вспомогательная функция: делает цвет темнее, если он слишком светлый
 function ensureDarkEnough(color) {
     const hexMatch = color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
     if (hexMatch) {
@@ -329,7 +357,6 @@ function ensureDarkEnough(color) {
     return '#1a1a1a';
 }
 
-// Вспомогательная функция для копирования (с фолбэком для старых браузеров)
 function copyToClipboard(text) {
     if (navigator.clipboard && window.isSecureContext) {
         return navigator.clipboard.writeText(text);
@@ -349,12 +376,10 @@ function copyToClipboard(text) {
     }
 }
 
-// --- ЛОГИКА QR-КОДА ---
 async function openQRCodeModal() {
     const qrModal = document.createElement('div');
     qrModal.className = 'modal-overlay';
     
-    // Умная генерация ссылки (короткая в ТГ, обычная в браузере)
     let currentUrl;
     if (window.Telegram?.WebApp?.initData) {
         currentUrl = 'https://t.me/timehub_portal_bot/portal';
@@ -387,12 +412,7 @@ async function openQRCodeModal() {
     qrModal.addEventListener('click', (e) => { if (e.target === qrModal) qrModal.remove(); });
 
     qrModal.querySelector('#btn-share-qr-native').addEventListener('click', async () => {
-        const shareData = {
-            title: 'TimeHub Portal',
-            text: 'Умное расписание и заметки для студентов!',
-            url: currentUrl
-        };
-
+        const shareData = { title: 'TimeHub Portal', text: 'Умное расписание и заметки!', url: currentUrl };
         if (navigator.share) {
             try { await navigator.share(shareData); } catch (err) {}
         } else if (window.Telegram?.WebApp?.switchInlineQuery) {

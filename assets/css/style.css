@@ -1207,7 +1207,6 @@ html, body, .modal-content, .schedule-container {
     flex-direction: column;
     gap: 6px;
     flex-grow: 1;
-    /* Убрали max-height и overflow-y, чтобы тянулось */
 }
 .check-item {
     display: flex;
@@ -1440,3 +1439,49 @@ body.font-tsap .header-date { font-size: calc(16px * var(--text-scale)); }
 body.font-tsap .week-label { font-size: calc(18px * var(--text-scale)); }
 body.font-tsap .group-trigger { font-size: calc(16px * var(--text-scale)); }
 body.font-tsap .weather-advice { font-size: calc(12px * var(--text-scale)); }
+
+/* =========================================
+   АНИМАЦИИ ПОЯВЛЕНИЯ КАРТОЧЕК РАСПИСАНИЯ
+   ========================================= */
+.schedule-card-anim {
+    opacity: 0; /* До начала анимации скрыты */
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 1. Выпадение снизу вверх (Slide Up) */
+@keyframes anim-slide-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.anim-slide-up {
+    animation-name: anim-slide-up;
+}
+
+/* 2. Пролет слева направо (Slide Left) */
+@keyframes anim-slide-left {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.anim-slide-left {
+    animation-name: anim-slide-left;
+}
+
+/* 3. Затухание (Fade) */
+@keyframes anim-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.anim-fade {
+    animation-name: anim-fade;
+}
+
+/* 4. Масштабирование (Zoom) */
+@keyframes anim-zoom {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+.anim-zoom {
+    animation-name: anim-zoom;
+}
