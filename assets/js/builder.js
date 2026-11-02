@@ -47,6 +47,44 @@ function transliterate(word) {
     return word.split('').map(char => map[char] || char).join('');
 }
 
+// УМНАЯ МАСКА ВРЕМЕНИ С АВТО-ПЕРЕХОДОМ
+function setupTimeMask(input, nextInput = null) {
+    input.setAttribute('maxlength', '5');
+    input.setAttribute('placeholder', 'ЧЧ:ММ');
+    input.setAttribute('inputmode', 'numeric');
+    
+    input.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/\D/g, ''); // Убираем всё, кроме цифр
+        if (val.length > 4) val = val.slice(0, 4);   // Максимум 4 цифры (ЧЧММ)
+        
+        // Если ввели больше 2 цифр — ставим двоеточие
+        if (val.length >= 3) {
+            val = val.slice(0, 2) + ':' + val.slice(2);
+        }
+        
+        e.target.value = val;
+
+        // Если ввели полное время (ЧЧ:ММ) и есть следующее поле — перескакиваем
+        if (val.length === 5 && nextInput) {
+            // Небольшая задержка (50мс), чтобы пользователь увидел введенный символ перед прыжком
+            setTimeout(() => nextInput.focus(), 50); 
+        }
+    });
+
+    // Валидация при потере фокуса
+    input.addEventListener('blur', (e) => {
+        let val = e.target.value;
+        if (val.length === 5) {
+            const [h, m] = val.split(':');
+            if (parseInt(h) > 23 || parseInt(m) > 59) {
+                e.target.value = ''; // Стираем если ввели 99:99
+            }
+        } else if (val.length > 0 && val.length < 5) {
+            e.target.value = ''; // Стираем если не дописали (например, "08:")
+        }
+    });
+}
+
 groupInput.value = state.groupName;
 
 function createDatalists() {
@@ -224,33 +262,45 @@ function renderLessons() {
 
         const startInput = document.createElement('input');
         startInput.type = 'text';
-        startInput.className = 'builder-input';
-        startInput.placeholder = '09:20';
-        startInput.style.width = '70px';
+        startInput.className = 'builder-input time-input';
+        startInput.style.width = '80px'; // Чуть шире для удобства
         startInput.value = lesson.start || '';
         
         const endInput = document.createElement('input');
         endInput.type = 'text';
-        endInput.className = 'builder-input';
-        endInput.placeholder = '10:05';
-        endInput.style.width = '70px';
+        endInput.className = 'builder-input time-input';
+        endInput.style.width = '80px';
         endInput.value = lesson.end || '';
+
+        // ПОДКЛЮЧАЕМ МАСКУ (передаем nextInput для авто-перехода)
+        setupTimeMask(startInput, endInput);
+        setupTimeMask(endInput, null);
 
         checkbox.addEventListener('change', (e) => {
             if (e.target.checked) {
                 timeInputs.style.display = 'flex';
                 lesson.start = startInput.value || "09:20";
                 lesson.end = endInput.value || "10:05";
+                startInput.value = lesson.start;
+                endInput.value = lesson.end;
             } else {
                 timeInputs.style.display = 'none';
                 delete lesson.start;
                 delete lesson.end;
+                startInput.value = '';
+                endInput.value = '';
             }
             saveState();
         });
 
-        startInput.addEventListener('input', (e) => { lesson.start = e.target.value; saveState(); });
-        endInput.addEventListener('input', (e) => { lesson.end = e.target.value; saveState(); });
+        startInput.addEventListener('input', (e) => { 
+            lesson.start = e.target.value; 
+            saveState(); 
+        });
+        endInput.addEventListener('input', (e) => { 
+            lesson.end = e.target.value; 
+            saveState(); 
+        });
 
         timeInputs.appendChild(startInput);
         timeInputs.appendChild(document.createTextNode('—'));

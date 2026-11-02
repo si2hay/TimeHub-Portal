@@ -345,3 +345,14 @@ body {
         grid-template-columns: 1fr;
     }
 }
+.time-input {
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-family: monospace; /* Чтобы цифры были ровными */
+    transition: all 0.2s ease;
+}
+.time-input:focus {
+    box-shadow: 0 0 8px var(--accent-color);
+    background: rgba(255, 255, 255, 0.1);
+}
