@@ -27,9 +27,18 @@ export async function getLessonsForDay(week, day, group) {
             const newLesson = { ...groupZamena[pairNum], isSubstitution: true };
             
             if (existingIndex !== -1) {
-                lessons[existingIndex] = newLesson;
+                // Если предмет пустой — удаляем пару
+                if (!newLesson.subject || newLesson.subject.trim() === '') {
+                    lessons.splice(existingIndex, 1);
+                } else {
+                    // Иначе заменяем, ОБЯЗАТЕЛЬНО сохраняя номер пары (pNum)
+                    lessons[existingIndex] = { ...newLesson, pair: pNum };
+                }
             } else {
-                lessons.push(newLesson);
+                // Если пары не было, но в замене есть — добавляем (только если предмет не пустой)
+                if (newLesson.subject && newLesson.subject.trim() !== '') {
+                    lessons.push({ ...newLesson, pair: pNum });
+                }
             }
         }
         lessons.sort((a, b) => a.pair - b.pair);
