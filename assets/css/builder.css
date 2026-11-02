@@ -385,3 +385,35 @@ datalist {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
+
+/* --- БЛОК ССЫЛКИ НА TELEGRAM-ГРУППУ --- */
+.tg-share-block {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.tg-share-block p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.tg-group-btn {
+    background: #2AABEE; /* Фирменный цвет Telegram */
+    color: white;
+    text-decoration: none;
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+}
+
+.tg-group-btn:hover {
+    background: #229ED9;
+    transform: translateY(-2px);
+}
+
+.tg-group-btn:active {
+    transform: translateY(0);
+}
