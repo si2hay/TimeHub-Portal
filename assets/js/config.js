@@ -2,7 +2,7 @@
 
 export const CONFIG = {
     APP_NAME: "TimeHub-Portal",
-    VERSION: "04.11.2026-02:15", // <-- Версия обновлена
+    VERSION: "04.11.2026-02:53", // <-- Версия обновлена
     
     // Точка отсчета: 26 октября 2026 (Начало 1-й недели)
     SEMESTER_START_DATE: new Date("2026-10-26T00:00:00"),

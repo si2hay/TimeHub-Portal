@@ -1,4 +1,4 @@
-// ui/settings.js: preferences panel
+// assets/js/ui/settings.js: Модальное окно настроек с группировкой (аккордеон)
 
 import { state } from '../state.js';
 import { applyTheme, applyFont, applyTextScale } from '../themes.js'; 
@@ -8,164 +8,204 @@ import { promptInstall } from '../pwa.js';
 import { CONFIG } from '../config.js'; 
 
 export function openSettings() {
+    // Защита от двойного открытия
     if (document.getElementById('settings-modal')) return;
 
     const settings = state.get('settings');
 
+    // Список тем для горизонтальной карусели
     const THEMES = [
         { id: 'dark', name: 'Темная' }, { id: 'dota', name: 'Dota 2' }, { id: 'minecraft', name: 'Minecraft' },
         { id: 'ocean', name: 'Океан' }, { id: 'sunset', name: 'Закат' }, { id: 'golden', name: 'Золото' },
         { id: 'emerald', name: 'Изумруд' }, { id: 'nord', name: 'Норд' }, { id: 'coffee', name: 'Кофе' },
-        { id: 'sakura', name: 'Сакура' }, { id: 'nothing', name: 'Nothing (Secret)' }
+        { id: 'sakura', name: 'Сакура' }, { id: 'nothing', name: 'Nothing' }
     ];
 
     const modal = document.createElement('div');
     modal.id = 'settings-modal';
     modal.className = 'modal-overlay';
 
+    // ==========================================
+    // ВЕРСТКА МОДАЛЬНОГО ОКНА
+    // ==========================================
     modal.innerHTML = `
-        <div class="modal-content glass-panel">
+        <div class="modal-content glass-panel" style="padding-bottom: 30px;">
             <div class="modal-header">
                 <h2>Настройки</h2>
                 <button id="btn-close-settings" class="icon-btn">✖</button>
             </div>
 
+            <!-- БЛОК 1: ОФОРМЛЕНИЕ -->
             <div class="settings-group">
-                <h3>Приложение</h3>
-                <button id="btn-install-pwa" class="theme-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: #ef4444; color: white; border: none; margin-bottom: 10px;">
-                    📲 Установить на устройство
-                </button>
-                <button id="btn-share-app" class="theme-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px;">
-                    🔗 Поделиться приложением (QR)
-                </button>
-            </div>
+                <div class="settings-header">
+                    <span>🎨 Оформление</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-inner">
+                        
+                        <div class="settings-row">
+                            <span class="settings-row-label">Темы</span>
+                            <div class="theme-carousel">
+                                ${THEMES.map(t => `
+                                    <button class="theme-pill ${settings.theme === t.id ? 'active' : ''}" data-theme="${t.id}">${t.name}</button>
+                                `).join('')}
+                            </div>
+                        </div>
 
-            <div class="settings-group">
-                <h3>Действия</h3>
-                <button id="btn-open-full-schedule" class="theme-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; margin-bottom: 10px;">
-                    📅 Открыть расписание на неделю
-                </button>
-                
-                <a href="./builder.html" target="_blank" class="theme-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; text-decoration: none; color: var(--text-main);">
-                    🛠️ Конструктор расписания
-                </a>
-            </div>
+                        <div class="settings-row">
+                            <span class="settings-row-label">Шрифты</span>
+                            <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr 1fr;">
+                                <button class="settings-btn ${settings.font === 'minecraft' ? 'active' : ''}" data-font="minecraft">Minecraft</button>
+                                <button class="settings-btn ${settings.font === 'tsap' ? 'active' : ''}" data-font="tsap">Tsap</button>
+                                <button class="settings-btn ${settings.font === 'inter' ? 'active' : ''}" data-font="inter">Inter</button>
+                                <button class="settings-btn ${settings.font === 'roboto' ? 'active' : ''}" data-font="roboto">Roboto</button>
+                                <button class="settings-btn ${settings.font === 'rubik' ? 'active' : ''}" data-font="rubik">Rubik</button>
+                                <button class="settings-btn ${settings.font === 'play' ? 'active' : ''}" data-font="play">Play</button>
+                            </div>
+                        </div>
 
-            <div class="settings-group">
-                <h3>Вид переключателя дней</h3>
-                <div class="theme-grid" style="grid-template-columns: 1fr 1fr;">
-                    <button class="theme-btn ${settings.dayPickerStyle === 'radial' || !settings.dayPickerStyle ? 'active' : ''}" data-daypicker="radial">Круглое меню</button>
-                    <button class="theme-btn ${settings.dayPickerStyle === 'minimal' ? 'active' : ''}" data-daypicker="minimal">Минимализм</button>
-                </div>
-            </div>
+                        <div class="settings-row">
+                            <span class="settings-row-label">Размер шрифта</span>
+                            <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr 1fr;">
+                                <button class="settings-btn ${settings.textScale === 0.9 ? 'active' : ''}" data-scale="0.9">Мелкий</button>
+                                <button class="settings-btn ${settings.textScale === 1 || !settings.textScale ? 'active' : ''}" data-scale="1">Обычный</button>
+                                <button class="settings-btn ${settings.textScale === 1.15 ? 'active' : ''}" data-scale="1.15">Крупный</button>
+                            </div>
+                        </div>
 
-            <div class="settings-group">
-                <h3>Анимация смены дней</h3>
-                <div class="theme-grid" style="grid-template-columns: 1fr 1fr;">
-                    <button class="theme-btn ${settings.dayChangeAnimation === 'slide-up' || !settings.dayChangeAnimation ? 'active' : ''}" data-anim="slide-up">Снизу</button>
-                    <button class="theme-btn ${settings.dayChangeAnimation === 'slide-left' ? 'active' : ''}" data-anim="slide-left">Слева</button>
-                    <button class="theme-btn ${settings.dayChangeAnimation === 'fade' ? 'active' : ''}" data-anim="fade">Затухание</button>
-                    <button class="theme-btn ${settings.dayChangeAnimation === 'zoom' ? 'active' : ''}" data-anim="zoom">Масштаб</button>
-                </div>
-            </div>
+                        <div class="settings-row">
+                            <span class="settings-row-label">Эффекты</span>
+                            <div class="toggle-row" style="padding-top:0;">
+                                <span>Частицы на фоне</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-particles" ${settings.particles ? 'checked' : ''}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-row">
+                                <span>Liquid Glass (стекло)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-glass" ${settings.liquidGlass ? 'checked' : ''}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
 
-            <div class="settings-group">
-                <h3>Размер шрифта</h3>
-                <div class="theme-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-                    <button class="theme-btn ${settings.textScale === 0.9 ? 'active' : ''}" data-scale="0.9">Мелкий</button>
-                    <button class="theme-btn ${settings.textScale === 1 || !settings.textScale ? 'active' : ''}" data-scale="1">Обычный</button>
-                    <button class="theme-btn ${settings.textScale === 1.15 ? 'active' : ''}" data-scale="1.15">Крупный</button>
-                </div>
-            </div>
-
-            <div class="settings-group">
-                <h3>Шрифты</h3>
-                <div class="theme-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-                    <button class="theme-btn ${settings.font === 'minecraft' ? 'active' : ''}" data-font="minecraft">Minecraft</button>
-                    <button class="theme-btn ${settings.font === 'tsap' ? 'active' : ''}" data-font="tsap">Tsap-Tsarap</button>
-                    <button class="theme-btn ${settings.font === 'inter' ? 'active' : ''}" data-font="inter">Inter</button>
-                    <button class="theme-btn ${settings.font === 'roboto' ? 'active' : ''}" data-font="roboto">Roboto</button>
-                    <button class="theme-btn ${settings.font === 'rubik' ? 'active' : ''}" data-font="rubik">Rubik</button>
-                    <button class="theme-btn ${settings.font === 'play' ? 'active' : ''}" data-font="play">Play</button>
-                    <button class="theme-btn ${settings.font === 'montserrat' ? 'active' : ''}" data-font="montserrat">Montserrat</button>
-                </div>
-            </div>
-
-            <div class="settings-group">
-                <h3>Обои</h3>
-                <input type="text" id="bg-url" class="settings-select" placeholder="Ссылка на видео/гифку (URL)" value="${settings.bgUrl || ''}" style="margin-bottom: 12px;">
-                
-                <div style="text-align: center; margin-bottom: 12px;">
-                    <label for="bg-file" class="theme-btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; cursor: pointer; width: 100%;">
-                        📁 Выбрать картинку с устройства
-                    </label>
-                    <input type="file" id="bg-file" accept="image/*" style="display: none;">
-                    <div id="file-name" style="font-size: 11px; color: var(--text-muted); margin-top: 6px; word-break: break-all;"></div>
-                </div>
-                
-                <div class="toggle-row">
-                    <span>Затемнение</span>
-                    <input type="range" id="bg-darkness" min="0" max="0.8" step="0.1" value="${settings.bgDarkness || 0}" style="accent-color: var(--accent-color); width: 100px;">
-                </div>
-                <div class="toggle-row">
-                    <span>Размытие</span>
-                    <input type="range" id="bg-blur" min="0" max="15" step="1" value="${settings.bgBlur || 0}" style="accent-color: var(--accent-color); width: 100px;">
-                </div>
-                
-                <button id="btn-clear-bg" class="theme-btn" style="width: 100%; margin-top: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
-                    🗑️ Убрать обои
-                </button>
-            </div>
-            
-            <div class="settings-group">
-                <h3>Темы</h3>
-                <div class="theme-grid" id="theme-grid">
-                    ${THEMES.map(t => `
-                        <button class="theme-btn ${settings.theme === t.id ? 'active' : ''}" data-theme="${t.id}">${t.name}</button>
-                    `).join('')}
+                    </div>
                 </div>
             </div>
 
+            <!-- БЛОК 2: ОБОИ -->
             <div class="settings-group">
-                <h3>Погода (API)</h3>
-                <div class="theme-grid">
-                    <button class="theme-btn ${settings.weatherApi === 'open-meteo' ? 'active' : ''}" data-weather="open-meteo">Open-Meteo</button>
-                    <button class="theme-btn ${settings.weatherApi === 'wttr-in' ? 'active' : ''}" data-weather="wttr-in">wttr.in</button>
+                <div class="settings-header">
+                    <span>🖼 Обои</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-inner">
+                        <input type="text" id="bg-url" class="settings-select" placeholder="Ссылка на видео/картинку (URL)" value="${settings.bgUrl || ''}">
+                        
+                        <div style="text-align: center;">
+                            <label for="bg-file" class="settings-btn" style="cursor: pointer; width: 100%;">
+                                📁 Выбрать картинку с устройства
+                            </label>
+                            <input type="file" id="bg-file" accept="image/*" style="display: none;">
+                            <div id="file-name" style="font-size: 11px; color: var(--text-muted); margin-top: 6px; word-break: break-all;"></div>
+                        </div>
+                        
+                        <div class="toggle-row">
+                            <span>Затемнение</span>
+                            <input type="range" id="bg-darkness" min="0" max="0.8" step="0.1" value="${settings.bgDarkness || 0}" style="accent-color: var(--accent-color); width: 100px;">
+                        </div>
+                        <div class="toggle-row">
+                            <span>Размытие</span>
+                            <input type="range" id="bg-blur" min="0" max="15" step="1" value="${settings.bgBlur || 0}" style="accent-color: var(--accent-color); width: 100px;">
+                        </div>
+                        
+                        <button id="btn-clear-bg" class="settings-btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+                            🗑️ Убрать обои
+                        </button>
+                    </div>
                 </div>
             </div>
 
+            <!-- БЛОК 3: ИНТЕРФЕЙС -->
             <div class="settings-group">
-                <h3>Эффекты</h3>
-                <div class="toggle-row">
-                    <span>Частицы на фоне</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-particles" ${settings.particles ? 'checked' : ''}>
-                        <span class="slider"></span>
-                    </label>
+                <div class="settings-header">
+                    <span>⚙️ Интерфейс</span>
+                    <span class="arrow">▼</span>
                 </div>
-                <div class="toggle-row">
-                    <span>Liquid Glass (стекло)</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-glass" ${settings.liquidGlass ? 'checked' : ''}>
-                        <span class="slider"></span>
-                    </label>
+                <div class="settings-content">
+                    <div class="settings-inner">
+                        <div class="settings-row">
+                            <span class="settings-row-label">Вид переключателя дней</span>
+                            <div class="settings-grid-buttons">
+                                <button class="settings-btn ${settings.dayPickerStyle === 'radial' || !settings.dayPickerStyle ? 'active' : ''}" data-daypicker="radial">Круглое меню</button>
+                                <button class="settings-btn ${settings.dayPickerStyle === 'minimal' ? 'active' : ''}" data-daypicker="minimal">Минимализм</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-row">
+                            <span class="settings-row-label">Анимация смены дней</span>
+                            <div class="settings-grid-buttons">
+                                <button class="settings-btn ${settings.dayChangeAnimation === 'slide-up' || !settings.dayChangeAnimation ? 'active' : ''}" data-anim="slide-up">Снизу</button>
+                                <button class="settings-btn ${settings.dayChangeAnimation === 'slide-left' ? 'active' : ''}" data-anim="slide-left">Слева</button>
+                                <button class="settings-btn ${settings.dayChangeAnimation === 'fade' ? 'active' : ''}" data-anim="fade">Затухание</button>
+                                <button class="settings-btn ${settings.dayChangeAnimation === 'zoom' ? 'active' : ''}" data-anim="zoom">Масштаб</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-row">
+                            <span class="settings-row-label">API Погоды</span>
+                            <div class="settings-grid-buttons">
+                                <button class="settings-btn ${settings.weatherApi === 'open-meteo' ? 'active' : ''}" data-weather="open-meteo">Open-Meteo</button>
+                                <button class="settings-btn ${settings.weatherApi === 'wttr-in' ? 'active' : ''}" data-weather="wttr-in">wttr.in</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="settings-group" style="text-align: center; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                <h3>Связь с автором</h3>
-                <p style="color: var(--text-muted); margin-bottom: 10px;">Вопросы, предложения и добавление расписаний. <br><em>(Отвечаем по возможности)</em></p>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="https://t.me/+sq9RDqa2I2A3M2Iy" target="_blank" class="theme-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        💬 Группа в Telegram
-                    </a>
-                    <a href="mailto:gemg944@gmail.com" class="theme-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        📧 gemg944@gmail.com
-                    </a>
+            <!-- БЛОК 4: ПРИЛОЖЕНИЕ -->
+            <div class="settings-group">
+                <div class="settings-header">
+                    <span>📱 Приложение</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-inner">
+                        
+                        <button id="btn-install-pwa" class="settings-link-btn" style="background: #ef4444; color: white; border: none;">
+                            📲 Установить на устройство
+                        </button>
+                        
+                        <button id="btn-share-app" class="settings-link-btn">
+                            🔗 Поделиться приложением (QR)
+                        </button>
+
+                        <button id="btn-open-full-schedule" class="settings-link-btn">
+                            📅 Расписание на неделю
+                        </button>
+                        
+                        <a href="./builder.html" target="_blank" class="settings-link-btn">
+                            🛠️ Конструктор расписания
+                        </a>
+
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                            <a href="https://t.me/+sq9RDqa2I2A3M2Iy" target="_blank" class="settings-link-btn" style="background: #2AABEE; color: white; border: none;">
+                                💬 Группа в Telegram
+                            </a>
+                            <a href="mailto:gemg944@gmail.com" class="settings-link-btn">
+                                📧 Написать автору
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div style="text-align: center; margin-top: 10px; margin-bottom: 10px; opacity: 0.4;">
+            <!-- Версия в подвале -->
+            <div style="text-align: center; margin-top: 20px; opacity: 0.4;">
                 <span style="font-size: 11px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">
                     TimeHub-Portal • v${CONFIG.VERSION}
                 </span>
@@ -175,12 +215,36 @@ export function openSettings() {
 
     document.body.appendChild(modal);
 
-    const closeBtn = modal.querySelector('#btn-close-settings');
-    closeBtn.addEventListener('click', () => modal.remove());
+    // ==========================================
+    // ЛОГИКА АККОРДЕОНА
+    // ==========================================
+    const headers = modal.querySelectorAll('.settings-header');
+    headers.forEach(header => {
+        header.addEventListener('click', () => {
+            const group = header.parentElement;
+            const isActive = group.classList.contains('active');
+            
+            // Закрываем все остальные (эффект "один открыт")
+            modal.querySelectorAll('.settings-group').forEach(g => g.classList.remove('active'));
+            
+            // Открываем текущий, если он был закрыт
+            if (!isActive) {
+                group.classList.add('active');
+            }
+        });
+    });
+
+    // ==========================================
+    // ОБРАБОТЧИКИ СОБЫТИЙ (Сохранение настроек)
+    // ==========================================
+
+    // Закрытие модалки
+    modal.querySelector('#btn-close-settings').addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.remove();
     });
 
+    // Установка PWA
     const installBtn = modal.querySelector('#btn-install-pwa');
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
@@ -192,57 +256,55 @@ export function openSettings() {
         });
     }
 
+    // Шаринг (QR)
     modal.querySelector('#btn-share-app').addEventListener('click', () => {
         modal.remove();
         openQRCodeModal();
     });
 
+    // Полное расписание
     modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => {
         modal.remove();
         openFullSchedule();
     });
 
-    // Выбор стиля переключателя дней
-    modal.querySelectorAll('.theme-btn[data-daypicker]').forEach(btn => {
+    // Стиль дней
+    modal.querySelectorAll('.settings-btn[data-daypicker]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const style = e.target.dataset.daypicker;
-            modal.querySelectorAll('.theme-btn[data-daypicker]').forEach(b => b.classList.remove('active'));
+            modal.querySelectorAll('.settings-btn[data-daypicker]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            
-            const newSettings = { ...state.get('settings'), dayPickerStyle: style };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), dayPickerStyle: style });
         });
     });
 
-    // Выбор анимации смены дней
-    modal.querySelectorAll('.theme-btn[data-anim]').forEach(btn => {
+    // Анимация дней
+    modal.querySelectorAll('.settings-btn[data-anim]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const anim = e.target.dataset.anim;
-            modal.querySelectorAll('.theme-btn[data-anim]').forEach(b => b.classList.remove('active'));
+            modal.querySelectorAll('.settings-btn[data-anim]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            
-            const newSettings = { ...state.get('settings'), dayChangeAnimation: anim };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), dayChangeAnimation: anim });
         });
     });
 
-    modal.querySelectorAll('.theme-btn[data-scale]').forEach(btn => {
+    // Размер шрифта
+    modal.querySelectorAll('.settings-btn[data-scale]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const scale = parseFloat(e.target.dataset.scale);
-            modal.querySelectorAll('.theme-btn[data-scale]').forEach(b => b.classList.remove('active'));
+            modal.querySelectorAll('.settings-btn[data-scale]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            
-            const newSettings = { ...state.get('settings'), textScale: scale };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), textScale: scale });
             applyTextScale(scale);
         });
     });
 
+    // Обои (URL)
     modal.querySelector('#bg-url').addEventListener('input', (e) => {
-        const newSettings = { ...state.get('settings'), bgUrl: e.target.value };
-        state.set('settings', newSettings);
+        state.set('settings', { ...state.get('settings'), bgUrl: e.target.value });
     });
 
+    // Обои (Файл)
     modal.querySelector('#bg-file').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -255,26 +317,25 @@ export function openSettings() {
         }
         const reader = new FileReader();
         reader.onload = (event) => {
-            const newSettings = { ...state.get('settings'), bgUrl: event.target.result };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), bgUrl: event.target.result });
             modal.querySelector('#bg-url').value = event.target.result;
         };
         reader.readAsDataURL(file);
     });
 
+    // Обои (Затемнение)
     modal.querySelector('#bg-darkness').addEventListener('input', (e) => {
-        const newSettings = { ...state.get('settings'), bgDarkness: parseFloat(e.target.value) };
-        state.set('settings', newSettings);
+        state.set('settings', { ...state.get('settings'), bgDarkness: parseFloat(e.target.value) });
     });
 
+    // Обои (Размытие)
     modal.querySelector('#bg-blur').addEventListener('input', (e) => {
-        const newSettings = { ...state.get('settings'), bgBlur: parseInt(e.target.value) };
-        state.set('settings', newSettings);
+        state.set('settings', { ...state.get('settings'), bgBlur: parseInt(e.target.value) });
     });
 
+    // Очистить обои
     modal.querySelector('#btn-clear-bg').addEventListener('click', () => {
-        const newSettings = { ...state.get('settings'), bgUrl: '', bgDarkness: 0, bgBlur: 0 };
-        state.set('settings', newSettings);
+        state.set('settings', { ...state.get('settings'), bgUrl: '', bgDarkness: 0, bgBlur: 0 });
         modal.querySelector('#bg-url').value = '';
         modal.querySelector('#bg-file').value = '';
         modal.querySelector('#file-name').textContent = '';
@@ -282,44 +343,44 @@ export function openSettings() {
         modal.querySelector('#bg-blur').value = 0;
     });
 
-    modal.querySelectorAll('.theme-btn[data-font]').forEach(btn => {
+    // Шрифты
+    modal.querySelectorAll('.settings-btn[data-font]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const font = e.target.dataset.font;
-            modal.querySelectorAll('.theme-btn[data-font]').forEach(b => b.classList.remove('active'));
+            modal.querySelectorAll('.settings-btn[data-font]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            const newSettings = { ...state.get('settings'), font: font };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), font: font });
             applyFont(font);
         });
     });
 
-    modal.querySelectorAll('.theme-btn[data-theme]').forEach(btn => {
+    // Темы
+    modal.querySelectorAll('.theme-pill[data-theme]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const theme = e.target.dataset.theme;
-            modal.querySelectorAll('.theme-btn[data-theme]').forEach(b => b.classList.remove('active'));
+            modal.querySelectorAll('.theme-pill[data-theme]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            const newSettings = { ...state.get('settings'), theme: theme };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), theme: theme });
             applyTheme(theme);
         });
     });
 
-    modal.querySelectorAll('.theme-btn[data-weather]').forEach(btn => {
+    // API Погоды
+    modal.querySelectorAll('.settings-btn[data-weather]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const weather = e.target.dataset.weather;
-            modal.querySelectorAll('.theme-btn[data-weather]').forEach(b => b.classList.remove('active'));
+            modal.querySelectorAll('.settings-btn[data-weather]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            const newSettings = { ...state.get('settings'), weatherApi: weather };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), weatherApi: weather });
         });
     });
 
+    // Тумблеры
     const setupToggle = (id, settingName, callback) => {
         const toggle = modal.querySelector(`#${id}`);
         toggle.addEventListener('change', (e) => {
             const isChecked = e.target.checked;
-            const newSettings = { ...state.get('settings'), [settingName]: isChecked };
-            state.set('settings', newSettings);
+            state.set('settings', { ...state.get('settings'), [settingName]: isChecked });
             if (callback) callback(isChecked);
         });
     };
@@ -330,6 +391,10 @@ export function openSettings() {
         else document.body.classList.add('no-glass');
     });
 }
+
+// ==========================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (QR, буфер обмена)
+// ==========================================
 
 function ensureDarkEnough(color) {
     const hexMatch = color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);

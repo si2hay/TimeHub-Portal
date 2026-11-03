@@ -1,6 +1,4 @@
-/*Исправленный `assets/css/style.css`
-
-/* style.css: Базовые стили, сброс, шрифты и каркас */
+/* assets/css/style.css: Базовые стили, сброс, шрифты и каркас */
 
 @font-face {
     font-family: 'MinecraftRus';
@@ -44,7 +42,7 @@ html, body {
 }
 
 body.font-tsap {
-    font-size: 20px;
+    font-size: 24px;
     letter-spacing: 0.5px; 
     font-weight: bold;
     text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9), 0px 2px 5px rgba(0, 0, 0, 0.7);
@@ -83,8 +81,7 @@ body.theme-ocean, body.theme-sunset, body.theme-emerald, body.theme-sakura {
     flex-direction: column;
     min-height: 100vh;
     padding: 16px;
-    /* ИСПРАВЛЕНО: запас снизу под плавающий переключатель дней (60px кнопка + 30px отступ + воздух) */
-    padding-bottom: 110px;
+    padding-bottom: 110px; /* Запас снизу под плавающий переключатель дней */
     gap: 16px;
     max-width: 600px;
     margin: 0 auto;
@@ -282,7 +279,6 @@ body.no-glass .glass-panel {
 /* --- Расписание --- */
 .schedule-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; position: relative; z-index: 10; }
 
-/* ВЫРАВНИВАНИЕ ВЫСОТЫ КАРТОЧЕК */
 .schedule-card {
     display: flex; 
     align-items: stretch; 
@@ -290,7 +286,7 @@ body.no-glass .glass-panel {
     overflow: hidden; 
     transition: transform 0.2s; 
     position: relative;
-    min-height: 100px; /* Чтобы карточки не сжимались */
+    min-height: 100px; 
     height: auto;
 }
 .schedule-card:active { transform: scale(0.98); }
@@ -298,7 +294,7 @@ body.no-glass .glass-panel {
 
 .lesson-time { 
     background: rgba(0, 0, 0, 0.2); 
-    padding: 12px 8px; /* ИСПРАВЛЕНО: уменьшен горизонтальный padding (было 12px) */
+    padding: 12px 8px; 
     display: flex; 
     flex-direction: column; 
     justify-content: center; 
@@ -311,12 +307,12 @@ body.no-glass .glass-panel {
 .lesson-clock { font-size: 12px; color: var(--text-muted); display: flex; gap: 2px; white-space: nowrap; }
 
 .lesson-info { 
-    padding: 12px 14px; /* ИСПРАВЛЕНО: чуть меньше горизонтальный padding */
+    padding: 12px 14px; 
     display: flex; 
     flex-direction: column; 
     justify-content: center; 
     flex-grow: 1; 
-    min-width: 0; /* ИСПРАВЛЕНО: чтобы flex не раздувался и текст переносился */
+    min-width: 0; 
     gap: 6px; 
 }
 .lesson-subject { font-size: 16px; font-weight: bold; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; }
@@ -351,7 +347,8 @@ body.no-glass .glass-panel {
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
 .modal-header h2 { font-size: 18px; margin: 0; }
-.settings-group { margin-bottom: 24px; }
+
+/* СТАРЫЕ стили настроек (оставлены для совместимости) */
 .settings-group h3 { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .theme-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
@@ -425,7 +422,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 .notes-status.status-show { opacity: 1; transform: translateY(0); }
 
 /* --- Подвал --- */
-.app-footer { margin-bottom: 90px; padding: 16px; text-align: center; } /* ИСПРАВЛЕНО: было 80px, теперь 90px — запас под кнопку */
+.app-footer { margin-bottom: 90px; padding: 16px; text-align: center; }
 .footer-content { display: flex; flex-direction: column; gap: 12px; }
 .footer-disclaimer { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin: 0; }
 .footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 4px 0; }
@@ -437,7 +434,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 .footer-copy { font-size: 10px; color: var(--text-muted); opacity: 0.5; }
 
 /* --- Таймер --- */
-.timer-status { font-size: calc(18px * var(--text-scale)); min-height: 24px; margin-bottom: 4px; line-height: 1.3; }
+.timer-status { font-size: 18px; min-height: 24px; margin-bottom: 4px; line-height: 1.3; }
 .timer-next-subject { font-size: 0.9em; color: var(--accent-color); opacity: 0.9; display: inline-block; margin-top: 4px;}
 .timer-subject { font-size: 16px; color: #ffffff; font-weight: bold; margin-top: 2px; margin-bottom: 6px; display: block; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); }
 .timer-progress-track { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
@@ -578,19 +575,21 @@ body { font-size: calc(16px * var(--text-scale)); }
 .settings-group p { font-size: calc(12px * var(--text-scale)); }
 .settings-group input[type="file"] { font-size: calc(12px * var(--text-scale)); }
 .qr-loading { font-size: calc(14px * var(--text-scale)); }
-body.font-tsap { font-size: calc(20px * var(--text-scale)); }
-body.font-tsap .lesson-subject { font-size: calc(20px * var(--text-scale)); }
-body.font-tsap .lesson-num { font-size: calc(28px * var(--text-scale)); }
-body.font-tsap .lesson-clock { font-size: calc(14px * var(--text-scale)); }
-body.font-tsap .lesson-details { font-size: calc(14px * var(--text-scale)); }
-body.font-tsap .timer-status { font-size: calc(22px * var(--text-scale)); }
-body.font-tsap .timer-timeleft { font-size: calc(32px * var(--text-scale)); }
-body.font-tsap .timer-subject { font-size: calc(20px * var(--text-scale)); }
-body.font-tsap .logo-text h1 { font-size: calc(22px * var(--text-scale)); }
-body.font-tsap .header-date { font-size: calc(16px * var(--text-scale)); }
-body.font-tsap .week-label { font-size: calc(18px * var(--text-scale)); }
-body.font-tsap .group-trigger { font-size: calc(16px * var(--text-scale)); }
-body.font-tsap .weather-advice { font-size: calc(12px * var(--text-scale)); }
+
+/* --- УВЕЛИЧЕННЫЙ ШРИФТ ЦАП-ЦАРАП --- */
+body.font-tsap { font-size: calc(24px * var(--text-scale)); }
+body.font-tsap .lesson-subject { font-size: calc(24px * var(--text-scale)); }
+body.font-tsap .lesson-num { font-size: calc(32px * var(--text-scale)); }
+body.font-tsap .lesson-clock { font-size: calc(16px * var(--text-scale)); }
+body.font-tsap .lesson-details { font-size: calc(16px * var(--text-scale)); }
+body.font-tsap .timer-status { font-size: calc(26px * var(--text-scale)); }
+body.font-tsap .timer-timeleft { font-size: calc(36px * var(--text-scale)); }
+body.font-tsap .timer-subject { font-size: calc(24px * var(--text-scale)); }
+body.font-tsap .logo-text h1 { font-size: calc(26px * var(--text-scale)); }
+body.font-tsap .header-date { font-size: calc(18px * var(--text-scale)); }
+body.font-tsap .week-label { font-size: calc(20px * var(--text-scale)); }
+body.font-tsap .group-trigger { font-size: calc(18px * var(--text-scale)); }
+body.font-tsap .weather-advice { font-size: calc(14px * var(--text-scale)); }
 
 /* --- Анимации появления --- */
 .schedule-card-anim {
@@ -610,151 +609,186 @@ body.font-tsap .weather-advice { font-size: calc(12px * var(--text-scale)); }
 
 /* =========================================================
    АДАПТИВ ДЛЯ УЗКИХ ЭКРАНОВ (мобилки ~338px и около)
-   ИСПРАВЛЕНО: карточки не наезжают, текст не сжимается,
-   плавающий переключатель дней не перекрывает контент.
    ========================================================= */
-
 @media (max-width: 380px) {
-    #app {
-        padding: 10px;
-        /* Запас снизу под плавающую кнопку (60px + 30px + воздух) */
-        padding-bottom: 120px;
-        gap: 12px;
-    }
-
-    .glass-panel {
-        padding: 12px;
-    }
-
-    /* Шапка */
-    .app-header {
-        padding: 10px 12px;
-        margin-bottom: 4px;
-    }
-    .logo-icon {
-        width: 32px;
-        height: 32px;
-    }
-    .logo-text h1 {
-        font-size: calc(16px * var(--text-scale));
-    }
-    .header-date {
-        font-size: calc(12px * var(--text-scale));
-    }
-    .icon-btn {
-        font-size: calc(18px * var(--text-scale));
-        padding: 4px;
-    }
-
-    /* Панель управления */
-    .controls-panel {
-        padding: 12px;
-        gap: 10px;
-    }
-    .week-control {
-        padding: 6px 8px;
-    }
-    .group-trigger {
-        padding: 6px 12px;
-    }
-    /* Скрываем длинный совет по одежде на узких экранах — экономит место */
-    .weather-advice {
-        display: none;
-    }
-    .weather-main {
-        min-width: 60px;
-    }
-
-    /* Карточки расписания */
-    .schedule-card {
-        min-height: 92px;
-    }
-    .lesson-time {
-        min-width: 74px;
-        padding: 8px 6px;
-    }
-    .lesson-num {
-        font-size: calc(20px * var(--text-scale));
-    }
-    .lesson-clock {
-        font-size: calc(10px * var(--text-scale));
-        gap: 1px;
-    }
-    .lesson-info {
-        padding: 10px 12px;
-        gap: 4px;
-    }
-    .lesson-subject {
-        font-size: calc(14px * var(--text-scale));
-    }
-    .lesson-details {
-        font-size: calc(11px * var(--text-scale));
-        gap: 6px;
-    }
-
-    /* Подвал — гарантированно выше плавающего переключателя */
-    .app-footer {
-        margin-bottom: 130px;
-        padding: 12px;
-    }
-
-    /* Модалки */
-    .modal-content {
-        padding: 16px;
-    }
-    .modal-header h2 {
-        font-size: calc(16px * var(--text-scale));
-    }
-
-    /* Заметки */
-    .notes-textarea {
-        min-height: 120px;
-    }
-
-    /* Скелетоны */
-    .skeleton-card {
-        height: 80px;
-    }
-    .skeleton-time {
-        min-width: 74px;
-        padding: 10px 6px;
-    }
+    #app { padding: 10px; padding-bottom: 120px; gap: 12px; }
+    .glass-panel { padding: 12px; }
+    .app-header { padding: 10px 12px; margin-bottom: 4px; }
+    .logo-icon { width: 32px; height: 32px; }
+    .logo-text h1 { font-size: calc(16px * var(--text-scale)); }
+    .header-date { font-size: calc(12px * var(--text-scale)); }
+    .icon-btn { font-size: calc(18px * var(--text-scale)); padding: 4px; }
+    .controls-panel { padding: 12px; gap: 10px; }
+    .week-control { padding: 6px 8px; }
+    .group-trigger { padding: 6px 12px; }
+    .weather-advice { display: none; }
+    .weather-main { min-width: 60px; }
+    .schedule-card { min-height: 92px; }
+    .lesson-time { min-width: 74px; padding: 8px 6px; }
+    .lesson-num { font-size: calc(20px * var(--text-scale)); }
+    .lesson-clock { font-size: calc(10px * var(--text-scale)); gap: 1px; }
+    .lesson-info { padding: 10px 12px; gap: 4px; }
+    .lesson-subject { font-size: calc(14px * var(--text-scale)); }
+    .lesson-details { font-size: calc(11px * var(--text-scale)); gap: 6px; }
+    .app-footer { margin-bottom: 130px; padding: 12px; }
+    .modal-content { padding: 16px; }
+    .modal-header h2 { font-size: calc(16px * var(--text-scale)); }
+    .notes-textarea { min-height: 120px; }
+    .skeleton-card { height: 80px; }
+    .skeleton-time { min-width: 74px; padding: 10px 6px; }
 }
 
 @media (max-width: 360px) {
-    #app {
-        padding: 8px;
-        padding-bottom: 130px;
-    }
-    .glass-panel {
-        padding: 10px;
-    }
-    .lesson-time {
-        min-width: 68px;
-        padding: 8px 4px;
-    }
-    .lesson-clock {
-        font-size: calc(9px * var(--text-scale));
-    }
-    .lesson-num {
-        font-size: calc(18px * var(--text-scale));
-    }
-    .lesson-info {
-        padding: 8px 10px;
-    }
-    .lesson-subject {
-        font-size: calc(13px * var(--text-scale));
-    }
-    .lesson-details {
-        font-size: calc(10px * var(--text-scale));
-    }
-    .app-footer {
-        margin-bottom: 140px;
-    }
-    .skeleton-card {
-        height: 74px;
-    }
-    .skeleton-time {
-        min-width: 66px;
-    }
+    #app { padding: 8px; padding-bottom: 130px; }
+    .glass-panel { padding: 10px; }
+    .lesson-time { min-width: 68px; padding: 8px 4px; }
+    .lesson-clock { font-size: calc(9px * var(--text-scale)); }
+    .lesson-num { font-size: calc(18px * var(--text-scale)); }
+    .lesson-info { padding: 8px 10px; }
+    .lesson-subject { font-size: calc(13px * var(--text-scale)); }
+    .lesson-details { font-size: calc(10px * var(--text-scale)); }
+    .app-footer { margin-bottom: 140px; }
+    .skeleton-card { height: 74px; }
+    .skeleton-time { min-width: 66px; }
 }
+
+/* =========================================================
+   НОВЫЕ НАСТРОЙКИ (АККОРДЕОН) - v1.6
+   ========================================================= */
+.settings-group {
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: border-color 0.3s, background 0.3s;
+}
+.settings-group.active {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-color);
+}
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: calc(15px * var(--text-scale)); 
+    color: var(--text-main);
+    user-select: none;
+    transition: background 0.2s;
+    position: sticky;
+    top: 0;
+    background: var(--surface-color);
+    z-index: 10;
+}
+.settings-header:hover { background: rgba(255, 255, 255, 0.05); }
+.settings-header:active { transform: scale(0.98); }
+.settings-header .arrow {
+    font-size: calc(12px * var(--text-scale));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: var(--accent-color);
+}
+.settings-group.active .settings-header .arrow { transform: rotate(180deg); }
+
+.settings-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.settings-group.active .settings-content { grid-template-rows: 1fr; }
+.settings-inner {
+    overflow: hidden;
+    min-height: 0;
+    padding: 0 16px;
+    transition: padding 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.settings-group.active .settings-inner { padding: 16px; }
+
+.settings-row { display: flex; flex-direction: column; gap: 8px; }
+.settings-row-label {
+    font-size: calc(12px * var(--text-scale));
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.theme-carousel {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+}
+.theme-carousel::-webkit-scrollbar { height: 4px; }
+.theme-carousel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+.theme-pill {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-main);
+    font-size: calc(13px * var(--text-scale));
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: all 0.2s;
+}
+.theme-pill.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-hover);
+    box-shadow: 0 0 10px rgba(0, 98, 177, 0.4);
+}
+.theme-pill:active { transform: scale(0.95); }
+
+.settings-grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.settings-btn {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: calc(13px * var(--text-scale));
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+}
+.settings-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.settings-btn:active { transform: scale(0.95); }
+.settings-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-hover);
+}
+
+.settings-link-btn {
+    text-decoration: none;
+    width: 100%;
+    padding: 12px;
+    font-size: calc(14px * var(--text-scale));
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.settings-link-btn:hover { background: var(--accent-color); color: white; }
+
+.toggle-row span { font-size: calc(14px * var(--text-scale)); }
