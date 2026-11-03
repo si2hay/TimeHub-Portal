@@ -23,6 +23,10 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+html {
+    scroll-behavior: smooth; /* Плавный скролл */
+}
+
 html, body {
     height: 100%;
     width: 100%;
@@ -134,7 +138,9 @@ body.no-glass .glass-panel {
     position: relative;
     z-index: 101;
     cursor: pointer;
+    transition: transform 0.2s;
 }
+.header-logo:active { transform: scale(0.95); }
 .logo-icon {
     width: 36px;
     height: 36px;
@@ -153,6 +159,7 @@ body.no-glass .glass-panel {
 .header-date { font-size: 14px; font-weight: 500; color: var(--text-main); opacity: 0.9; text-align: right; line-height: 1.2; }
 .icon-btn { background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); padding: 5px; transition: transform var(--transition-speed); }
 .icon-btn:hover { transform: rotate(45deg); }
+.icon-btn:active { transform: scale(0.9) rotate(45deg); }
 
 /* --- СТРИК --- */
 .header-streak-badge {
@@ -212,44 +219,23 @@ body.no-glass .glass-panel {
 .fire-lvl-4 { color: #a855f7; animation-duration: 0.8s; }
 .fire-lvl-5 { color: #fbbf24; animation-duration: 0.6s; filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.8)); }
 
-/* Мертвый огонек (стили стоят ОТДЕЛЬНО, а не внутри бейджа) */
-.fire-dead { 
-    color: #64748b; 
-    animation: none; 
-    filter: grayscale(1) drop-shadow(0 0 5px rgba(100, 116, 139, 0.3)); 
-}
+.fire-dead { color: #64748b; animation: none; filter: grayscale(1) drop-shadow(0 0 5px rgba(100, 116, 139, 0.3)); }
 
-.streak-timer {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border-color);
-}
-
+.streak-timer { font-size: 11px; color: var(--text-muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color); }
 .streak-revive-btn {
-    display: none;
-    width: 100%;
-    margin-top: 8px;
-    padding: 6px;
-    background: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
+    display: none; width: 100%; margin-top: 8px; padding: 6px;
+    background: #ef4444; color: white; border: none; border-radius: 6px;
+    font-size: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.1s;
 }
-.streak-revive-btn:hover {
-    background: #dc2626;
-}
+.streak-revive-btn:hover { background: #dc2626; }
+.streak-revive-btn:active { transform: scale(0.95); }
 
 /* --- Панель управления --- */
 .controls-panel { display: flex; flex-direction: column; gap: 12px; padding: 16px; position: relative; z-index: 50; }
 .week-control { display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.2); border-radius: var(--border-radius); padding: 8px 12px; }
 .arrow-btn { background: transparent; border: none; color: var(--text-main); font-size: 18px; cursor: pointer; padding: 5px 15px; transition: transform 0.2s; }
 .arrow-btn:hover { transform: scale(1.2); color: var(--accent-color); }
+.arrow-btn:active { transform: scale(0.9); }
 
 .group-control { order: 2; position: relative; text-align: center; flex-shrink: 0; }
 .group-trigger {
@@ -259,6 +245,7 @@ body.no-glass .glass-panel {
     cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.2s; user-select: none;
 }
 .group-trigger:hover { background: var(--accent-color); border-color: var(--accent-hover); box-shadow: 0 0 10px var(--accent-color); }
+.group-trigger:active { transform: scale(0.95); }
 .arrow-down { font-size: 10px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .arrow-down.rotate { transform: rotate(180deg); }
 
@@ -276,7 +263,7 @@ body.no-glass .glass-panel {
 .group-dropdown.open .group-option { opacity: 1; transform: translateY(0); transition-delay: calc(var(--i) * 0.03s); }
 
 /* --- Скелетоны --- */
-.skeleton-card { display: flex; align-items: stretch; padding: 0; overflow: hidden; border-radius: var(--border-radius); background: var(--glass-bg); border: 1px solid var(--glass-border); margin-bottom: 12px; height: 80px; }
+.skeleton-card { display: flex; align-items: stretch; padding: 0; overflow: hidden; border-radius: var(--border-radius); background: var(--glass-bg); border: 1px solid var(--glass-border); margin-bottom: 12px; height: 88px; }
 .skeleton-time { background: rgba(0, 0, 0, 0.1); padding: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 90px; border-right: 1px solid var(--border-color); gap: 8px; }
 .skeleton-num { width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); }
 .skeleton-clock { width: 50px; height: 12px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); }
@@ -289,23 +276,49 @@ body.no-glass .glass-panel {
 
 /* --- Расписание --- */
 .schedule-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; position: relative; z-index: 10; }
+
+/* ВЫРАВНИВАНИЕ ВЫСОТЫ КАРТОЧЕК */
 .schedule-card {
-    display: flex; align-items: stretch; padding: 0; overflow: hidden; transition: transform 0.2s; position: relative;
-    min-height: 88px; /* ВЫРАВНИВАНИЕ ВЫСОТЫ */
+    display: flex; 
+    align-items: stretch; 
+    padding: 0; 
+    overflow: hidden; 
+    transition: transform 0.2s; 
+    position: relative;
+    min-height: 100px; /* Чтобы Информатика не сжималась */
+    height: auto;
 }
 .schedule-card:active { transform: scale(0.98); }
 .schedule-card.current-lesson { border-color: var(--accent-color); border-width: 2px; }
-.lesson-time { background: rgba(0, 0, 0, 0.2); padding: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 90px; border-right: 1px solid var(--border-color); }
+
+.lesson-time { 
+    background: rgba(0, 0, 0, 0.2); 
+    padding: 12px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    min-width: 90px; 
+    border-right: 1px solid var(--border-color); 
+}
 .lesson-num { font-size: 24px; font-weight: bold; color: var(--accent-color); line-height: 1; margin-bottom: 4px; }
 .lesson-clock { font-size: 12px; color: var(--text-muted); display: flex; gap: 2px; }
-.lesson-info { padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; flex-grow: 1; }
-.lesson-subject { font-size: 16px; font-weight: bold; margin-bottom: 6px; line-height: 1.2; }
-.lesson-details { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-muted); }
-.lesson-room { color: #f59e0b; }
-.lesson-teacher { color: var(--text-main); opacity: 0.8; }
+
+.lesson-info { 
+    padding: 12px 16px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    flex-grow: 1; 
+    gap: 6px; 
+}
+.lesson-subject { font-size: 16px; font-weight: bold; line-height: 1.2; word-wrap: break-word; }
+.lesson-details { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-muted); }
+.lesson-room { color: #f59e0b; white-space: nowrap; }
+.lesson-teacher { color: var(--text-main); opacity: 0.8; word-wrap: break-word; }
 
 /* --- Таймер и Замены --- */
-.timer-widget { border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+.timer-widget { border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; }
 #app > .timer-widget { margin-bottom: 8px; }
 .schedule-card.is-substitution { border-color: #ef4444; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(20, 22, 26, 0.7)); }
 .badge-substitution { position: absolute; top: 8px; right: 8px; background: #ef4444; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; animation: pulse-danger 2s infinite; }
@@ -335,6 +348,7 @@ body.no-glass .glass-panel {
 .settings-group h3 { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
 .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .theme-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.theme-btn:active { transform: scale(0.95); }
 .theme-btn.active { background: var(--accent-color); color: white; border-color: var(--accent-hover); }
 .settings-select { width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; }
 .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
@@ -346,13 +360,14 @@ body.no-glass .glass-panel {
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(22px); }
 
-/* --- Справочник (Аккордеон на CSS Grid) --- */
+/* --- Справочник --- */
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
 .section-header h2 { font-size: 16px; margin: 0; color: var(--text-main); }
 .section-icon { font-size: 18px; }
 .accordion-item { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
 .accordion-trigger { width: 100%; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.02); border: none; padding: 12px; color: var(--text-main); font-family: inherit; font-size: 14px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
 .accordion-trigger:hover { background: rgba(255, 255, 255, 0.05); }
+.accordion-trigger:active { background: rgba(255, 255, 255, 0.08); }
 .accordion-arrow { font-size: 10px; transition: transform 0.3s; }
 .accordion-item.active .accordion-arrow { transform: rotate(180deg); }
 
@@ -384,8 +399,8 @@ input:checked + .slider:before { transform: translateX(22px); }
 .notes-textarea {
     width: 100%;
     min-height: 150px;
-    max-height: 400px; /* Ограничиваем максимальную высоту */
-    overflow-y: auto; /* Если текст длинный, появляется скролл */
+    max-height: 400px;
+    overflow-y: auto;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -393,7 +408,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     color: var(--text-main);
     font-family: inherit;
     font-size: 14px;
-    resize: none; /* Убираем ручной ресайз, он теперь умный */
+    resize: none;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -409,11 +424,14 @@ input:checked + .slider:before { transform: translateX(22px); }
 .footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 4px 0; }
 .footer-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-main); text-decoration: none; font-size: 12px; padding: 8px 16px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border-color); border-radius: 20px; transition: all 0.2s; }
 .footer-link:hover { background: var(--accent-color); color: white; border-color: var(--accent-hover); transform: translateY(-2px); }
+.footer-link:active { transform: scale(0.95); }
 .official-link { background: rgba(255, 255, 255, 0.1); }
 .official-link:hover { background: var(--accent-color); }
 .footer-copy { font-size: 10px; color: var(--text-muted); opacity: 0.5; }
 
 /* --- Таймер --- */
+.timer-status { font-size: calc(18px * var(--text-scale)); min-height: 24px; margin-bottom: 4px; line-height: 1.3; }
+.timer-next-subject { font-size: 0.9em; color: var(--accent-color); opacity: 0.9; display: inline-block; margin-top: 4px;}
 .timer-subject { font-size: 16px; color: #ffffff; font-weight: bold; margin-top: 2px; margin-bottom: 6px; display: block; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); }
 .timer-progress-track { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-top: 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
 .timer-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-hover), var(--accent-color)); transition: width 1s linear; box-shadow: 0 0 8px var(--accent-color); }
@@ -478,6 +496,7 @@ html, body, .modal-content, .schedule-container { scrollbar-width: thin; scrollb
 .check-input:focus { border-color: var(--accent-color); }
 .check-add-btn { background: var(--accent-color); color: white; border: none; border-radius: 6px; width: 36px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 .check-add-btn:hover { background: var(--accent-hover); }
+.check-add-btn:active { transform: scale(0.9); }
 .checklist { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
 .check-item { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 6px; transition: all 0.2s; }
 .check-item.done .check-text { text-decoration: line-through; opacity: 0.5; }

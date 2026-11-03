@@ -92,6 +92,7 @@ body {
     transition: all 0.2s;
 }
 
+.week-btn:active { transform: scale(0.95); }
 .week-btn.active {
     background: var(--accent-color);
     color: white;
@@ -118,10 +119,8 @@ body {
     transition: all 0.2s;
 }
 
-.day-btn:hover { 
-    background: rgba(255, 255, 255, 0.1); 
-}
-
+.day-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.day-btn:active { transform: scale(0.95); }
 .day-btn.active {
     background: var(--accent-color);
     color: white;
@@ -268,6 +267,7 @@ body {
     gap: 8px;
 }
 
+.builder-btn:active { transform: scale(0.95); }
 .builder-btn.primary { background: var(--accent-color); color: white; }
 .builder-btn.primary:hover { background: var(--accent-hover); }
 
@@ -340,31 +340,16 @@ body {
     background: var(--accent-hover);
 }
 
-@media (max-width: 900px) {
-    .lesson-fields {
-        grid-template-columns: 1fr;
-    }
-}
 .time-input {
     text-align: center;
     font-weight: bold;
     letter-spacing: 1px;
-    font-family: monospace; /* Чтобы цифры были ровными */
+    font-family: monospace;
     transition: all 0.2s ease;
 }
 .time-input:focus {
     box-shadow: 0 0 8px var(--accent-color);
     background: rgba(255, 255, 255, 0.1);
-}
-/* Анимация автоподстановки */
-.builder-input {
-    transition: all 0.3s ease;
-    border: 1px solid var(--border-color);
-}
-
-.builder-input:focus {
-    border-color: var(--accent-color);
-    box-shadow: 0 0 8px rgba(0, 98, 177, 0.3);
 }
 
 .builder-input.autofilled {
@@ -376,14 +361,6 @@ body {
 @keyframes fill-flash {
     0% { background-color: rgba(16, 185, 129, 0.4); border-color: #10b981; }
     100% { background-color: rgba(0, 0, 0, 0.2); border-color: var(--border-color); }
-}
-
-/* Красивые подсказки (Datalist) - работает только в некоторых браузерах, но все равно добавим */
-datalist {
-    background-color: var(--surface-color);
-    color: var(--text-main);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 /* --- БЛОК ССЫЛКИ НА TELEGRAM-ГРУППУ --- */
@@ -401,7 +378,7 @@ datalist {
 }
 
 .tg-group-btn {
-    background: #2AABEE; /* Фирменный цвет Telegram */
+    background: #2AABEE;
     color: white;
     text-decoration: none;
     width: 100%;
@@ -415,5 +392,86 @@ datalist {
 }
 
 .tg-group-btn:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.95);
+}
+
+/* =========================================
+   АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ (Билдер)
+   ========================================= */
+@media (max-width: 768px) {
+    body {
+        overflow: auto; /* Разрешаем скролл всей страницы */
+        height: auto;
+    }
+    
+    #builder-app {
+        height: auto;
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .builder-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .header-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-controls input {
+        width: 100% !important;
+    }
+
+    .builder-layout {
+        flex-direction: column;
+        overflow: visible;
+    }
+
+    .builder-sidebar {
+        width: 100%;
+        padding: 16px;
+    }
+
+    /* Дни недели в ряд, чтобы не было огромного списка */
+    .days-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .day-btn {
+        flex: 1 1 calc(33.333% - 8px);
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .builder-main {
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    .lesson-edit-card {
+        padding: 12px;
+    }
+
+    .lesson-fields {
+        grid-template-columns: 1fr; /* Все поля в одну колонку */
+    }
+
+    .card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lesson-time-inputs {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .time-input {
+        flex-grow: 1;
+    }
 }

@@ -73,12 +73,12 @@ export function createTimer() {
         widget.classList.toggle('fullscreen');
         
         if (widget.classList.contains('fullscreen')) {
-            document.body.style.overflow = 'hidden'; // Блокируем прокрутку страницы
+            document.body.style.overflow = 'hidden'; 
             tHint.textContent = 'Нажми, чтобы свернуть';
             initLocalParticles();
             animateLocalParticles();
         } else {
-            document.body.style.overflow = ''; // Возвращаем прокрутку
+            document.body.style.overflow = ''; 
             tHint.textContent = 'Нажми, чтобы раскрыть';
             if (particleAnimId) {
                 cancelAnimationFrame(particleAnimId);
@@ -172,7 +172,7 @@ export function createTimer() {
                         break;
                     } else if (currentMins >= half1End && currentMins < half2Start) {
                         status = 'break'; currentPairNum = pair.pair;
-                        text = `Перемена`;
+                        text = `Перемена 🍵`;
                         timeLeftStr = `До конца: ${formatTimeLeft(half2Start - currentMins)}`;
                         progress = (currentMins - half1End) / (half2Start - half1End);
                         break;
@@ -185,11 +185,14 @@ export function createTimer() {
                     }
                 }
 
+                // Перемена между парами
                 if (currentMins >= end && i < todaySchedule.length - 1) {
-                    const nextStart = timeToMinutes(todaySchedule[i+1].startTime);
+                    const nextPair = todaySchedule[i+1];
+                    const nextStart = timeToMinutes(nextPair.startTime);
                     if (currentMins < nextStart) {
                         status = 'waiting';
-                        text = `Перемена, до ${todaySchedule[i+1].pair}-й пары`;
+                        const roomInfo = nextPair.room ? `, каб. ${nextPair.room}` : '';
+                        text = `Перемена до ${nextPair.pair}-й пары:<br><span class="timer-next-subject">📖 ${nextPair.subject}${roomInfo}</span>`;
                         timeLeftStr = `До начала: ${formatTimeLeft(nextStart - currentMins)}`;
                         progress = (currentMins - end) / (nextStart - end);
                         break;
@@ -204,7 +207,7 @@ export function createTimer() {
             if (lesson) subjectName = lesson.subject;
         }
 
-        tStatus.textContent = text;
+        tStatus.innerHTML = text; 
         tStatus.className = `timer-status ${status}`;
         tSubject.textContent = subjectName;
         tTimeLeft.textContent = timeLeftStr;

@@ -36,7 +36,6 @@ export function createSchedule() {
             container.innerHTML = renderScheduleSkeleton();
         }
 
-        // --- FLIP ШАГ 1: Запоминаем позиции всех элементов ПОД расписанием ---
         const siblings = [
             document.querySelector('.reference-widget'),
             document.querySelector('.notes-widget'),
@@ -45,7 +44,6 @@ export function createSchedule() {
         
         const firstRects = siblings.map(el => el.getBoundingClientRect());
 
-        // Загружаем данные
         const lessons = await getLessonsForDay(week, day, group);
         
         if (lessons === null) {
@@ -86,7 +84,8 @@ export function createSchedule() {
 
             const card = document.createElement('div');
             card.className = `schedule-card glass-panel schedule-card-anim anim-${animType} ${isNow ? 'current-lesson animate-pulse' : ''} ${lesson.isSubstitution ? 'is-substitution' : ''}`;
-            card.style.animationDelay = `${index * 0.05}s`; 
+            // Быстрая задержка для эффекта "каскада"
+            card.style.animationDelay = `${index * 0.03}s`; 
             card.dataset.pair = lesson.pair;
             card.dataset.start = startMins;
             card.dataset.end = endMins;
@@ -116,7 +115,7 @@ export function createSchedule() {
             setTimeout(() => {
                 card.classList.remove('schedule-card-anim');
                 card.classList.remove(`anim-${animType}`);
-            }, 800);
+            }, 600);
         });
 
         lastWeek = week;
@@ -124,21 +123,15 @@ export function createSchedule() {
         lastGroup = group;
         isRendering = false;
 
-        // --- FLIP ШАГ 2 и 3: Вычисляем разницу и анимируем ---
         requestAnimationFrame(() => {
             siblings.forEach((el, index) => {
                 const lastRect = el.getBoundingClientRect();
                 const deltaY = firstRects[index].top - lastRect.top;
 
                 if (deltaY !== 0) {
-                    // Мгновенно возвращаем на старое место
                     el.style.transform = `translateY(${deltaY}px)`;
                     el.style.transition = 'none';
-                    
-                    // Форсируем перерисовку браузера
                     el.offsetHeight; 
-
-                    // Плавно двигаем на новое место
                     el.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
                     el.style.transform = 'translateY(0)';
                 }
