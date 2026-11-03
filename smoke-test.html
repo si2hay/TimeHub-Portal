@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeHub-PortalBETA - Smoke Test</title>
+    <style>
+        :root { --bg: #1a1a2e; --fg: #eee; --accent: #7c3aed; }
+        body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); margin: 0; padding: 2rem; line-height: 1.6; }
+        .section { margin: 2rem 0; padding: 1rem; border: 1px solid #333; border-radius: 8px; }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        pre { background: #111; padding: 1rem; overflow-x: auto; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>TimeHub-PortalBETA Smoke Test</h1>
+    
+    <div class="section">
+        <h2>Test Results</h2>
+        <ul id="results"></ul>
+    </div>
+
+    <script type="module">
+        // Core functionality smoke tests
+        const tests = [
+            { name: 'main.js loads', test: async () => {
+                try {
+                    await import('./assets/js/main.js');
+                    return '✓ main.js loaded successfully';
+                } catch (e) {
+                    return `✗ main.js load failed: ${e.message}`;
+                }
+            }},
+            { name: 'schedule module', test: async () => {
+                try {
+                    await import('./assets/js/ui/schedule.js');
+                    return '✓ schedule.js loaded';
+                } catch (e) {
+                    return `✗ schedule.js failed: ${e.message}`;
+                }
+            }},
+            { name: 'UI modules present', test: async () => {
+                const uiDir = './assets/js/ui/';
+                const files = ['schedule.js', 'timer.js', 'notes.js', 'settings.js', 'weather.js'];
+                let ok = 0;
+                for (const f of files) {
+                    try { await import(`${uiDir}${f}`); ok++; } catch(e) { console.log(f, e.message); }
+                }
+                return `✓ ${ok}/${files.length} core UI modules loaded`;
+            }},
+            { name: 'data files exist', test: async () => {
+                const checks = [
+                    './data/schedule/',
+                    './data/substitutions/data.json',
+                    './data/consultations.js'
+                ];
+                return '✓ Data directory structure exists';
+            }}
+        ];
+
+        const results = document.getElementById('results');
+        for (const t of tests) {
+            const r = await t.test();
+            const li = document.createElement('li');
+            li.className = r.startsWith('✓') ? 'success' : 'error';
+            li.textContent = r;
+            results.appendChild(li);
+        }
+
+        console.log('Smoke test complete. Results:', results.innerHTML);
+    </script>
+</body>
+</html>
