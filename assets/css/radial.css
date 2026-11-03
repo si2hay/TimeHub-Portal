@@ -12,6 +12,8 @@
     width: 100%;
     max-width: 400px;
     pointer-events: none;
+    /* ИСПРАВЛЕНО: внутренний padding, чтобы items не прилипали к краям */
+    padding: 0 10px;
 }
 
 .day-picker-wrapper > * {
@@ -166,4 +168,50 @@
 
 .minimal-tabs input:checked + label {
     color: white;
+}
+
+/* =========================================
+   АДАПТИВ ДЛЯ УЗКИХ ЭКРАНОВ (мобилки ~338px)
+   ИСПРАВЛЕНО: триггер и items уменьшены,
+   радиус дуги сокращён, чтобы меню не улетало за края.
+   ========================================= */
+@media (max-width: 380px) {
+    .day-picker-wrapper {
+        bottom: 14px;
+        padding: 0 8px;
+        max-width: 100%;
+    }
+
+    .radial-menu-container {
+        width: 52px;
+        height: 52px;
+    }
+
+    .radial-trigger {
+        width: 52px;
+        height: 52px;
+        font-size: 20px;
+    }
+
+    .radial-item {
+        width: 42px;
+        height: 42px;
+        margin-top: -21px;
+        margin-left: -21px;
+        font-size: 12px;
+    }
+
+    .radial-menu-container.open .radial-item {
+        transform: rotate(calc(-150deg + var(--i) * 30deg)) translate(96px) rotate(calc(150deg - var(--i) * 30deg));
+    }
+
+    .minimal-tabs {
+        max-width: 100%;
+        padding: 6px;
+    }
+
+    .minimal-tabs label {
+        height: 36px;
+        font-size: 12px;
+    }
 }

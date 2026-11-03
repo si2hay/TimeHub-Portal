@@ -1,3 +1,5 @@
+/*Исправленный `assets/css/style.css`
+
 /* style.css: Базовые стили, сброс, шрифты и каркас */
 
 @font-face {
@@ -81,6 +83,8 @@ body.theme-ocean, body.theme-sunset, body.theme-emerald, body.theme-sakura {
     flex-direction: column;
     min-height: 100vh;
     padding: 16px;
+    /* ИСПРАВЛЕНО: запас снизу под плавающий переключатель дней (60px кнопка + 30px отступ + воздух) */
+    padding-bottom: 110px;
     gap: 16px;
     max-width: 600px;
     margin: 0 auto;
@@ -153,6 +157,7 @@ body.no-glass .glass-panel {
     font-size: 24px;
     font-weight: bold;
     user-select: none;
+    flex-shrink: 0;
 }
 .logo-text h1 { font-size: 18px; line-height: 1; margin: 0; }
 .logo-text span { font-size: 12px; color: var(--text-muted); }
@@ -275,7 +280,7 @@ body.no-glass .glass-panel {
 @keyframes shimmer { 100% { transform: translateX(100%); } }
 
 /* --- Расписание --- */
-.schedule-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; position: relative; z-index: 10; }
+.schedule-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; position: relative; z-index: 10; }
 
 /* ВЫРАВНИВАНИЕ ВЫСОТЫ КАРТОЧЕК */
 .schedule-card {
@@ -285,7 +290,7 @@ body.no-glass .glass-panel {
     overflow: hidden; 
     transition: transform 0.2s; 
     position: relative;
-    min-height: 100px; /* Чтобы Информатика не сжималась */
+    min-height: 100px; /* Чтобы карточки не сжимались */
     height: auto;
 }
 .schedule-card:active { transform: scale(0.98); }
@@ -293,29 +298,31 @@ body.no-glass .glass-panel {
 
 .lesson-time { 
     background: rgba(0, 0, 0, 0.2); 
-    padding: 12px; 
+    padding: 12px 8px; /* ИСПРАВЛЕНО: уменьшен горизонтальный padding (было 12px) */
     display: flex; 
     flex-direction: column; 
     justify-content: center; 
     align-items: center; 
     min-width: 90px; 
     border-right: 1px solid var(--border-color); 
+    flex-shrink: 0;
 }
 .lesson-num { font-size: 24px; font-weight: bold; color: var(--accent-color); line-height: 1; margin-bottom: 4px; }
-.lesson-clock { font-size: 12px; color: var(--text-muted); display: flex; gap: 2px; }
+.lesson-clock { font-size: 12px; color: var(--text-muted); display: flex; gap: 2px; white-space: nowrap; }
 
 .lesson-info { 
-    padding: 12px 16px; 
+    padding: 12px 14px; /* ИСПРАВЛЕНО: чуть меньше горизонтальный padding */
     display: flex; 
     flex-direction: column; 
     justify-content: center; 
     flex-grow: 1; 
+    min-width: 0; /* ИСПРАВЛЕНО: чтобы flex не раздувался и текст переносился */
     gap: 6px; 
 }
-.lesson-subject { font-size: 16px; font-weight: bold; line-height: 1.2; word-wrap: break-word; }
+.lesson-subject { font-size: 16px; font-weight: bold; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; }
 .lesson-details { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-muted); }
 .lesson-room { color: #f59e0b; white-space: nowrap; }
-.lesson-teacher { color: var(--text-main); opacity: 0.8; word-wrap: break-word; }
+.lesson-teacher { color: var(--text-main); opacity: 0.8; word-wrap: break-word; overflow-wrap: break-word; }
 
 /* --- Таймер и Замены --- */
 .timer-widget { border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; }
@@ -418,7 +425,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 .notes-status.status-show { opacity: 1; transform: translateY(0); }
 
 /* --- Подвал --- */
-.app-footer { margin-bottom: 80px; padding: 16px; text-align: center; }
+.app-footer { margin-bottom: 90px; padding: 16px; text-align: center; } /* ИСПРАВЛЕНО: было 80px, теперь 90px — запас под кнопку */
 .footer-content { display: flex; flex-direction: column; gap: 12px; }
 .footer-disclaimer { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin: 0; }
 .footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 4px 0; }
@@ -600,3 +607,154 @@ body.font-tsap .weather-advice { font-size: calc(12px * var(--text-scale)); }
 .anim-fade { animation-name: anim-fade; }
 @keyframes anim-zoom { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 .anim-zoom { animation-name: anim-zoom; }
+
+/* =========================================================
+   АДАПТИВ ДЛЯ УЗКИХ ЭКРАНОВ (мобилки ~338px и около)
+   ИСПРАВЛЕНО: карточки не наезжают, текст не сжимается,
+   плавающий переключатель дней не перекрывает контент.
+   ========================================================= */
+
+@media (max-width: 380px) {
+    #app {
+        padding: 10px;
+        /* Запас снизу под плавающую кнопку (60px + 30px + воздух) */
+        padding-bottom: 120px;
+        gap: 12px;
+    }
+
+    .glass-panel {
+        padding: 12px;
+    }
+
+    /* Шапка */
+    .app-header {
+        padding: 10px 12px;
+        margin-bottom: 4px;
+    }
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+    }
+    .logo-text h1 {
+        font-size: calc(16px * var(--text-scale));
+    }
+    .header-date {
+        font-size: calc(12px * var(--text-scale));
+    }
+    .icon-btn {
+        font-size: calc(18px * var(--text-scale));
+        padding: 4px;
+    }
+
+    /* Панель управления */
+    .controls-panel {
+        padding: 12px;
+        gap: 10px;
+    }
+    .week-control {
+        padding: 6px 8px;
+    }
+    .group-trigger {
+        padding: 6px 12px;
+    }
+    /* Скрываем длинный совет по одежде на узких экранах — экономит место */
+    .weather-advice {
+        display: none;
+    }
+    .weather-main {
+        min-width: 60px;
+    }
+
+    /* Карточки расписания */
+    .schedule-card {
+        min-height: 92px;
+    }
+    .lesson-time {
+        min-width: 74px;
+        padding: 8px 6px;
+    }
+    .lesson-num {
+        font-size: calc(20px * var(--text-scale));
+    }
+    .lesson-clock {
+        font-size: calc(10px * var(--text-scale));
+        gap: 1px;
+    }
+    .lesson-info {
+        padding: 10px 12px;
+        gap: 4px;
+    }
+    .lesson-subject {
+        font-size: calc(14px * var(--text-scale));
+    }
+    .lesson-details {
+        font-size: calc(11px * var(--text-scale));
+        gap: 6px;
+    }
+
+    /* Подвал — гарантированно выше плавающего переключателя */
+    .app-footer {
+        margin-bottom: 130px;
+        padding: 12px;
+    }
+
+    /* Модалки */
+    .modal-content {
+        padding: 16px;
+    }
+    .modal-header h2 {
+        font-size: calc(16px * var(--text-scale));
+    }
+
+    /* Заметки */
+    .notes-textarea {
+        min-height: 120px;
+    }
+
+    /* Скелетоны */
+    .skeleton-card {
+        height: 80px;
+    }
+    .skeleton-time {
+        min-width: 74px;
+        padding: 10px 6px;
+    }
+}
+
+@media (max-width: 360px) {
+    #app {
+        padding: 8px;
+        padding-bottom: 130px;
+    }
+    .glass-panel {
+        padding: 10px;
+    }
+    .lesson-time {
+        min-width: 68px;
+        padding: 8px 4px;
+    }
+    .lesson-clock {
+        font-size: calc(9px * var(--text-scale));
+    }
+    .lesson-num {
+        font-size: calc(18px * var(--text-scale));
+    }
+    .lesson-info {
+        padding: 8px 10px;
+    }
+    .lesson-subject {
+        font-size: calc(13px * var(--text-scale));
+    }
+    .lesson-details {
+        font-size: calc(10px * var(--text-scale));
+    }
+    .app-footer {
+        margin-bottom: 140px;
+    }
+    .skeleton-card {
+        height: 74px;
+    }
+    .skeleton-time {
+        min-width: 66px;
+    }
+}
