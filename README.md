@@ -1,6 +1,15 @@
 # ⏱️ TimeHub-Portal
 
-**Умное расписание, таймер пар, заметки и куча кастомизации — в одном приложении.**
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-CC_BY--NC_4.0-d32f2f?style=flat-square" alt="License"></a>
+  <img src="https://img.shields.io/badge/Status-STABLE-d32f2f?style=flat-square" alt="Status">
+  <a href="https://github.com/si2hay/TimeHub-Portal"><img src="https://img.shields.io/badge/GitHub-Repository-222222?style=flat-square&logo=github" alt="GitHub"></a>
+  <a href="https://t.me/+sq9RDqa2I2A3M2Iy"><img src="https://img.shields.io/badge/Telegram-JOIN-5865F2?style=flat-square&logo=telegram" alt="Telegram"></a>
+</p>
+
+<p align="center">
+  <b>Умное расписание, таймер пар, заметки и куча кастомизации — в одном приложении.</b>
+</p>
 
 TimeHub-Portal — это неофициальный некоммерческий SPA-портал, созданный студентом Газпром колледжа Волгограда (группа 26 АТП-2Бо). Изначально проект делался для одной группы, но теперь позиционируется как **универсальная платформа для любого учебного заведения**. Любой студент может собрать своё расписание в Конструкторе, отправить файл в Telegram-группу, а администратор добавит его на сайт.
 
