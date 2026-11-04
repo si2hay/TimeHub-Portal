@@ -65,7 +65,7 @@ export function createSchedule() {
             return;
         }
 
-        const now = new Date(); 
+        const now = state.getNow(); 
         const currentMins = now.getHours() * 60 + now.getMinutes();
 
         lessons.forEach((lesson, index) => {
@@ -84,7 +84,6 @@ export function createSchedule() {
 
             const card = document.createElement('div');
             card.className = `schedule-card glass-panel schedule-card-anim anim-${animType} ${isNow ? 'current-lesson animate-pulse' : ''} ${lesson.isSubstitution ? 'is-substitution' : ''}`;
-            // Быстрая задержка для эффекта "каскада"
             card.style.animationDelay = `${index * 0.03}s`; 
             card.dataset.pair = lesson.pair;
             card.dataset.start = startMins;
@@ -140,7 +139,7 @@ export function createSchedule() {
     }
 
     function updateHighlightOnly(week, day, group) {
-        const now = new Date(); 
+        const now = state.getNow(); 
         const currentMins = now.getHours() * 60 + now.getMinutes();
         
         const cards = container.querySelectorAll('.schedule-card');
@@ -167,6 +166,8 @@ export function createSchedule() {
     state.on('change:settings', (newSettings) => {
         if (newSettings && newSettings.group && newSettings.group !== lastGroup) {
             render();
+        } else if (newSettings && newSettings.debugTime) {
+            updateHighlightOnly(lastWeek, lastDay, lastGroup);
         }
     });
 

@@ -9,7 +9,7 @@ export function createHeader() {
     header.className = 'app-header glass-panel';
     
     const updateDate = () => {
-        const now = new Date();
+        const now = state.getNow();
         const options = { weekday: 'long', day: 'numeric', month: 'long' };
         let dateStr = now.toLocaleDateString('ru-RU', options);
         dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);

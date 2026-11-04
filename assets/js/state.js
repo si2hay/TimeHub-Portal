@@ -6,11 +6,11 @@ import { smartStorage } from './telegram-storage.js';
 class State {
     constructor() {
         const savedSettings = JSON.parse(localStorage.getItem('timehub_settings')) || {};
-        const currentWeekCalc = this.determineWeek();
         
+        // 1. Сначала инициализируем хранилище с временными значениями
         this.data = {
-            currentWeek: currentWeekCalc, 
-            realWeek: currentWeekCalc,    
+            currentWeek: 1, 
+            realWeek: 1,    
             currentDay: new Date().getDay() === 0 ? 1 : new Date().getDay(), 
             settings: { ...CONFIG.DEFAULT_SETTINGS, ...savedSettings },
             schedule: null,
@@ -20,8 +20,26 @@ class State {
         
         this.listeners = {};
 
+        // 2. Теперь, когда this.data существует, безопасно вычисляем неделю
+        const currentWeekCalc = this.determineWeek();
+        this.data.currentWeek = currentWeekCalc;
+        this.data.realWeek = currentWeekCalc;
+
+        // 3. Запускаем остальные процессы
         this.initStreak();
         this.restoreSettingsFromCloud();
+    }
+
+    // ВАЖНО: Единая точка получения текущего времени (учитывает отладку)
+    getNow() {
+        const fakeTime = this.get('settings').debugTime;
+        if (fakeTime) {
+            const now = new Date();
+            const [hours, minutes] = fakeTime.split(':');
+            now.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            return now;
+        }
+        return new Date();
     }
 
     async restoreSettingsFromCloud() {
@@ -50,7 +68,7 @@ class State {
             const savedStreakStr = await smartStorage.getItem('timehub_streak');
             let streakData = savedStreakStr ? JSON.parse(savedStreakStr) : { count: 0, lastVisit: '', status: 'alive' };
             
-            const now = new Date();
+            const now = this.getNow();
             const nowTime = now.getTime();
             
             if (!streakData.lastVisit || streakData.lastVisit.length === 10) {
@@ -90,7 +108,7 @@ class State {
     async reviveStreak() {
         if (this.data.streak.status === 'dying') {
             this.data.streak.status = 'alive';
-            this.data.streak.lastVisit = new Date().toISOString();
+            this.data.streak.lastVisit = this.getNow().toISOString();
             this.emit('change:streak', this.data.streak);
             await smartStorage.setItem('timehub_streak', JSON.stringify(this.data.streak));
             return true;
@@ -99,13 +117,13 @@ class State {
     }
 
     async resetStreak() {
-        this.data.streak = { count: 1, lastVisit: new Date().toISOString(), status: 'alive' };
+        this.data.streak = { count: 1, lastVisit: this.getNow().toISOString(), status: 'alive' };
         this.emit('change:streak', this.data.streak);
         await smartStorage.setItem('timehub_streak', JSON.stringify(this.data.streak));
     }
 
     determineWeek() {
-        const now = new Date();
+        const now = this.getNow();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const start = CONFIG.SEMESTER_START_DATE;
         const diffTime = Math.abs(today - start);

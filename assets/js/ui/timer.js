@@ -19,7 +19,10 @@ export function createTimer() {
         <div class="timer-content">
             <div class="timer-status" id="t-status"></div>
             <span class="timer-subject" id="t-subject"></span>
-            <div class="timer-timeleft" id="t-timeleft"></div>
+            <div class="timer-timeleft">
+                <span class="time-label" id="t-time-label"></span>
+                <span class="time-value" id="t-time-value"></span>
+            </div>
             <div class="timer-progress-track">
                 <div class="timer-progress-fill" id="t-progress"></div>
             </div>
@@ -29,7 +32,8 @@ export function createTimer() {
 
     const tStatus = widget.querySelector('#t-status');
     const tSubject = widget.querySelector('#t-subject');
-    const tTimeLeft = widget.querySelector('#t-timeleft');
+    const tTimeLabel = widget.querySelector('#t-time-label');
+    const tTimeValue = widget.querySelector('#t-time-value');
     const tProgress = widget.querySelector('#t-progress');
     const tHint = widget.querySelector('#t-hint');
     const canvas = widget.querySelector('#timer-particles');
@@ -108,16 +112,22 @@ export function createTimer() {
     }
 
     function update() {
-        const now = new Date();
+        const now = state.getNow();
         const currentMins = now.getHours() * 60 + now.getMinutes();
         
         const course = state.get('settings').course || 1;
         const bells = course === 1 ? BELLS.course1 : BELLS.course2plus;
 
+        const ordinals = ['первой', 'второй', 'третьей', 'четвертой', 'пятой', 'шестой', 'седьмой'];
+        
+        // Векторная иконка книги
+        const bookIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 4px; margin-bottom: 2px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
+
         let status = 'waiting';
         let text = '';
         let progress = 0;
-        let timeLeftStr = '';
+        let timeLabelStr = '';
+        let timeValueStr = '';
         let currentPairNum = null;
 
         const realDay = now.getDay(); 
@@ -140,11 +150,21 @@ export function createTimer() {
             let daysToAdd = realDay === 6 ? 2 : (realDay === 0 ? 1 : (realDay === 5 ? 3 : 1));
             const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToAdd, Math.floor(firstPairStart / 60), firstPairStart % 60);
             const diffMins = Math.floor((targetDate - now) / 60000);
-            text = `До 1-й пары (${daysToAdd === 1 ? 'завтра' : 'в пн'})`;
-            timeLeftStr = formatTimeLeft(diffMins);
+            
+            const firstPair = todaySchedule[0];
+            const roomInfo = firstPair.room ? ` <span class="lesson-room">📍 ${firstPair.room}</span>` : '';
+            text = `До занятий (${daysToAdd === 1 ? 'завтра' : 'в пн'}):<br><span class="timer-next-subject">${bookIcon} ${firstPair.subject}${roomInfo}</span>`;
+            timeLabelStr = 'Начнется через:';
+            timeValueStr = formatTimeLeft(diffMins);
         } else if (currentMins < firstPairStart) {
-            text = 'До 1-й пары';
-            timeLeftStr = formatTimeLeft(firstPairStart - currentMins);
+            const firstPair = todaySchedule[0];
+            const roomInfo = firstPair.room ? ` <span class="lesson-room">📍 ${firstPair.room}</span>` : '';
+            text = `До ${ordinals[0]} пары:<br><span class="timer-next-subject">${bookIcon} ${firstPair.subject}${roomInfo}</span>`;
+            timeLabelStr = 'До начала:';
+            timeValueStr = formatTimeLeft(firstPairStart - currentMins);
+            
+            const oneHourBefore = Math.max(0, firstPairStart - 60);
+            progress = Math.max(0, Math.min(1, (currentMins - oneHourBefore) / (firstPairStart - oneHourBefore)));
         } else {
             for (let i = 0; i < todaySchedule.length; i++) {
                 const pair = todaySchedule[i];
@@ -155,8 +175,9 @@ export function createTimer() {
                 if (duration <= 45) {
                     if (currentMins >= start && currentMins < end) {
                         status = 'lesson'; currentPairNum = pair.pair;
-                        text = `Идет пара ${pair.pair}`;
-                        timeLeftStr = `До конца: ${formatTimeLeft(end - currentMins)}`;
+                        text = `Идет ${ordinals[pair.pair - 1]} пара`;
+                        timeLabelStr = 'До конца:';
+                        timeValueStr = formatTimeLeft(end - currentMins);
                         progress = (currentMins - start) / duration;
                         break;
                     }
@@ -166,20 +187,23 @@ export function createTimer() {
 
                     if (currentMins >= start && currentMins < half1End) {
                         status = 'lesson'; currentPairNum = pair.pair;
-                        text = `Идет 1-я часть пары ${pair.pair}`;
-                        timeLeftStr = `До конца: ${formatTimeLeft(half1End - currentMins)}`;
+                        text = `1-я часть ${ordinals[pair.pair - 1]} пары`;
+                        timeLabelStr = 'До конца:';
+                        timeValueStr = formatTimeLeft(half1End - currentMins);
                         progress = (currentMins - start) / 45;
                         break;
                     } else if (currentMins >= half1End && currentMins < half2Start) {
                         status = 'break'; currentPairNum = pair.pair;
                         text = `Перемена 🍵`;
-                        timeLeftStr = `До конца: ${formatTimeLeft(half2Start - currentMins)}`;
+                        timeLabelStr = 'До конца:';
+                        timeValueStr = formatTimeLeft(half2Start - currentMins);
                         progress = (currentMins - half1End) / (half2Start - half1End);
                         break;
                     } else if (currentMins >= half2Start && currentMins < end) {
                         status = 'lesson'; currentPairNum = pair.pair;
-                        text = `Идет 2-я часть пары ${pair.pair}`;
-                        timeLeftStr = `До конца: ${formatTimeLeft(end - currentMins)}`;
+                        text = `2-я часть ${ordinals[pair.pair - 1]} пары`;
+                        timeLabelStr = 'До конца:';
+                        timeValueStr = formatTimeLeft(end - currentMins);
                         progress = (currentMins - half2Start) / 45;
                         break;
                     }
@@ -191,9 +215,10 @@ export function createTimer() {
                     const nextStart = timeToMinutes(nextPair.startTime);
                     if (currentMins < nextStart) {
                         status = 'waiting';
-                        const roomInfo = nextPair.room ? `, каб. ${nextPair.room}` : '';
-                        text = `Перемена до ${nextPair.pair}-й пары:<br><span class="timer-next-subject">📖 ${nextPair.subject}${roomInfo}</span>`;
-                        timeLeftStr = `До начала: ${formatTimeLeft(nextStart - currentMins)}`;
+                        const roomInfo = nextPair.room ? ` <span class="lesson-room">📍 ${nextPair.room}</span>` : '';
+                        text = `Перемена перед ${ordinals[nextPair.pair - 1]} парой:<br><span class="timer-next-subject">${bookIcon} ${nextPair.subject}${roomInfo}</span>`;
+                        timeLabelStr = 'До начала:';
+                        timeValueStr = formatTimeLeft(nextStart - currentMins);
                         progress = (currentMins - end) / (nextStart - end);
                         break;
                     }
@@ -201,16 +226,21 @@ export function createTimer() {
             }
         }
 
-        let subjectName = '';
+        // ИСПРАВЛЕНО: Теперь кабинет добавляется в название предмета, когда идет пара
+        let subjectHTML = '';
         if (currentPairNum !== null && currentLessons.length > 0) {
             const lesson = currentLessons.find(l => l.pair === currentPairNum);
-            if (lesson) subjectName = lesson.subject;
+            if (lesson) {
+                const roomInfo = lesson.room ? ` <span class="lesson-room">📍 ${lesson.room}</span>` : '';
+                subjectHTML = `${lesson.subject}${roomInfo}`;
+            }
         }
 
         tStatus.innerHTML = text; 
         tStatus.className = `timer-status ${status}`;
-        tSubject.textContent = subjectName;
-        tTimeLeft.textContent = timeLeftStr;
+        tSubject.innerHTML = subjectHTML; // Используем innerHTML для отрисовки span с кабинетом
+        tTimeLabel.textContent = timeLabelStr;
+        tTimeValue.textContent = timeValueStr;
         tProgress.style.width = `${progress * 100}%`;
     }
 
@@ -220,6 +250,8 @@ export function createTimer() {
     state.on('change:settings', (newSettings) => {
         if (newSettings && newSettings.group && newSettings.group !== lastGroup) {
             loadLessons();
+        } else if (newSettings && newSettings.debugTime) {
+            update(); 
         }
     });
 

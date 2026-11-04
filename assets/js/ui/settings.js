@@ -6,6 +6,7 @@ import { toggleParticles } from '../particles.js';
 import { openFullSchedule } from './full-schedule.js';
 import { promptInstall } from '../pwa.js';
 import { CONFIG } from '../config.js'; 
+import { smartStorage } from '../telegram-storage.js';
 
 export function openSettings() {
     if (document.getElementById('settings-modal')) return;
@@ -106,7 +107,6 @@ export function openSettings() {
                             <input type="file" id="bg-file" accept="image/*" style="display: none;">
                             <div id="file-name" style="font-size: 11px; color: var(--text-muted); margin-top: 6px; word-break: break-all;"></div>
                             
-                            <!-- ПОДСКАЗКА ПРО СИНХРОНИЗАЦИЮ -->
                             <div class="settings-warning">
                                 ⚠️ Файлы с устройства не синхронизируются между устройствами (сохраняются только локально). Чтобы обои были везде, используйте ссылку (URL).
                             </div>
@@ -136,7 +136,6 @@ export function openSettings() {
                 <div class="settings-content">
                     <div class="settings-inner">
                         
-                        <!-- ИСПРАВЛЕНО: Переименовано в "Переключатель дней" -->
                         <div class="settings-row">
                             <span class="settings-row-label">Переключатель дней</span>
                             <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr;">
@@ -171,7 +170,6 @@ export function openSettings() {
                             </div>
                         </div>
 
-                        <!-- ИСПРАВЛЕНО: Переименовано и добавлена подсказка -->
                         <div class="settings-row" style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 12px;">
                             <div class="toggle-row" style="padding-top:0; border:none;">
                                 <span>Свайп для смены недель</span>
@@ -223,7 +221,69 @@ export function openSettings() {
                 </div>
             </div>
 
-            <div style="text-align: center; margin-top: 20px; opacity: 0.4;">
+            <!-- DANGER ZONE (Жестко скрыто через display: none) -->
+            <div class="debug-zone" id="debug-zone" style="display: none;">
+                <div class="debug-header">
+                    <span>🛠 ОТЛАДКА (DANGER ZONE)</span>
+                </div>
+                <div class="debug-content">
+                    <div class="debug-inner">
+                        
+                        <div class="debug-group">
+                            <div class="debug-label">Машина времени (Виртуальное время)</div>
+                            <div class="debug-row">
+                                <input type="time" id="debug-time-input" class="debug-input" value="${settings.debugTime || ''}">
+                                <button id="btn-debug-set-time" class="debug-btn">Задать</button>
+                                <button id="btn-debug-reset-time" class="debug-btn danger">Сброс</button>
+                            </div>
+                        </div>
+
+                        <div class="debug-group">
+                            <div class="debug-label">Принудительный день/неделя</div>
+                            <div class="debug-row">
+                                <select id="debug-week-select" class="debug-input">
+                                    <option value="1" ${state.get('currentWeek') === 1 ? 'selected' : ''}>1 неделя</option>
+                                    <option value="2" ${state.get('currentWeek') === 2 ? 'selected' : ''}>2 неделя</option>
+                                </select>
+                                <select id="debug-day-select" class="debug-input">
+                                    <option value="1" ${state.get('currentDay') === 1 ? 'selected' : ''}>Пн</option>
+                                    <option value="2" ${state.get('currentDay') === 2 ? 'selected' : ''}>Вт</option>
+                                    <option value="3" ${state.get('currentDay') === 3 ? 'selected' : ''}>Ср</option>
+                                    <option value="4" ${state.get('currentDay') === 4 ? 'selected' : ''}>Чт</option>
+                                    <option value="5" ${state.get('currentDay') === 5 ? 'selected' : ''}>Пт</option>
+                                </select>
+                                <button id="btn-debug-force-day" class="debug-btn">Применить</button>
+                            </div>
+                        </div>
+
+                        <div class="debug-group">
+                            <div class="debug-label">Данные и Кэш</div>
+                            <button id="btn-debug-copy-state" class="debug-btn">Копировать State (JSON)</button>
+                            <button id="btn-debug-hard-reset" class="debug-btn danger">Hard Reset (Полный сброс)</button>
+                        </div>
+
+                        <div class="debug-group">
+                            <div class="debug-label">Стрик (Огонек)</div>
+                            <div class="debug-row">
+                                <button id="btn-debug-break-streak" class="debug-btn danger">Сломать (38ч)</button>
+                                <button id="btn-debug-kill-streak" class="debug-btn danger">Убить (50ч)</button>
+                            </div>
+                        </div>
+
+                        <div class="debug-group">
+                            <div class="debug-label">Окружение</div>
+                            <div class="debug-info" id="debug-env-info">
+                                Загрузка...
+                            </div>
+                        </div>
+
+                        <button id="btn-debug-hide" class="debug-btn" style="margin-top: 10px; width: 100%;">Скрыть отладку</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Версия -->
+            <div style="text-align: center; margin-top: 20px; opacity: 0.4; cursor: pointer;" id="version-trigger">
                 <span style="font-size: 11px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">
                     TimeHub-Portal • v${CONFIG.VERSION}
                 </span>
@@ -233,6 +293,28 @@ export function openSettings() {
 
     document.body.appendChild(modal);
 
+    // ЛОГИКА 5 КЛИКОВ ПО ВЕРСИИ
+    const versionTrigger = modal.querySelector('#version-trigger');
+    const debugZone = modal.querySelector('#debug-zone');
+    let versionClicks = 0;
+    let clickTimeout;
+
+    versionTrigger.addEventListener('click', () => {
+        if (!CONFIG.ENABLE_DEBUG) return;
+
+        versionClicks++;
+        clearTimeout(clickTimeout);
+        clickTimeout = setTimeout(() => { versionClicks = 0; }, 1500);
+
+        if (versionClicks >= 5) {
+            versionClicks = 0;
+            debugZone.style.display = 'grid'; // Принудительно показываем
+            setTimeout(() => debugZone.classList.add('open'), 10); // Запускаем анимацию
+            updateEnvInfo();
+        }
+    });
+
+    // ЛОГИКА АККОРДЕОНА
     const headers = modal.querySelectorAll('.settings-header');
     headers.forEach(header => {
         header.addEventListener('click', () => {
@@ -243,6 +325,7 @@ export function openSettings() {
         });
     });
 
+    // ОБРАБОТЧИКИ
     modal.querySelector('#btn-close-settings').addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
@@ -358,6 +441,96 @@ export function openSettings() {
         else document.body.classList.add('no-glass');
     });
     setupToggle('toggle-week-swipe', 'enableWeekSwipe');
+
+    // ==========================================
+    // ОБРАБОТЧИКИ ОТЛАДКИ
+    // ==========================================
+    if (CONFIG.ENABLE_DEBUG) {
+        const timeInput = modal.querySelector('#debug-time-input');
+        const weekSelect = modal.querySelector('#debug-week-select');
+        const daySelect = modal.querySelector('#debug-day-select');
+
+        modal.querySelector('#btn-debug-set-time').addEventListener('click', () => {
+            if (!timeInput.value) return;
+            state.set('settings', { ...state.get('settings'), debugTime: timeInput.value });
+            state.emit('change:debugDate');
+            modal.remove();
+        });
+
+        modal.querySelector('#btn-debug-reset-time').addEventListener('click', () => {
+            state.set('settings', { ...state.get('settings'), debugTime: null });
+            timeInput.value = '';
+            state.emit('change:debugDate');
+            modal.remove();
+        });
+
+        modal.querySelector('#btn-debug-force-day').addEventListener('click', () => {
+            state.set('currentWeek', parseInt(weekSelect.value));
+            state.set('currentDay', parseInt(daySelect.value));
+            modal.remove();
+        });
+
+        modal.querySelector('#btn-debug-copy-state').addEventListener('click', () => {
+            copyToClipboard(JSON.stringify(state.data, null, 2))
+                .then(() => alert('State скопирован в буфер обмена!'))
+                .catch(() => alert('Не удалось скопировать.'));
+        });
+
+        modal.querySelector('#btn-debug-hard-reset').addEventListener('click', () => {
+            if (confirm('⚠️ ВНИМАНИЕ! Это удалит ВСЕ настройки, заметки и стрик. Приложение перезагрузится. Продолжить?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                location.reload();
+            }
+        });
+
+        modal.querySelector('#btn-debug-break-streak').addEventListener('click', async () => {
+            const fakeLastVisit = new Date(Date.now() - 38 * 3600 * 1000).toISOString();
+            state.data.streak.status = 'dying';
+            state.data.streak.lastVisit = fakeLastVisit;
+            state.emit('change:streak', state.data.streak);
+            await smartStorage.setItem('timehub_streak', JSON.stringify(state.data.streak));
+            modal.remove();
+        });
+
+        modal.querySelector('#btn-debug-kill-streak').addEventListener('click', async () => {
+            const fakeLastVisit = new Date(Date.now() - 50 * 3600 * 1000).toISOString();
+            state.data.streak.count = 0;
+            state.data.streak.status = 'dead';
+            state.data.streak.lastVisit = fakeLastVisit;
+            state.emit('change:streak', state.data.streak);
+            await smartStorage.setItem('timehub_streak', JSON.stringify(state.data.streak));
+            modal.remove();
+        });
+
+        // ЖЕЛЕЗОБЕТОННОЕ СКРЫТИЕ
+        modal.querySelector('#btn-debug-hide').addEventListener('click', () => {
+            debugZone.classList.remove('open');
+            setTimeout(() => { debugZone.style.display = 'none'; }, 300); // Ждем окончания анимации
+            versionClicks = 0;
+            if (timeInput) timeInput.value = '';
+        });
+    }
+
+    // Выносим функцию наружу
+    async function updateEnvInfo() {
+        const envInfo = modal.querySelector('#debug-env-info');
+        if (!envInfo) return;
+        
+        let cacheName = 'Неизвестно';
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            if (keys.length > 0) cacheName = keys.join(', ');
+        }
+        
+        const tgInfo = window.Telegram?.WebApp ? `Да (${window.Telegram.WebApp.platform})` : 'Нет (Браузер)';
+        
+        envInfo.innerHTML = `
+            <div><b>Кэш SW:</b> ${cacheName}</div>
+            <div><b>Telegram:</b> ${tgInfo}</div>
+            <div><b>Экран:</b> ${window.innerWidth}x${window.innerHeight} (DPR: ${window.devicePixelRatio})</div>
+        `;
+    }
 }
 
 // ==========================================
