@@ -8,12 +8,10 @@ import { promptInstall } from '../pwa.js';
 import { CONFIG } from '../config.js'; 
 
 export function openSettings() {
-    // Защита от двойного открытия
     if (document.getElementById('settings-modal')) return;
 
     const settings = state.get('settings');
 
-    // Список тем для горизонтальной карусели
     const THEMES = [
         { id: 'dark', name: 'Темная' }, { id: 'dota', name: 'Dota 2' }, { id: 'minecraft', name: 'Minecraft' },
         { id: 'ocean', name: 'Океан' }, { id: 'sunset', name: 'Закат' }, { id: 'golden', name: 'Золото' },
@@ -25,9 +23,6 @@ export function openSettings() {
     modal.id = 'settings-modal';
     modal.className = 'modal-overlay';
 
-    // ==========================================
-    // ВЕРСТКА МОДАЛЬНОГО ОКНА
-    // ==========================================
     modal.innerHTML = `
         <div class="modal-content glass-panel" style="padding-bottom: 30px;">
             <div class="modal-header">
@@ -35,7 +30,6 @@ export function openSettings() {
                 <button id="btn-close-settings" class="icon-btn">✖</button>
             </div>
 
-            <!-- БЛОК 1: ОФОРМЛЕНИЕ -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>🎨 Оформление</span>
@@ -96,7 +90,6 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- БЛОК 2: ОБОИ -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>🖼 Обои</span>
@@ -112,9 +105,14 @@ export function openSettings() {
                             </label>
                             <input type="file" id="bg-file" accept="image/*" style="display: none;">
                             <div id="file-name" style="font-size: 11px; color: var(--text-muted); margin-top: 6px; word-break: break-all;"></div>
+                            
+                            <!-- ПОДСКАЗКА ПРО СИНХРОНИЗАЦИЮ -->
+                            <div class="settings-warning">
+                                ⚠️ Файлы с устройства не синхронизируются между устройствами (сохраняются только локально). Чтобы обои были везде, используйте ссылку (URL).
+                            </div>
                         </div>
                         
-                        <div class="toggle-row">
+                        <div class="toggle-row" style="margin-top: 8px;">
                             <span>Затемнение</span>
                             <input type="range" id="bg-darkness" min="0" max="0.8" step="0.1" value="${settings.bgDarkness || 0}" style="accent-color: var(--accent-color); width: 100px;">
                         </div>
@@ -130,7 +128,6 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- БЛОК 3: ИНТЕРФЕЙС (7 СТИЛЕЙ) -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>⚙️ Интерфейс</span>
@@ -138,8 +135,10 @@ export function openSettings() {
                 </div>
                 <div class="settings-content">
                     <div class="settings-inner">
+                        
+                        <!-- ИСПРАВЛЕНО: Переименовано в "Переключатель дней" -->
                         <div class="settings-row">
-                            <span class="settings-row-label">Плашка дней недели</span>
+                            <span class="settings-row-label">Переключатель дней</span>
                             <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr;">
                                 <button class="settings-btn ${settings.dayPickerStyle === 'radial' ? 'active' : ''}" data-daypicker="radial">Веер</button>
                                 <button class="settings-btn ${settings.dayPickerStyle === 'minimal' ? 'active' : ''}" data-daypicker="minimal">Минимал</button>
@@ -172,22 +171,22 @@ export function openSettings() {
                             </div>
                         </div>
 
-                        <!-- НОВЫЙ ТУМБЛЕР СВАЙПА НЕДЕЛЬ -->
+                        <!-- ИСПРАВЛЕНО: Переименовано и добавлена подсказка -->
                         <div class="settings-row" style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 12px;">
                             <div class="toggle-row" style="padding-top:0; border:none;">
-                                <span>Свайп недель (по полосе)</span>
+                                <span>Свайп для смены недель</span>
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="toggle-week-swipe" ${settings.enableWeekSwipe !== false ? 'checked' : ''}>
                                     <span class="slider"></span>
                                 </label>
                             </div>
+                            <div class="settings-hint">Проводите пальцем влево/вправо по полосе с датами, чтобы переключать недели.</div>
                         </div>
 
                     </div>
                 </div>
             </div>
 
-            <!-- БЛОК 4: ПРИЛОЖЕНИЕ -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>📱 Приложение</span>
@@ -224,7 +223,6 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- Версия в подвале -->
             <div style="text-align: center; margin-top: 20px; opacity: 0.4;">
                 <span style="font-size: 11px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">
                     TimeHub-Portal • v${CONFIG.VERSION}
@@ -235,9 +233,6 @@ export function openSettings() {
 
     document.body.appendChild(modal);
 
-    // ==========================================
-    // ЛОГИКА АККОРДЕОНА
-    // ==========================================
     const headers = modal.querySelectorAll('.settings-header');
     headers.forEach(header => {
         header.addEventListener('click', () => {
@@ -248,9 +243,6 @@ export function openSettings() {
         });
     });
 
-    // ==========================================
-    // ОБРАБОТЧИКИ СОБЫТИЙ
-    // ==========================================
     modal.querySelector('#btn-close-settings').addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
@@ -365,7 +357,7 @@ export function openSettings() {
         if (isChecked) document.body.classList.remove('no-glass');
         else document.body.classList.add('no-glass');
     });
-    setupToggle('toggle-week-swipe', 'enableWeekSwipe'); // Новый тумблер
+    setupToggle('toggle-week-swipe', 'enableWeekSwipe');
 }
 
 // ==========================================

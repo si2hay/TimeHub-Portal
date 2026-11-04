@@ -2,7 +2,7 @@
 
 export const CONFIG = {
     APP_NAME: "TimeHub-Portal",
-    VERSION: "04.11.2026-03:34", // Обновлена версия
+    VERSION: "04.11.2026-03:54", // Обновлена версия
     
     // Точка отсчета: 26 октября 2026 (Начало 1-й недели)
     SEMESTER_START_DATE: new Date("2026-10-26T00:00:00"),
@@ -18,9 +18,9 @@ export const CONFIG = {
         group: "26 АТП-2Бо", 
         course: 1,
         textScale: 1,
-        dayPickerStyle: "capsule", // Новый стиль по умолчанию
+        dayPickerStyle: "capsule",
         dayChangeAnimation: "slide-up",
-        enableWeekSwipe: true // Новая настройка: свайп недель
+        enableWeekSwipe: true 
     }
 };
 
