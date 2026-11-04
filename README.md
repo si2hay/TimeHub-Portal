@@ -1,10 +1,13 @@
+
 # ⏱️ TimeHub-Portal
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-CC_BY--NC_4.0-d32f2f?style=flat-square" alt="License"></a>
-  <img src="https://img.shields.io/badge/Status-STABLE-d32f2f?style=flat-square" alt="Status">
-  <a href="https://github.com/si2hay/TimeHub-Portal"><img src="https://img.shields.io/badge/GitHub-Repository-222222?style=flat-square&logo=github" alt="GitHub"></a>
-  <a href="https://t.me/+sq9RDqa2I2A3M2Iy"><img src="https://img.shields.io/badge/Telegram-JOIN-5865F2?style=flat-square&logo=telegram" alt="Telegram"></a>
+  <a href="https://si2hay.github.io/TimeHub-Portal/"><img src="https://img.shields.io/badge/SITE-LIVE-4caf50?style=flat-square&logo=githubpages&logoColor=white" alt="Site"></a>
+  <a href="https://si2hay.github.io/TimeHub-Portal/builder.html"><img src="https://img.shields.io/badge/BUILDER-OPEN-ff9800?style=flat-square&logo=tools&logoColor=white" alt="Builder"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-CC_BY--NC_4.0-d32f2f?style=flat-square" alt="License"></a>
+  <img src="https://img.shields.io/badge/STATUS-STABLE-d32f2f?style=flat-square" alt="Status">
+  <a href="https://github.com/si2hay/TimeHub-Portal"><img src="https://img.shields.io/badge/GITHUB-REPOSITORY-222222?style=flat-square&logo=github" alt="GitHub"></a>
+  <a href="https://t.me/+sq9RDqa2I2A3M2Iy"><img src="https://img.shields.io/badge/TELEGRAM-JOIN-5865F2?style=flat-square&logo=telegram" alt="Telegram"></a>
 </p>
 
 <p align="center">
