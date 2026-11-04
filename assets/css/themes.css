@@ -19,11 +19,9 @@
     --transition-speed: 0.3s;
 }
 
-/* --- ПЕРЕКЛЮЧАТЕЛЬ ШРИФТОВ --- */
 body.font-minecraft { --font-family: 'MinecraftRus', monospace; }
 body.font-tsap { --font-family: 'Tsap-Tsarap', sans-serif; }
 
-/* 2. Dota 2 */
 body.theme-dota {
     --bg-color: #1a0b0e;
     --bg-gradient: none;
@@ -35,7 +33,6 @@ body.theme-dota {
     --glass-bg: rgba(42, 13, 15, 0.4);
 }
 
-/* 3. Minecraft */
 body.theme-minecraft {
     --bg-color: #3d3d3d;
     --bg-gradient: none;
@@ -48,7 +45,6 @@ body.theme-minecraft {
     --glass-bg: rgba(50, 50, 50, 0.6);
 }
 
-/* 4. Nothing (Теперь официальная тема) */
 body.theme-nothing {
     --bg-color: #000000;
     --bg-gradient: none;
@@ -59,10 +55,9 @@ body.theme-nothing {
     --accent-hover: #ff3333;
     --border-color: #333333;
     --glass-bg: rgba(20, 20, 20, 0.8);
-    --border-radius: 0px; /* Стиль Nothing — только прямые углы */
+    --border-radius: 0px;
 }
 
-/* 5. Matrix (Новая тема) */
 body.theme-matrix {
     --bg-color: #000000;
     --bg-gradient: none;
@@ -78,7 +73,6 @@ body.theme-matrix {
     --border-radius: 0px;
 }
 
-/* 6. Глубокий океан (Градиент) */
 body.theme-ocean {
     --bg-color: #0f2027;
     --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
@@ -91,7 +85,6 @@ body.theme-ocean {
     --glass-bg: rgba(15, 32, 39, 0.4);
 }
 
-/* 7. Нежный закат (Градиент) */
 body.theme-sunset {
     --bg-color: #2b1a1a;
     --bg-gradient: linear-gradient(135deg, #2b1a1a, #4a2525, #6b3636);
@@ -104,7 +97,6 @@ body.theme-sunset {
     --glass-bg: rgba(43, 26, 26, 0.4);
 }
 
-/* 8. Золото */
 body.theme-golden {
     --bg-color: #1c1917;
     --bg-gradient: none;
@@ -117,7 +109,6 @@ body.theme-golden {
     --glass-bg: rgba(28, 25, 23, 0.5);
 }
 
-/* 9. Изумруд (Градиент) */
 body.theme-emerald {
     --bg-color: #022c22;
     --bg-gradient: linear-gradient(135deg, #022c22, #064e3b, #065f46);
@@ -130,7 +121,6 @@ body.theme-emerald {
     --glass-bg: rgba(2, 44, 34, 0.4);
 }
 
-/* 10. Норд */
 body.theme-nord {
     --bg-color: #2e3440;
     --bg-gradient: none;
@@ -143,7 +133,6 @@ body.theme-nord {
     --glass-bg: rgba(46, 52, 64, 0.4);
 }
 
-/* 11. Кофе */
 body.theme-coffee {
     --bg-color: #2c1e16;
     --bg-gradient: none;
@@ -156,7 +145,6 @@ body.theme-coffee {
     --glass-bg: rgba(44, 30, 22, 0.4);
 }
 
-/* 12. Сакура */
 body.theme-sakura {
     --bg-color: #2d1b21;
     --bg-gradient: linear-gradient(135deg, #2d1b21, #4c2a35, #6b3c4a);
@@ -168,3 +156,63 @@ body.theme-sakura {
     --border-color: rgba(236, 72, 153, 0.3);
     --glass-bg: rgba(45, 27, 33, 0.4);
 }
+
+/* =========================================================
+   СТИЛИ ИНТЕРФЕЙСА (ОСТАВЛЕНЫ 4, РАБОТАЮТ С ЦВЕТАМИ)
+   ========================================================= */
+
+/* --- 1. ТЕРМИНАЛ / MAINFRAME --- */
+body.style-terminal {
+    --border-radius: 0px;
+    --glass-blur: blur(0px);
+    --shadow: none;
+}
+body.style-terminal::before {
+    content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-image: linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+    background-size: 20px 20px; pointer-events: none; z-index: 9998; opacity: 0.3;
+}
+body.style-terminal::after {
+    content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+    background-size: 100% 4px; pointer-events: none; z-index: 9999;
+}
+body.style-terminal .app-header h1::before { content: "> "; color: var(--accent-color); }
+body.style-terminal .section-header h2::before { content: "[ "; color: var(--accent-color); }
+body.style-terminal .section-header h2::after { content: " ]"; color: var(--accent-color); }
+body.style-terminal .glass-panel { border: 1px solid var(--accent-color); box-shadow: none; background: transparent; }
+body.style-terminal .lesson-num { text-shadow: 0 0 5px var(--accent-color); }
+body.style-terminal .timer-timeleft .time-value { text-shadow: 0 0 10px var(--accent-color); }
+body.style-terminal .timer-timeleft .time-value::after { content: "_"; animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* --- 2. БРУТАЛИЗМ --- */
+body.style-brutalism {
+    --border-radius: 0px;
+    --glass-blur: none;
+    --shadow: 4px 4px 0px var(--text-main);
+}
+body.style-brutalism .glass-panel { border: 3px solid var(--text-main); padding: 16px; background: var(--surface-color); }
+body.style-brutalism .lesson-time { background: var(--text-main); color: var(--bg-color); border-right: 3px solid var(--text-main); }
+body.style-brutalism .lesson-num { color: var(--bg-color); }
+body.style-brutalism .lesson-clock { color: var(--bg-color); opacity: 0.8; }
+body.style-brutalism .schedule-card { border: 3px solid var(--text-main); }
+body.style-brutalism .week-control { border: 2px solid var(--text-main); background: var(--surface-color); }
+body.style-brutalism .settings-header { border-bottom: 2px solid var(--text-main); background: var(--surface-color); }
+body.style-brutalism .app-header { border-bottom: 3px solid var(--text-main); }
+
+/* --- 3. NOTHING OS --- */
+body.style-nothing {
+    --border-radius: 0px;
+    --glass-blur: blur(20px);
+    --shadow: none;
+}
+body.style-nothing::before {
+    content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background-image: radial-gradient(var(--text-main) 1px, transparent 1px);
+    background-size: 10px 10px; pointer-events: none; z-index: -1; opacity: 0.1;
+}
+body.style-nothing .glass-panel { border: 1px solid var(--border-color); background: var(--surface-color); }
+body.style-nothing .logo-icon { background: transparent; border: 2px solid var(--text-main); color: var(--text-main); }
+body.style-nothing .badge-substitution { background: var(--accent-color); color: var(--bg-color); font-weight: 900; }
+body.style-nothing .timer-timeleft .time-value { font-family: 'Space Mono', monospace; }

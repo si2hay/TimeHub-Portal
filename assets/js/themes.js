@@ -3,31 +3,35 @@
 import { state } from './state.js';
 
 export function applyTheme(themeName) {
-    // Сбрасываем классы, но сохраняем классы шрифтов
-    const currentFont = state.get('settings').font || 'minecraft';
-    document.body.className = ''; 
+    const classesToRemove = Array.from(document.body.classList).filter(c => c.startsWith('theme-'));
+    document.body.classList.remove(...classesToRemove);
     
-    // Применяем тему
     if (themeName !== 'dark') {
         document.body.classList.add(`theme-${themeName}`);
     }
     
-    // Применяем стекло (liquid glass)
     const settings = state.get('settings');
     if (!settings.liquidGlass) {
         document.body.classList.add('no-glass');
+    } else {
+        document.body.classList.remove('no-glass');
     }
+}
+
+export function applyStyle(styleName) {
+    const classesToRemove = Array.from(document.body.classList).filter(c => c.startsWith('style-'));
+    document.body.classList.remove(...classesToRemove);
     
-    // Возвращаем шрифт
-    applyFont(currentFont);
-    // ВАЖНО: НЕ вызываем здесь state.set, чтобы не было рекурсии.
-    // Сохранение настроек делается в settings.js при клике.
+    if (styleName && styleName !== 'default') {
+        document.body.classList.add(`style-${styleName}`);
+    }
 }
 
 export function applyFont(fontName) {
     document.body.classList.remove(
         'font-minecraft', 'font-tsap', 
-        'font-inter', 'font-roboto', 'font-rubik', 'font-play', 'font-montserrat'
+        'font-inter', 'font-roboto', 'font-rubik', 'font-play', 'font-montserrat',
+        'font-terminal', 'font-paper', 'font-cyber', 'font-synth', 'font-soft'
     );
     
     if (['inter', 'roboto', 'rubik', 'play', 'montserrat'].includes(fontName)) {
@@ -46,6 +50,7 @@ export function applyTextScale(scale) {
 export function initThemes() {
     const settings = state.get('settings');
     applyTheme(settings.theme || 'dark');
+    applyStyle(settings.uiStyle || 'default');
     applyFont(settings.font || 'minecraft');
     applyTextScale(settings.textScale || 1);
 }

@@ -1,7 +1,7 @@
 // assets/js/ui/settings.js: Модальное окно настроек с группировкой (аккордеон)
 
 import { state } from '../state.js';
-import { applyTheme, applyFont, applyTextScale } from '../themes.js'; 
+import { applyTheme, applyStyle, applyFont, applyTextScale } from '../themes.js';
 import { toggleParticles } from '../particles.js';
 import { openFullSchedule } from './full-schedule.js';
 import { promptInstall } from '../pwa.js';
@@ -18,6 +18,14 @@ export function openSettings() {
         { id: 'ocean', name: 'Океан' }, { id: 'sunset', name: 'Закат' }, { id: 'golden', name: 'Золото' },
         { id: 'emerald', name: 'Изумруд' }, { id: 'nord', name: 'Норд' }, { id: 'coffee', name: 'Кофе' },
         { id: 'sakura', name: 'Сакура' }, { id: 'nothing', name: 'Nothing' }, { id: 'matrix', name: 'Matrix' }
+    ];
+
+    // ОСТАВЛЕНЫ ТОЛЬКО 4 СТИЛЯ
+    const STYLES = [
+        { id: 'default', name: 'Стекло' }, 
+        { id: 'terminal', name: 'Терминал' },
+        { id: 'brutalism', name: 'Брутализм' }, 
+        { id: 'nothing', name: 'Nothing' }
     ];
 
     const modal = document.createElement('div');
@@ -40,10 +48,19 @@ export function openSettings() {
                     <div class="settings-inner">
                         
                         <div class="settings-row">
-                            <span class="settings-row-label">Темы</span>
+                            <span class="settings-row-label">Цветовая тема</span>
                             <div class="theme-carousel">
                                 ${THEMES.map(t => `
                                     <button class="theme-pill ${settings.theme === t.id ? 'active' : ''}" data-theme="${t.id}">${t.name}</button>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="settings-row">
+                            <span class="settings-row-label">Стиль интерфейса</span>
+                            <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr;">
+                                ${STYLES.map(s => `
+                                    <button class="settings-btn ${settings.uiStyle === s.id || (!settings.uiStyle && s.id === 'default') ? 'active' : ''}" data-uistyle="${s.id}">${s.name}</button>
                                 `).join('')}
                             </div>
                         </div>
@@ -308,8 +325,8 @@ export function openSettings() {
 
         if (versionClicks >= 5) {
             versionClicks = 0;
-            debugZone.style.display = 'grid'; // Принудительно показываем
-            setTimeout(() => debugZone.classList.add('open'), 10); // Запускаем анимацию
+            debugZone.style.display = 'grid'; 
+            setTimeout(() => debugZone.classList.add('open'), 10); 
             updateEnvInfo();
         }
     });
@@ -342,6 +359,16 @@ export function openSettings() {
 
     modal.querySelector('#btn-share-app').addEventListener('click', () => { modal.remove(); openQRCodeModal(); });
     modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => { modal.remove(); openFullSchedule(); });
+
+    modal.querySelectorAll('.settings-btn[data-uistyle]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const style = e.target.dataset.uistyle;
+            modal.querySelectorAll('.settings-btn[data-uistyle]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            state.set('settings', { ...state.get('settings'), uiStyle: style });
+            applyStyle(style);
+        });
+    });
 
     modal.querySelectorAll('.settings-btn[data-daypicker]').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -442,9 +469,6 @@ export function openSettings() {
     });
     setupToggle('toggle-week-swipe', 'enableWeekSwipe');
 
-    // ==========================================
-    // ОБРАБОТЧИКИ ОТЛАДКИ
-    // ==========================================
     if (CONFIG.ENABLE_DEBUG) {
         const timeInput = modal.querySelector('#debug-time-input');
         const weekSelect = modal.querySelector('#debug-week-select');
@@ -503,16 +527,14 @@ export function openSettings() {
             modal.remove();
         });
 
-        // ЖЕЛЕЗОБЕТОННОЕ СКРЫТИЕ
         modal.querySelector('#btn-debug-hide').addEventListener('click', () => {
             debugZone.classList.remove('open');
-            setTimeout(() => { debugZone.style.display = 'none'; }, 300); // Ждем окончания анимации
+            setTimeout(() => { debugZone.style.display = 'none'; }, 300);
             versionClicks = 0;
             if (timeInput) timeInput.value = '';
         });
     }
 
-    // Выносим функцию наружу
     async function updateEnvInfo() {
         const envInfo = modal.querySelector('#debug-env-info');
         if (!envInfo) return;
@@ -532,10 +554,6 @@ export function openSettings() {
         `;
     }
 }
-
-// ==========================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (QR, буфер обмена)
-// ==========================================
 
 function ensureDarkEnough(color) {
     const hexMatch = color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);

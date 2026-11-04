@@ -2,7 +2,7 @@
 
 import { state } from './state.js';
 import { CONFIG } from './config.js';
-import { initThemes, applyTextScale, applyTheme, applyFont } from './themes.js'; 
+import { initThemes, applyTextScale, applyTheme, applyStyle, applyFont } from './themes.js';
 import { initParticles } from './particles.js';
 import { initPWA } from './pwa.js';
 import { createHeader } from './ui/header.js';
@@ -98,6 +98,7 @@ function applyBackground() {
 function applyAllSettings(newSettings) {
     applyBackground();
     if (newSettings.theme) applyTheme(newSettings.theme);
+    if (newSettings.uiStyle !== undefined) applyStyle(newSettings.uiStyle);
     if (newSettings.font) applyFont(newSettings.font);
     if (newSettings.textScale) applyTextScale(newSettings.textScale);
 }
@@ -122,7 +123,6 @@ if (appDiv) {
 
 applyAllSettings(state.get('settings'));
 
-// ИСПРАВЛЕНИЕ: Инициализируем строку ДО начала работы, вырезав _updatedAt
 const initial = state.get('settings');
 const { _updatedAt: _, ...initialClean } = initial;
 let lastSettingsJson = JSON.stringify(initialClean);
@@ -131,14 +131,12 @@ state.on('change:settings', (newSettings) => {
     const { _updatedAt, ...cleanSettings } = newSettings;
     const newJson = JSON.stringify(cleanSettings);
     
-    // Если настройки реально не изменились (кроме метки времени) — ничего не делаем
     if (newJson === lastSettingsJson) return; 
     lastSettingsJson = newJson;
     
     applyAllSettings(newSettings);
 });
 
-// ВАЖНО: при возврате в приложение (например, после сворачивания) — проверяем облако
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         console.log('[Main] Приложение вернулось в фокус, проверяем облако');

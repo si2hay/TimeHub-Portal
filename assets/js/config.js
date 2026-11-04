@@ -2,14 +2,14 @@
 
 export const CONFIG = {
     APP_NAME: "TimeHub-Portal",
-    VERSION: "04.11.2026-05:18", // Обновлена версия
+    VERSION: "04.11.2026-06:16", // Обновлена версия
     
     // =====================================================================================
     // ⚠️ ВНИМАНИЕ! ГЛАВНЫЙ ВЫКЛЮЧАТЕЛЬ РЕЖИМА ОТЛАДКИ ⚠️
     // Перед релизом или если отладка не нужна, поставь ENABLE_DEBUG: false
     // После этого клики по версии в настройках перестанут открывать DANGER ZONE.
     // =====================================================================================
-    ENABLE_DEBUG: false,
+    ENABLE_DEBUG: true,
     
     // Точка отсчета: 26 октября 2026 (Начало 1-й недели)
     SEMESTER_START_DATE: new Date("2026-10-26T00:00:00"),
@@ -17,6 +17,7 @@ export const CONFIG = {
     // Настройки по умолчанию
     DEFAULT_SETTINGS: {
         theme: "dark",
+        uiStyle: "default",
         font: "minecraft",
         particles: true,
         liquidGlass: true,
@@ -28,7 +29,7 @@ export const CONFIG = {
         dayPickerStyle: "capsule",
         dayChangeAnimation: "slide-up",
         enableWeekSwipe: true,
-        debugTime: null // Фейковое время для отладки (формат "HH:MM")
+        debugTime: null
     }
 };
 
