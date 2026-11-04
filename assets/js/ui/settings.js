@@ -18,7 +18,7 @@ export function openSettings() {
         { id: 'dark', name: 'Темная' }, { id: 'dota', name: 'Dota 2' }, { id: 'minecraft', name: 'Minecraft' },
         { id: 'ocean', name: 'Океан' }, { id: 'sunset', name: 'Закат' }, { id: 'golden', name: 'Золото' },
         { id: 'emerald', name: 'Изумруд' }, { id: 'nord', name: 'Норд' }, { id: 'coffee', name: 'Кофе' },
-        { id: 'sakura', name: 'Сакура' }, { id: 'nothing', name: 'Nothing' }
+        { id: 'sakura', name: 'Сакура' }, { id: 'nothing', name: 'Nothing' }, { id: 'matrix', name: 'Matrix' }
     ];
 
     const modal = document.createElement('div');
@@ -130,7 +130,7 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- БЛОК 3: ИНТЕРФЕЙС -->
+            <!-- БЛОК 3: ИНТЕРФЕЙС (7 СТИЛЕЙ) -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>⚙️ Интерфейс</span>
@@ -139,10 +139,15 @@ export function openSettings() {
                 <div class="settings-content">
                     <div class="settings-inner">
                         <div class="settings-row">
-                            <span class="settings-row-label">Вид переключателя дней</span>
-                            <div class="settings-grid-buttons">
-                                <button class="settings-btn ${settings.dayPickerStyle === 'radial' || !settings.dayPickerStyle ? 'active' : ''}" data-daypicker="radial">Круглое меню</button>
-                                <button class="settings-btn ${settings.dayPickerStyle === 'minimal' ? 'active' : ''}" data-daypicker="minimal">Минимализм</button>
+                            <span class="settings-row-label">Плашка дней недели</span>
+                            <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr;">
+                                <button class="settings-btn ${settings.dayPickerStyle === 'radial' ? 'active' : ''}" data-daypicker="radial">Веер</button>
+                                <button class="settings-btn ${settings.dayPickerStyle === 'minimal' ? 'active' : ''}" data-daypicker="minimal">Минимал</button>
+                                <button class="settings-btn ${settings.dayPickerStyle === 'capsule' || !settings.dayPickerStyle ? 'active' : ''}" data-daypicker="capsule">Капсула</button>
+                                <button class="settings-btn ${settings.dayPickerStyle === 'segmented' ? 'active' : ''}" data-daypicker="segmented">Сегменты</button>
+                                <button class="settings-btn ${settings.dayPickerStyle === 'swipe' ? 'active' : ''}" data-daypicker="swipe">Свайп + Точки</button>
+                                <button class="settings-btn ${settings.dayPickerStyle === 'vertical' ? 'active' : ''}" data-daypicker="vertical">Сбоку (Dock)</button>
+                                <button class="settings-btn ${settings.dayPickerStyle === 'led' ? 'active' : ''}" data-daypicker="led" style="grid-column: span 2;">Светодиоды (LED)</button>
                             </div>
                         </div>
 
@@ -151,8 +156,11 @@ export function openSettings() {
                             <div class="settings-grid-buttons">
                                 <button class="settings-btn ${settings.dayChangeAnimation === 'slide-up' || !settings.dayChangeAnimation ? 'active' : ''}" data-anim="slide-up">Снизу</button>
                                 <button class="settings-btn ${settings.dayChangeAnimation === 'slide-left' ? 'active' : ''}" data-anim="slide-left">Слева</button>
+                                <button class="settings-btn ${settings.dayChangeAnimation === 'blur' ? 'active' : ''}" data-anim="blur">Матовое</button>
+                                <button class="settings-btn ${settings.dayChangeAnimation === 'bounce' ? 'active' : ''}" data-anim="bounce">Пружина</button>
                                 <button class="settings-btn ${settings.dayChangeAnimation === 'fade' ? 'active' : ''}" data-anim="fade">Затухание</button>
                                 <button class="settings-btn ${settings.dayChangeAnimation === 'zoom' ? 'active' : ''}" data-anim="zoom">Масштаб</button>
+                                <button class="settings-btn ${settings.dayChangeAnimation === 'glitch' ? 'active' : ''}" data-anim="glitch" style="grid-column: span 2;">⚡ Глитч (CRT)</button>
                             </div>
                         </div>
 
@@ -163,6 +171,18 @@ export function openSettings() {
                                 <button class="settings-btn ${settings.weatherApi === 'wttr-in' ? 'active' : ''}" data-weather="wttr-in">wttr.in</button>
                             </div>
                         </div>
+
+                        <!-- НОВЫЙ ТУМБЛЕР СВАЙПА НЕДЕЛЬ -->
+                        <div class="settings-row" style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                            <div class="toggle-row" style="padding-top:0; border:none;">
+                                <span>Свайп недель (по полосе)</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="toggle-week-swipe" ${settings.enableWeekSwipe !== false ? 'checked' : ''}>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -223,28 +243,17 @@ export function openSettings() {
         header.addEventListener('click', () => {
             const group = header.parentElement;
             const isActive = group.classList.contains('active');
-            
-            // Закрываем все остальные (эффект "один открыт")
             modal.querySelectorAll('.settings-group').forEach(g => g.classList.remove('active'));
-            
-            // Открываем текущий, если он был закрыт
-            if (!isActive) {
-                group.classList.add('active');
-            }
+            if (!isActive) group.classList.add('active');
         });
     });
 
     // ==========================================
-    // ОБРАБОТЧИКИ СОБЫТИЙ (Сохранение настроек)
+    // ОБРАБОТЧИКИ СОБЫТИЙ
     // ==========================================
-
-    // Закрытие модалки
     modal.querySelector('#btn-close-settings').addEventListener('click', () => modal.remove());
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-    });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
-    // Установка PWA
     const installBtn = modal.querySelector('#btn-install-pwa');
     if (installBtn) {
         installBtn.addEventListener('click', async () => {
@@ -256,19 +265,9 @@ export function openSettings() {
         });
     }
 
-    // Шаринг (QR)
-    modal.querySelector('#btn-share-app').addEventListener('click', () => {
-        modal.remove();
-        openQRCodeModal();
-    });
+    modal.querySelector('#btn-share-app').addEventListener('click', () => { modal.remove(); openQRCodeModal(); });
+    modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => { modal.remove(); openFullSchedule(); });
 
-    // Полное расписание
-    modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => {
-        modal.remove();
-        openFullSchedule();
-    });
-
-    // Стиль дней
     modal.querySelectorAll('.settings-btn[data-daypicker]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const style = e.target.dataset.daypicker;
@@ -278,7 +277,6 @@ export function openSettings() {
         });
     });
 
-    // Анимация дней
     modal.querySelectorAll('.settings-btn[data-anim]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const anim = e.target.dataset.anim;
@@ -288,7 +286,6 @@ export function openSettings() {
         });
     });
 
-    // Размер шрифта
     modal.querySelectorAll('.settings-btn[data-scale]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const scale = parseFloat(e.target.dataset.scale);
@@ -299,22 +296,12 @@ export function openSettings() {
         });
     });
 
-    // Обои (URL)
-    modal.querySelector('#bg-url').addEventListener('input', (e) => {
-        state.set('settings', { ...state.get('settings'), bgUrl: e.target.value });
-    });
-
-    // Обои (Файл)
+    modal.querySelector('#bg-url').addEventListener('input', (e) => { state.set('settings', { ...state.get('settings'), bgUrl: e.target.value }); });
     modal.querySelector('#bg-file').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
         modal.querySelector('#file-name').textContent = `Выбрано: ${file.name}`;
-        
-        if (file.size > 4 * 1024 * 1024) {
-            alert('Файл слишком большой (макс. 4 МБ).');
-            return;
-        }
+        if (file.size > 4 * 1024 * 1024) { alert('Файл слишком большой (макс. 4 МБ).'); return; }
         const reader = new FileReader();
         reader.onload = (event) => {
             state.set('settings', { ...state.get('settings'), bgUrl: event.target.result });
@@ -322,18 +309,9 @@ export function openSettings() {
         };
         reader.readAsDataURL(file);
     });
-
-    // Обои (Затемнение)
-    modal.querySelector('#bg-darkness').addEventListener('input', (e) => {
-        state.set('settings', { ...state.get('settings'), bgDarkness: parseFloat(e.target.value) });
-    });
-
-    // Обои (Размытие)
-    modal.querySelector('#bg-blur').addEventListener('input', (e) => {
-        state.set('settings', { ...state.get('settings'), bgBlur: parseInt(e.target.value) });
-    });
-
-    // Очистить обои
+    modal.querySelector('#bg-darkness').addEventListener('input', (e) => { state.set('settings', { ...state.get('settings'), bgDarkness: parseFloat(e.target.value) }); });
+    modal.querySelector('#bg-blur').addEventListener('input', (e) => { state.set('settings', { ...state.get('settings'), bgBlur: parseInt(e.target.value) }); });
+    
     modal.querySelector('#btn-clear-bg').addEventListener('click', () => {
         state.set('settings', { ...state.get('settings'), bgUrl: '', bgDarkness: 0, bgBlur: 0 });
         modal.querySelector('#bg-url').value = '';
@@ -343,7 +321,6 @@ export function openSettings() {
         modal.querySelector('#bg-blur').value = 0;
     });
 
-    // Шрифты
     modal.querySelectorAll('.settings-btn[data-font]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const font = e.target.dataset.font;
@@ -354,7 +331,6 @@ export function openSettings() {
         });
     });
 
-    // Темы
     modal.querySelectorAll('.theme-pill[data-theme]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const theme = e.target.dataset.theme;
@@ -365,7 +341,6 @@ export function openSettings() {
         });
     });
 
-    // API Погоды
     modal.querySelectorAll('.settings-btn[data-weather]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const weather = e.target.dataset.weather;
@@ -375,9 +350,9 @@ export function openSettings() {
         });
     });
 
-    // Тумблеры
     const setupToggle = (id, settingName, callback) => {
         const toggle = modal.querySelector(`#${id}`);
+        if (!toggle) return;
         toggle.addEventListener('change', (e) => {
             const isChecked = e.target.checked;
             state.set('settings', { ...state.get('settings'), [settingName]: isChecked });
@@ -390,6 +365,7 @@ export function openSettings() {
         if (isChecked) document.body.classList.remove('no-glass');
         else document.body.classList.add('no-glass');
     });
+    setupToggle('toggle-week-swipe', 'enableWeekSwipe'); // Новый тумблер
 }
 
 // ==========================================

@@ -17,7 +17,7 @@ export function createControls() {
     const availableGroups = Object.keys(ALL_SCHEDULES).sort();
 
     panel.innerHTML = `
-        <div class="week-control">
+        <div class="week-control" id="week-swipe-area">
             <button id="btn-prev-week" class="arrow-btn">◀</button>
             <span id="week-label" class="week-label"></span>
             <button id="btn-next-week" class="arrow-btn">▶</button>
@@ -45,6 +45,7 @@ export function createControls() {
     const btnPrev = panel.querySelector('#btn-prev-week');
     const btnNext = panel.querySelector('#btn-next-week');
     const weekLabel = panel.querySelector('#week-label');
+    const swipeArea = panel.querySelector('#week-swipe-area'); // Зона свайпа
 
     const updateWeekUI = (newWeek) => {
         currentWeek = newWeek;
@@ -67,6 +68,35 @@ export function createControls() {
             updateWeekUI(realWeek);
         }
     });
+
+    // ==========================================
+    // НОВОЕ: Свайп недель (влево/вправо по полосе)
+    // ==========================================
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    swipeArea.addEventListener('touchstart', (e) => {
+        // Проверяем настройку (включен ли свайп)
+        if (state.get('settings').enableWeekSwipe === false) return;
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    swipeArea.addEventListener('touchend', (e) => {
+        if (state.get('settings').enableWeekSwipe === false) return;
+        
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // Проверяем, что свайп горизонтальный (а не вертикальный скролл) и достаточно длинный (порог 50px)
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+            // Переключаем неделю в любую сторону (так как их всего 2)
+            updateWeekUI(currentWeek === 1 ? 2 : 1);
+        }
+    }, { passive: true });
 
     // --- Логика выбора группы ---
     const groupTrigger = panel.querySelector('#group-trigger');

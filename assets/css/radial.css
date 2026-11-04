@@ -1,4 +1,4 @@
-/* assets/css/radial.css: Меню выбора дней недели (Круглое и Минимализм) */
+/* assets/css/radial.css: Меню выбора дней недели (7 стилей) */
 
 .day-picker-wrapper {
     position: fixed;
@@ -20,7 +20,7 @@
 }
 
 /* =========================================
-   ВАРИАНТ 1: РАДИАЛЬНОЕ МЕНЮ (ИДЕАЛЬНЫЙ ВЕЕР)
+   1. РАДИАЛЬНОЕ МЕНЮ (ИДЕАЛЬНЫЙ ВЕЕР)
    ========================================= */
 .radial-menu-container {
     position: relative;
@@ -30,12 +30,10 @@
     justify-content: center;
     align-items: center;
 }
-
 .radial-trigger {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    /* ИСПРАВЛЕНО: Добавлена легкая прозрачность и блюр */
     background: var(--accent-color);
     opacity: 0.9;
     color: white;
@@ -51,16 +49,13 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
 }
-
 .radial-trigger:hover, .radial-trigger:active {
     background: var(--accent-hover);
-    opacity: 1; /* При нажатии становимся плотнее */
+    opacity: 1;
 }
-
 .radial-menu-container.open .radial-trigger {
     transform: rotate(45deg);
 }
-
 .radial-menu-items {
     position: absolute;
     top: 0;
@@ -69,7 +64,6 @@
     height: 100%;
     pointer-events: none;
 }
-
 .radial-item {
     position: absolute;
     top: 50%;
@@ -79,7 +73,6 @@
     margin-top: -25px;
     margin-left: -25px;
     border-radius: 50%;
-    /* ИСПРАВЛЕНО: Полупрозрачный фон для эффекта матового стекла */
     background: rgba(30, 33, 40, 0.6); 
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: var(--text-main);
@@ -98,30 +91,21 @@
     -webkit-backdrop-filter: blur(10px);
     z-index: 5;
 }
-
 .radial-item:hover {
     background: var(--accent-color);
     color: white;
     border-color: transparent;
 }
-
-/* 
-   ИСПРАВЛЕНО: Идеальная полуокружность.
-   Радиус = 120px. Углы: 150, 120, 90, 60, 30 градусов.
-*/
-.radial-item:nth-child(1) { --x: -104px; --y: -60px; } /* Пн (150°) */
-.radial-item:nth-child(2) { --x: -60px;  --y: -104px; } /* Вт (120°) */
-.radial-item:nth-child(3) { --x: 0px;    --y: -120px; } /* Ср (90°) */
-.radial-item:nth-child(4) { --x: 60px;   --y: -104px; } /* Чт (60°) */
-.radial-item:nth-child(5) { --x: 104px;  --y: -60px; } /* Пт (30°) */
-
+.radial-item:nth-child(1) { --x: -104px; --y: -60px; }
+.radial-item:nth-child(2) { --x: -60px;  --y: -104px; }
+.radial-item:nth-child(3) { --x: 0px;    --y: -120px; }
+.radial-item:nth-child(4) { --x: 60px;   --y: -104px; }
+.radial-item:nth-child(5) { --x: 104px;  --y: -60px; }
 .radial-menu-container.open .radial-item {
-    opacity: 0.95; /* Легкая прозрачность для самих кружочков */
+    opacity: 0.95;
     pointer-events: auto;
     transform: translate(var(--x), var(--y)) scale(1);
 }
-
-/* Активный день (на котором мы сейчас) — делаем чуть плотнее */
 .radial-menu-container.open .radial-item.active {
     opacity: 1;
     background: var(--accent-color);
@@ -130,31 +114,8 @@
     box-shadow: 0 0 15px var(--accent-color);
 }
 
-/* 
-   ИСПРАВЛЕНО: Идеальная полуокружность.
-   Радиус = 120px. Углы: 150, 120, 90, 60, 30 градусов.
-   Координаты рассчитаны математически для равного расстояния.
-*/
-.radial-item:nth-child(1) { --x: -104px; --y: -60px; } /* Пн (150°) */
-.radial-item:nth-child(2) { --x: -60px;  --y: -104px; } /* Вт (120°) */
-.radial-item:nth-child(3) { --x: 0px;    --y: -120px; } /* Ср (90°) */
-.radial-item:nth-child(4) { --x: 60px;   --y: -104px; } /* Чт (60°) */
-.radial-item:nth-child(5) { --x: 104px;  --y: -60px; } /* Пт (30°) */
-
-.radial-menu-container.open .radial-item {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translate(var(--x), var(--y)) scale(1);
-}
-
-.radial-item.active {
-    background: var(--accent-color);
-    color: white;
-    border-color: var(--accent-hover);
-}
-
 /* =========================================
-   ВАРИАНТ 2: МИНИМАЛИЗМ С ПЛАВНЫМ ПОЛЗУНКОМ
+   2. МИНИМАЛИЗМ С ПЛАВНЫМ ПОЛЗУНКОМ
    ========================================= */
 .minimal-tabs {
     display: flex;
@@ -170,7 +131,6 @@
     max-width: 350px;
     margin: 0 auto;
 }
-
 .minimal-tabs .minimal-glider {
     position: absolute;
     top: 6px;
@@ -183,17 +143,12 @@
     z-index: 1;
     left: 6px;
 }
-
 #day-minimal-1:checked ~ .minimal-glider { transform: translateX(0%); }
 #day-minimal-2:checked ~ .minimal-glider { transform: translateX(100%); }
 #day-minimal-3:checked ~ .minimal-glider { transform: translateX(200%); }
 #day-minimal-4:checked ~ .minimal-glider { transform: translateX(300%); }
 #day-minimal-5:checked ~ .minimal-glider { transform: translateX(400%); }
-
-.minimal-tabs input[type="radio"] {
-    display: none;
-}
-
+.minimal-tabs input[type="radio"] { display: none; }
 .minimal-tabs label {
     flex: 1;
     display: flex;
@@ -209,58 +164,216 @@
     z-index: 2;
     position: relative;
 }
+.minimal-tabs input:checked + label { color: white; }
 
-.minimal-tabs input:checked + label {
-    color: white;
+/* =========================================
+   3. УМНАЯ КАПСУЛА (CAPSULE)
+   ========================================= */
+.capsule-container { 
+    display: flex; 
+    gap: 8px; 
+    background: var(--glass-bg); 
+    backdrop-filter: blur(16px); 
+    -webkit-backdrop-filter: blur(16px); 
+    padding: 6px; 
+    border-radius: 30px; 
+    border: 1px solid var(--glass-border); 
+    box-shadow: var(--shadow); 
+    transition: all 0.3s; 
+    width: 100%; 
+    max-width: 340px; 
+    justify-content: space-between; 
 }
+.capsule-item { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    height: 44px; 
+    border-radius: 22px; 
+    cursor: pointer; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    color: var(--text-muted); 
+    font-weight: bold; 
+    font-size: 14px; 
+    overflow: hidden; 
+}
+.capsule-item:not(.active) { width: 44px; background: transparent; }
+.capsule-item.active { flex-grow: 1; background: var(--accent-color); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.capsule-item .short-text { display: block; }
+.capsule-item .full-text { display: none; white-space: nowrap; padding: 0 12px; }
+.capsule-item.active .short-text { display: none; }
+.capsule-item.active .full-text { display: block; }
+
+/* =========================================
+   4. СЕГМЕНТЫ (SEGMENTED CONTROL)
+   ========================================= */
+.segmented-tabs { 
+    display: flex; 
+    background: rgba(0,0,0,0.3); 
+    border-radius: 12px; 
+    padding: 4px; 
+    border: 1px solid var(--border-color); 
+    width: 100%; 
+    max-width: 340px; 
+    position: relative; 
+}
+.segmented-item { 
+    flex: 1; 
+    text-align: center; 
+    padding: 10px 0; 
+    font-size: 13px; 
+    font-weight: bold; 
+    color: var(--text-muted); 
+    cursor: pointer; 
+    border-radius: 8px; 
+    transition: all 0.2s; 
+    position: relative; 
+    z-index: 2; 
+}
+.segmented-item.active { color: white; }
+.segmented-glider { 
+    position: absolute; 
+    top: 4px; 
+    bottom: 4px; 
+    width: calc((100% - 8px) / 5); 
+    background: var(--accent-color); 
+    border-radius: 8px; 
+    z-index: 1; 
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+body.theme-nothing .segmented-tabs, body.theme-nothing .segmented-glider, body.theme-nothing .segmented-item { border-radius: 0; }
+
+/* =========================================
+   5. СВАЙП (SWIPE) + ТОЧКИ
+   ========================================= */
+.swipe-dots-container { 
+    display: flex; 
+    gap: 10px; 
+    background: var(--glass-bg); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px); 
+    padding: 12px 20px; 
+    border-radius: 30px; 
+    border: 1px solid var(--glass-border); 
+    box-shadow: var(--shadow); 
+}
+.swipe-dot { 
+    width: 8px; 
+    height: 8px; 
+    border-radius: 50%; 
+    background: var(--text-muted); 
+    opacity: 0.4; 
+    transition: all 0.3s; 
+}
+.swipe-dot.active { 
+    opacity: 1; 
+    background: var(--accent-color); 
+    transform: scale(1.4); 
+    box-shadow: 0 0 10px var(--accent-color); 
+}
+
+/* =========================================
+   6. ВЕРТИКАЛЬНЫЙ ДОК (VERTICAL DOCK)
+   ========================================= */
+.day-picker-wrapper.style-vertical {
+    bottom: auto;
+    top: 50%;
+    right: 10px;
+    left: auto;
+    transform: translateY(-50%);
+    width: auto;
+    padding: 0;
+    max-width: none;
+}
+.vertical-dock { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    padding: 10px 6px; 
+    border-radius: 20px; 
+    background: var(--glass-bg); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px); 
+    border: 1px solid var(--glass-border); 
+    box-shadow: var(--shadow); 
+    pointer-events: auto; 
+}
+.vertical-item { 
+    width: 38px; 
+    height: 38px; 
+    border-radius: 50%; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-size: 12px; 
+    font-weight: bold; 
+    color: var(--text-muted); 
+    cursor: pointer; 
+    transition: all 0.2s; 
+}
+.vertical-item.active { 
+    background: var(--accent-color); 
+    color: white; 
+    box-shadow: 0 0 10px var(--accent-color); 
+    transform: scale(1.1); 
+}
+body.theme-nothing .vertical-dock, body.theme-nothing .vertical-item { border-radius: 0; }
+
+/* =========================================
+   7. СВЕТОДИОДЫ (LED)
+   ========================================= */
+.led-tabs { 
+    display: flex; 
+    gap: 14px; 
+    background: #111; 
+    padding: 10px 16px; 
+    border-radius: 8px; 
+    border: 2px solid #333; 
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.8), 0 4px 10px rgba(0,0,0,0.5); 
+    align-items: center; 
+    justify-content: center; 
+}
+.led-dot { 
+    width: 14px; 
+    height: 14px; 
+    border-radius: 50%; 
+    background: #222; 
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.9), 0 0 2px rgba(255,255,255,0.1); 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    position: relative; 
+}
+.led-dot.active { 
+    background: var(--accent-color); 
+    box-shadow: 0 0 10px var(--accent-color), inset 0 -2px 4px rgba(0,0,0,0.5); 
+}
+body.theme-nothing .led-dot.active { box-shadow: 0 0 12px #ff0000, inset 0 -2px 4px rgba(0,0,0,0.5); }
+body.theme-matrix .led-dot.active { box-shadow: 0 0 12px #00ff00, inset 0 -2px 4px rgba(0,0,0,0.5); }
 
 /* =========================================
    АДАПТИВ ДЛЯ УЗКИХ ЭКРАНОВ (мобилки ~338px)
    ========================================= */
 @media (max-width: 380px) {
-    .day-picker-wrapper {
-        bottom: 14px;
-        padding: 0 8px;
-        max-width: 100%;
-    }
-
-    .radial-menu-container {
-        width: 52px;
-        height: 52px;
-    }
-
-    .radial-trigger {
-        width: 52px;
-        height: 52px;
-        font-size: 20px;
-    }
-
-    .radial-item {
-        width: 42px;
-        height: 42px;
-        margin-top: -21px;
-        margin-left: -21px;
-        font-size: 12px;
-    }
-
-    /* 
-       Уменьшенный радиус (100px) для телефонов, 
-       чтобы веер не упирался в края экрана. 
-       Координаты пересчитаны по той же формуле.
-    */
+    .day-picker-wrapper { bottom: 14px; padding: 0 8px; max-width: 100%; }
+    .radial-menu-container { width: 52px; height: 52px; }
+    .radial-trigger { width: 52px; height: 52px; font-size: 20px; }
+    .radial-item { width: 42px; height: 42px; margin-top: -21px; margin-left: -21px; font-size: 12px; }
     .radial-item:nth-child(1) { --x: -87px; --y: -50px; }
     .radial-item:nth-child(2) { --x: -50px; --y: -87px; }
     .radial-item:nth-child(3) { --x: 0px;   --y: -100px; }
     .radial-item:nth-child(4) { --x: 50px;  --y: -87px; }
     .radial-item:nth-child(5) { --x: 87px;  --y: -50px; }
-
-    .minimal-tabs {
-        max-width: 100%;
-        padding: 6px;
-    }
-
-    .minimal-tabs label {
-        height: 36px;
-        font-size: 12px;
-    }
+    
+    .minimal-tabs, .capsule-container, .segmented-tabs { max-width: 100%; }
+    .minimal-tabs label { height: 36px; font-size: 12px; }
+    .capsule-item { height: 38px; }
+    .capsule-item:not(.active) { width: 38px; }
+    .capsule-item .full-text { padding: 0 8px; }
+    
+    .day-picker-wrapper.style-vertical { right: 4px; top: 40%; }
+    .vertical-dock { padding: 8px 4px; gap: 6px; }
+    .vertical-item { width: 32px; height: 32px; font-size: 11px; }
+    
+    .led-tabs { gap: 10px; padding: 8px 12px; }
+    .led-dot { width: 12px; height: 12px; }
 }
