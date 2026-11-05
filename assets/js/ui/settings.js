@@ -113,6 +113,23 @@ export function openSettings() {
                 <div class="settings-content">
                     <div class="settings-inner">
                         <div class="settings-hint">Собери свой интерфейс, комбинируя визуальные эффекты.</div>
+                        
+                        <!-- ВОЗВРАЩЕНО: Тумблеры частиц и стекла -->
+                        <div class="toggle-row">
+                            <span>Частицы на фоне</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-particles" ${settings.particles ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-row">
+                            <span>Liquid Glass (стекло)</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-glass" ${settings.liquidGlass ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
                         ${EFFECTS_LIST.map(e => `
                             <div class="toggle-row">
                                 <span>${e.name}</span>
