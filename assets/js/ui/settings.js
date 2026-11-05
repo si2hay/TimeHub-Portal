@@ -1,7 +1,10 @@
-// assets/js/ui/settings.js: Модальное окно настроек с группировкой (аккордеон)
+// assets/js/ui/settings.js: Модалка настроек с группировкой (аккордеон)
 
 import { state } from '../state.js';
-import { applyTheme, applyStyle, applyFont, applyTextScale } from '../themes.js';
+import {
+    applyTheme, applyEffects, applyFont,
+    applyTextScaleLevel, applyCustomColors, applyCustomBorderRadius
+} from '../themes.js';
 import { toggleParticles } from '../particles.js';
 import { openFullSchedule } from './full-schedule.js';
 import { promptInstall } from '../pwa.js';
@@ -20,13 +23,22 @@ export function openSettings() {
         { id: 'sakura', name: 'Сакура' }, { id: 'nothing', name: 'Nothing' }, { id: 'matrix', name: 'Matrix' }
     ];
 
-    // ОСТАВЛЕНЫ ТОЛЬКО 4 СТИЛЯ
-    const STYLES = [
-        { id: 'default', name: 'Стекло' }, 
-        { id: 'terminal', name: 'Терминал' },
-        { id: 'brutalism', name: 'Брутализм' }, 
-        { id: 'nothing', name: 'Nothing' }
+    const EFFECTS_LIST = [
+        { id: 'strictCorners', name: 'Строгие углы (0px)' },
+        { id: 'neonGlow', name: 'Неоновое свечение' },
+        { id: 'terminalGrid', name: 'Фоновая сетка' },
+        { id: 'scanlines', name: 'Сканлайны (CRT)' },
+        { id: 'thickBorders', name: 'Жирные рамки' },
+        { id: 'dotBackground', name: 'Точечный фон' },
+        { id: 'asciiBrackets', name: 'ASCII скобки' }
     ];
+
+    const textScaleLevel = settings.textScaleLevel ?? 5;
+    const darknessLevel = settings.bgDarknessLevel ?? 0;
+    const blurLevel = settings.bgBlurLevel ?? 0;
+    const cc = settings.customColors || CONFIG.DEFAULT_SETTINGS.customColors;
+    const br = settings.customBorderRadius;
+    const effects = settings.effects || CONFIG.DEFAULT_SETTINGS.effects;
 
     const modal = document.createElement('div');
     modal.id = 'settings-modal';
@@ -39,9 +51,10 @@ export function openSettings() {
                 <button id="btn-close-settings" class="icon-btn">✖</button>
             </div>
 
+            <!-- ===== ОФОРМЛЕНИЕ И ФОРМА ===== -->
             <div class="settings-group">
                 <div class="settings-header">
-                    <span>🎨 Оформление</span>
+                    <span>🎨 Оформление (Пресеты)</span>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="settings-content">
@@ -49,18 +62,10 @@ export function openSettings() {
                         
                         <div class="settings-row">
                             <span class="settings-row-label">Цветовая тема</span>
+                            <div class="settings-hint" style="margin-bottom: 8px;">Кликни на тему, чтобы сбросить свои цвета и вернуть стандартный вид.</div>
                             <div class="theme-carousel">
                                 ${THEMES.map(t => `
                                     <button class="theme-pill ${settings.theme === t.id ? 'active' : ''}" data-theme="${t.id}">${t.name}</button>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <div class="settings-row">
-                            <span class="settings-row-label">Стиль интерфейса</span>
-                            <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr;">
-                                ${STYLES.map(s => `
-                                    <button class="settings-btn ${settings.uiStyle === s.id || (!settings.uiStyle && s.id === 'default') ? 'active' : ''}" data-uistyle="${s.id}">${s.name}</button>
                                 `).join('')}
                             </div>
                         </div>
@@ -78,29 +83,113 @@ export function openSettings() {
                         </div>
 
                         <div class="settings-row">
-                            <span class="settings-row-label">Размер шрифта</span>
-                            <div class="settings-grid-buttons" style="grid-template-columns: 1fr 1fr 1fr;">
-                                <button class="settings-btn ${settings.textScale === 0.9 ? 'active' : ''}" data-scale="0.9">Мелкий</button>
-                                <button class="settings-btn ${settings.textScale === 1 || !settings.textScale ? 'active' : ''}" data-scale="1">Обычный</button>
-                                <button class="settings-btn ${settings.textScale === 1.15 ? 'active' : ''}" data-scale="1.15">Крупный</button>
+                            <span class="settings-row-label">Размер шрифта (1–10, 5 = обычный)</span>
+                            <div class="slider-with-value">
+                                <input type="range" id="text-scale-range" min="1" max="10" step="1" value="${textScaleLevel}">
+                                <input type="number" id="text-scale-value" min="1" max="10" step="1" value="${textScaleLevel}">
                             </div>
                         </div>
 
-                        <div class="settings-row">
-                            <span class="settings-row-label">Эффекты</span>
-                            <div class="toggle-row" style="padding-top:0;">
-                                <span>Частицы на фоне</span>
+                        <div class="settings-row" style="margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                            <span class="settings-row-label">Скругление углов (0–32px)</span>
+                            <div class="slider-with-value">
+                                <input type="range" id="border-radius-range" min="0" max="32" step="1" value="${br !== null ? br : 12}">
+                                <input type="number" id="border-radius-value" min="0" max="32" step="1" value="${br !== null ? br : 12}">
+                            </div>
+                            <div class="settings-hint">Значение берётся из темы, пока не сдвинешь ползунок.</div>
+                            <button id="btn-reset-radius" class="settings-btn" style="margin-top: 8px;">↺ Вернуть как в теме</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ЭФФЕКТЫ ===== -->
+            <div class="settings-group">
+                <div class="settings-header">
+                    <span>✨ Эффекты</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-inner">
+                        <div class="settings-hint">Собери свой интерфейс, комбинируя визуальные эффекты.</div>
+                        ${EFFECTS_LIST.map(e => `
+                            <div class="toggle-row">
+                                <span>${e.name}</span>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" id="toggle-particles" ${settings.particles ? 'checked' : ''}>
+                                    <input type="checkbox" data-effect="${e.id}" ${effects[e.id] ? 'checked' : ''}>
                                     <span class="slider"></span>
                                 </label>
                             </div>
-                            <div class="toggle-row">
-                                <span>Liquid Glass (стекло)</span>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== СВОИ ЦВЕТА ===== -->
+            <div class="settings-group">
+                <div class="settings-header">
+                    <span>🎨 Свои цвета</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="settings-content">
+                    <div class="settings-inner">
+                        
+                        <div class="toggle-row" style="padding-top:0;">
+                            <span>Использовать свои цвета</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-custom-colors" ${cc.enabled ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-hint">При включении цвета переопределяют выбранную тему.</div>
+
+                        <div id="custom-colors-fields" style="${cc.enabled ? '' : 'opacity: 0.4; pointer-events: none;'}">
+                            <div class="color-row">
+                                <label for="custom-accent">Акцент</label>
+                                <input type="color" id="custom-accent" value="${cc.accent || '#0062b1'}">
+                            </div>
+                            <div class="color-row">
+                                <label for="custom-bg">Фон страницы</label>
+                                <input type="color" id="custom-bg" value="${cc.background || '#0f1115'}">
+                            </div>
+                            <div class="color-row">
+                                <label for="custom-surface">Фон карточек</label>
+                                <input type="color" id="custom-surface" value="${cc.surface || '#1a1d24'}">
+                            </div>
+                            <div class="color-row">
+                                <label for="custom-text">Основной текст</label>
+                                <input type="color" id="custom-text" value="${cc.text || '#e2e8f0'}">
+                            </div>
+                            <div class="color-row">
+                                <label for="custom-text-muted">Второстепенный текст</label>
+                                <input type="color" id="custom-text-muted" value="${cc.textMuted || '#94a3b8'}">
+                            </div>
+
+                            <div class="toggle-row" style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                                <span>Градиент на фоне</span>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" id="toggle-glass" ${settings.liquidGlass ? 'checked' : ''}>
+                                    <input type="checkbox" id="toggle-gradient" ${cc.gradient?.enabled ? 'checked' : ''}>
                                     <span class="slider"></span>
                                 </label>
+                            </div>
+
+                            <div id="gradient-fields" style="${cc.gradient?.enabled ? '' : 'opacity: 0.4; pointer-events: none;'}">
+                                <div class="color-row">
+                                    <label for="gradient-color1">Цвет 1</label>
+                                    <input type="color" id="gradient-color1" value="${cc.gradient?.color1 || '#0f2027'}">
+                                </div>
+                                <div class="color-row">
+                                    <label for="gradient-color2">Цвет 2</label>
+                                    <input type="color" id="gradient-color2" value="${cc.gradient?.color2 || '#2c5364'}">
+                                </div>
+                                <div class="settings-row" style="margin-top: 8px;">
+                                    <span class="settings-row-label">Угол (0–360°)</span>
+                                    <div class="slider-with-value">
+                                        <input type="range" id="gradient-angle-range" min="0" max="360" step="5" value="${cc.gradient?.angle || 135}">
+                                        <input type="number" id="gradient-angle-value" min="0" max="360" step="5" value="${cc.gradient?.angle || 135}">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -108,6 +197,7 @@ export function openSettings() {
                 </div>
             </div>
 
+            <!-- ===== ОБОИ ===== -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>🖼 Обои</span>
@@ -125,17 +215,23 @@ export function openSettings() {
                             <div id="file-name" style="font-size: 11px; color: var(--text-muted); margin-top: 6px; word-break: break-all;"></div>
                             
                             <div class="settings-warning">
-                                ⚠️ Файлы с устройства не синхронизируются между устройствами (сохраняются только локально). Чтобы обои были везде, используйте ссылку (URL).
+                                ⚠️ Файлы с устройства не синхронизируются между устройствами. Используйте URL для облака.
                             </div>
                         </div>
                         
-                        <div class="toggle-row" style="margin-top: 8px;">
-                            <span>Затемнение</span>
-                            <input type="range" id="bg-darkness" min="0" max="0.8" step="0.1" value="${settings.bgDarkness || 0}" style="accent-color: var(--accent-color); width: 100px;">
+                        <div class="settings-row" style="margin-top: 12px;">
+                            <span class="settings-row-label">Затемнение (0–10)</span>
+                            <div class="slider-with-value">
+                                <input type="range" id="bg-darkness-range" min="0" max="10" step="1" value="${darknessLevel}">
+                                <input type="number" id="bg-darkness-value" min="0" max="10" step="1" value="${darknessLevel}">
+                            </div>
                         </div>
-                        <div class="toggle-row">
-                            <span>Размытие</span>
-                            <input type="range" id="bg-blur" min="0" max="15" step="1" value="${settings.bgBlur || 0}" style="accent-color: var(--accent-color); width: 100px;">
+                        <div class="settings-row">
+                            <span class="settings-row-label">Размытие (0–10)</span>
+                            <div class="slider-with-value">
+                                <input type="range" id="bg-blur-range" min="0" max="10" step="1" value="${blurLevel}">
+                                <input type="number" id="bg-blur-value" min="0" max="10" step="1" value="${blurLevel}">
+                            </div>
                         </div>
                         
                         <button id="btn-clear-bg" class="settings-btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
@@ -145,6 +241,7 @@ export function openSettings() {
                 </div>
             </div>
 
+            <!-- ===== ИНТЕРФЕЙС ===== -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>⚙️ Интерфейс</span>
@@ -195,13 +292,14 @@ export function openSettings() {
                                     <span class="slider"></span>
                                 </label>
                             </div>
-                            <div class="settings-hint">Проводите пальцем влево/вправо по полосе с датами, чтобы переключать недели.</div>
+                            <div class="settings-hint">Проводите пальцем влево/вправо по полосе с датами.</div>
                         </div>
 
                     </div>
                 </div>
             </div>
 
+            <!-- ===== ПРИЛОЖЕНИЕ ===== -->
             <div class="settings-group">
                 <div class="settings-header">
                     <span>📱 Приложение</span>
@@ -238,7 +336,7 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- DANGER ZONE (Жестко скрыто через display: none) -->
+            <!-- DANGER ZONE -->
             <div class="debug-zone" id="debug-zone" style="display: none;">
                 <div class="debug-header">
                     <span>🛠 ОТЛАДКА (DANGER ZONE)</span>
@@ -247,7 +345,7 @@ export function openSettings() {
                     <div class="debug-inner">
                         
                         <div class="debug-group">
-                            <div class="debug-label">Машина времени (Виртуальное время)</div>
+                            <div class="debug-label">Машина времени</div>
                             <div class="debug-row">
                                 <input type="time" id="debug-time-input" class="debug-input" value="${settings.debugTime || ''}">
                                 <button id="btn-debug-set-time" class="debug-btn">Задать</button>
@@ -276,7 +374,7 @@ export function openSettings() {
                         <div class="debug-group">
                             <div class="debug-label">Данные и Кэш</div>
                             <button id="btn-debug-copy-state" class="debug-btn">Копировать State (JSON)</button>
-                            <button id="btn-debug-hard-reset" class="debug-btn danger">Hard Reset (Полный сброс)</button>
+                            <button id="btn-debug-hard-reset" class="debug-btn danger">Hard Reset</button>
                         </div>
 
                         <div class="debug-group">
@@ -289,9 +387,7 @@ export function openSettings() {
 
                         <div class="debug-group">
                             <div class="debug-label">Окружение</div>
-                            <div class="debug-info" id="debug-env-info">
-                                Загрузка...
-                            </div>
+                            <div class="debug-info" id="debug-env-info">Загрузка...</div>
                         </div>
 
                         <button id="btn-debug-hide" class="debug-btn" style="margin-top: 10px; width: 100%;">Скрыть отладку</button>
@@ -299,7 +395,6 @@ export function openSettings() {
                 </div>
             </div>
 
-            <!-- Версия -->
             <div style="text-align: center; margin-top: 20px; opacity: 0.4; cursor: pointer;" id="version-trigger">
                 <span style="font-size: 11px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">
                     TimeHub-Portal • v${CONFIG.VERSION}
@@ -310,7 +405,7 @@ export function openSettings() {
 
     document.body.appendChild(modal);
 
-    // ЛОГИКА 5 КЛИКОВ ПО ВЕРСИИ
+    // ============== DANGER ZONE ==============
     const versionTrigger = modal.querySelector('#version-trigger');
     const debugZone = modal.querySelector('#debug-zone');
     let versionClicks = 0;
@@ -318,11 +413,9 @@ export function openSettings() {
 
     versionTrigger.addEventListener('click', () => {
         if (!CONFIG.ENABLE_DEBUG) return;
-
         versionClicks++;
         clearTimeout(clickTimeout);
         clickTimeout = setTimeout(() => { versionClicks = 0; }, 1500);
-
         if (versionClicks >= 5) {
             versionClicks = 0;
             debugZone.style.display = 'grid'; 
@@ -331,7 +424,7 @@ export function openSettings() {
         }
     });
 
-    // ЛОГИКА АККОРДЕОНА
+    // ============== АККОРДЕОН ==============
     const headers = modal.querySelectorAll('.settings-header');
     headers.forEach(header => {
         header.addEventListener('click', () => {
@@ -342,7 +435,7 @@ export function openSettings() {
         });
     });
 
-    // ОБРАБОТЧИКИ
+    // ============== БАЗОВЫЕ ОБРАБОТЧИКИ ==============
     modal.querySelector('#btn-close-settings').addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
@@ -360,16 +453,273 @@ export function openSettings() {
     modal.querySelector('#btn-share-app').addEventListener('click', () => { modal.remove(); openQRCodeModal(); });
     modal.querySelector('#btn-open-full-schedule').addEventListener('click', () => { modal.remove(); openFullSchedule(); });
 
-    modal.querySelectorAll('.settings-btn[data-uistyle]').forEach(btn => {
+    // ============== ЛОГИКА ПРЕСЕТОВ И КАСТОМА ==============
+    const customColorsFields = modal.querySelector('#custom-colors-fields');
+    const toggleCustomColors = modal.querySelector('#toggle-custom-colors');
+    
+    // ИСПРАВЛЕНО: Надежная конвертация любых цветов (hex, rgb, rgba) в hex
+    const toHex = (color) => {
+        if (!color) return '#000000';
+        if (color.startsWith('#')) return color.length >= 7 ? color.substring(0, 7) : color;
+        
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.fillStyle = color;
+        const norm = ctx.fillStyle; // Возвращает либо #rrggbb, либо rgba(...)
+        
+        if (norm.startsWith('#')) return norm;
+        
+        const match = norm.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (match) {
+            const r = parseInt(match[1]).toString(16).padStart(2, '0');
+            const g = parseInt(match[2]).toString(16).padStart(2, '0');
+            const b = parseInt(match[3]).toString(16).padStart(2, '0');
+            return `#${r}${g}${b}`;
+        }
+        return '#000000';
+    };
+
+    // Функция для синхронизации color-picker'ов с текущей темой
+    const syncColorPickers = () => {
+        const style = getComputedStyle(document.body);
+        
+        const hexAccent = toHex(style.getPropertyValue('--accent-color').trim());
+        const hexBg = toHex(style.getPropertyValue('--bg-color').trim());
+        const hexSurface = toHex(style.getPropertyValue('--surface-color').trim());
+        const hexText = toHex(style.getPropertyValue('--text-main').trim());
+        const hexTextMuted = toHex(style.getPropertyValue('--text-muted').trim());
+        
+        modal.querySelector('#custom-accent').value = hexAccent;
+        modal.querySelector('#custom-bg').value = hexBg;
+        modal.querySelector('#custom-surface').value = hexSurface;
+        modal.querySelector('#custom-text').value = hexText;
+        modal.querySelector('#custom-text-muted').value = hexTextMuted;
+
+        const radius = style.getPropertyValue('--border-radius').trim();
+        modal.querySelector('#border-radius-range').value = parseInt(radius) || 0;
+        modal.querySelector('#border-radius-value').value = parseInt(radius) || 0;
+        
+        return { hexAccent, hexBg, hexSurface, hexText, hexTextMuted };
+    };
+
+    // Вызываем синхронизацию при открытии
+    syncColorPickers();
+
+    modal.querySelectorAll('.theme-pill[data-theme]').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const style = e.target.dataset.uistyle;
-            modal.querySelectorAll('.settings-btn[data-uistyle]').forEach(b => b.classList.remove('active'));
+            const theme = e.target.dataset.theme;
+            modal.querySelectorAll('.theme-pill[data-theme]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            state.set('settings', { ...state.get('settings'), uiStyle: style });
-            applyStyle(style);
+            
+            // СБРОС КАСТОМА ПРИ ВЫБОРЕ ПРЕСЕТА
+            const newSettings = { ...state.get('settings') };
+            newSettings.theme = theme;
+            newSettings.customColors = { ...newSettings.customColors, enabled: false };
+            newSettings.customBorderRadius = null;
+            
+            state.set('settings', newSettings);
+            applyTheme(theme);
+            applyCustomColors(newSettings.customColors);
+            applyCustomBorderRadius(null);
+            
+            // Обновляем UI
+            toggleCustomColors.checked = false;
+            customColorsFields.style.opacity = '0.4';
+            customColorsFields.style.pointerEvents = 'none';
+            
+            // Ждём тик, чтобы тема применилась, и синхронизируем цвета
+            setTimeout(() => {
+                const colors = syncColorPickers();
+                if (colors) {
+                    // Сохраняем цвета темы в стейт, чтобы при включении кастома они были дефолтными
+                    const updatedCC = { 
+                        ...state.get('settings').customColors, 
+                        accent: colors.hexAccent, 
+                        background: colors.hexBg, 
+                        surface: colors.hexSurface,
+                        text: colors.hexText,
+                        textMuted: colors.hexTextMuted,
+                        enabled: false,
+                        gradient: { ...state.get('settings').customColors?.gradient, enabled: false }
+                    };
+                    state.set('settings', { ...state.get('settings'), customColors: updatedCC });
+                }
+            }, 50);
         });
     });
 
+    // ============== СВОИ ЦВЕТА ==============
+    const toggleGradient = modal.querySelector('#toggle-gradient');
+    const gradientFields = modal.querySelector('#gradient-fields');
+
+    const getCurrentCC = () => {
+        return state.get('settings').customColors || CONFIG.DEFAULT_SETTINGS.customColors;
+    };
+
+    const saveCC = (patch, autoEnable = false) => {
+        const cc = { ...getCurrentCC(), ...patch };
+        if (autoEnable && !cc.enabled) {
+            cc.enabled = true;
+            toggleCustomColors.checked = true;
+            customColorsFields.style.opacity = '1';
+            customColorsFields.style.pointerEvents = 'auto';
+        }
+        state.set('settings', { ...state.get('settings'), customColors: cc });
+        applyCustomColors(cc);
+    };
+
+    toggleCustomColors.addEventListener('change', (e) => {
+        const enabled = e.target.checked;
+        customColorsFields.style.opacity = enabled ? '1' : '0.4';
+        customColorsFields.style.pointerEvents = enabled ? 'auto' : 'none';
+        saveCC({ enabled });
+    });
+
+    modal.querySelector('#custom-accent').addEventListener('input', (e) => saveCC({ accent: e.target.value }, true));
+    modal.querySelector('#custom-bg').addEventListener('input', (e) => saveCC({ background: e.target.value }, true));
+    modal.querySelector('#custom-surface').addEventListener('input', (e) => saveCC({ surface: e.target.value }, true));
+    modal.querySelector('#custom-text').addEventListener('input', (e) => saveCC({ text: e.target.value }, true));
+    modal.querySelector('#custom-text-muted').addEventListener('input', (e) => saveCC({ textMuted: e.target.value }, true));
+
+    toggleGradient.addEventListener('change', (e) => {
+        const enabled = e.target.checked;
+        gradientFields.style.opacity = enabled ? '1' : '0.4';
+        gradientFields.style.pointerEvents = enabled ? 'auto' : 'none';
+        saveCC({ gradient: { ...getCurrentCC().gradient, enabled } }, true);
+    });
+
+    modal.querySelector('#gradient-color1').addEventListener('input', (e) => saveCC({ gradient: { ...getCurrentCC().gradient, color1: e.target.value } }, true));
+    modal.querySelector('#gradient-color2').addEventListener('input', (e) => saveCC({ gradient: { ...getCurrentCC().gradient, color2: e.target.value } }, true));
+
+    const gradAngleRange = modal.querySelector('#gradient-angle-range');
+    const gradAngleValue = modal.querySelector('#gradient-angle-value');
+    const updateGradAngle = (val) => {
+        val = Math.max(0, Math.min(360, parseInt(val) || 135));
+        gradAngleRange.value = val;
+        gradAngleValue.value = val;
+        saveCC({ gradient: { ...getCurrentCC().gradient, angle: val } }, true);
+    };
+    gradAngleRange.addEventListener('input', (e) => updateGradAngle(e.target.value));
+    gradAngleValue.addEventListener('change', (e) => updateGradAngle(e.target.value));
+
+    // ============== СКРУГЛЕНИЕ ==============
+    const radiusRange = modal.querySelector('#border-radius-range');
+    const radiusValue = modal.querySelector('#border-radius-value');
+    const updateRadius = (val) => {
+        val = Math.max(0, Math.min(32, parseInt(val) || 0));
+        radiusRange.value = val;
+        radiusValue.value = val;
+        state.set('settings', { ...state.get('settings'), customBorderRadius: val });
+        applyCustomBorderRadius(val);
+    };
+    radiusRange.addEventListener('input', (e) => updateRadius(e.target.value));
+    radiusValue.addEventListener('change', (e) => updateRadius(e.target.value));
+
+    modal.querySelector('#btn-reset-radius').addEventListener('click', () => {
+        state.set('settings', { ...state.get('settings'), customBorderRadius: null });
+        applyCustomBorderRadius(null);
+        const themeValue = getComputedStyle(document.body).getPropertyValue('--border-radius').trim();
+        const parsed = parseInt(themeValue) || 0;
+        radiusRange.value = parsed;
+        radiusValue.value = parsed;
+    });
+
+    // ============== ШРИФТЫ ==============
+    modal.querySelectorAll('.settings-btn[data-font]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const font = e.target.dataset.font;
+            modal.querySelectorAll('.settings-btn[data-font]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            state.set('settings', { ...state.get('settings'), font: font });
+            applyFont(font);
+        });
+    });
+
+    // ============== РАЗМЕР ШРИФТА (1–10) ==============
+    const textScaleRange = modal.querySelector('#text-scale-range');
+    const textScaleValue = modal.querySelector('#text-scale-value');
+    const updateTextScale = (level) => {
+        level = Math.max(1, Math.min(10, parseInt(level) || 5));
+        textScaleRange.value = level;
+        textScaleValue.value = level;
+        state.set('settings', { ...state.get('settings'), textScaleLevel: level });
+        applyTextScaleLevel(level);
+    };
+    textScaleRange.addEventListener('input', (e) => updateTextScale(e.target.value));
+    textScaleValue.addEventListener('change', (e) => updateTextScale(e.target.value));
+
+    // ============== ЭФФЕКТЫ ==============
+    modal.querySelectorAll('input[data-effect]').forEach(input => {
+        input.addEventListener('change', (e) => {
+            const key = e.target.dataset.effect;
+            const isChecked = e.target.checked;
+            
+            let newEffects = { ...state.get('settings').effects, [key]: isChecked };
+            
+            // Взаимоисключение сетки и точек
+            if (isChecked && key === 'terminalGrid') {
+                newEffects.dotBackground = false;
+                const dotInput = modal.querySelector('input[data-effect="dotBackground"]');
+                if (dotInput) dotInput.checked = false;
+            } else if (isChecked && key === 'dotBackground') {
+                newEffects.terminalGrid = false;
+                const gridInput = modal.querySelector('input[data-effect="terminalGrid"]');
+                if (gridInput) gridInput.checked = false;
+            }
+
+            state.set('settings', { ...state.get('settings'), effects: newEffects });
+            applyEffects(newEffects);
+        });
+    });
+
+    // ============== ОБОИ ==============
+    modal.querySelector('#bg-url').addEventListener('input', (e) => { state.set('settings', { ...state.get('settings'), bgUrl: e.target.value }); });
+    modal.querySelector('#bg-file').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        modal.querySelector('#file-name').textContent = `Выбрано: ${file.name}`;
+        if (file.size > 4 * 1024 * 1024) { alert('Файл слишком большой (макс. 4 МБ).'); return; }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            state.set('settings', { ...state.get('settings'), bgUrl: event.target.result });
+            modal.querySelector('#bg-url').value = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    const darknessRange = modal.querySelector('#bg-darkness-range');
+    const darknessValue = modal.querySelector('#bg-darkness-value');
+    const updateDarkness = (val) => {
+        val = Math.max(0, Math.min(10, parseInt(val) || 0));
+        darknessRange.value = val;
+        darknessValue.value = val;
+        state.set('settings', { ...state.get('settings'), bgDarknessLevel: val });
+    };
+    darknessRange.addEventListener('input', (e) => updateDarkness(e.target.value));
+    darknessValue.addEventListener('change', (e) => updateDarkness(e.target.value));
+
+    const blurRange = modal.querySelector('#bg-blur-range');
+    const blurValue = modal.querySelector('#bg-blur-value');
+    const updateBlur = (val) => {
+        val = Math.max(0, Math.min(10, parseInt(val) || 0));
+        blurRange.value = val;
+        blurValue.value = val;
+        state.set('settings', { ...state.get('settings'), bgBlurLevel: val });
+    };
+    blurRange.addEventListener('input', (e) => updateBlur(e.target.value));
+    blurValue.addEventListener('change', (e) => updateBlur(e.target.value));
+
+    modal.querySelector('#btn-clear-bg').addEventListener('click', () => {
+        state.set('settings', { ...state.get('settings'), bgUrl: '', bgDarknessLevel: 0, bgBlurLevel: 0 });
+        modal.querySelector('#bg-url').value = '';
+        modal.querySelector('#bg-file').value = '';
+        modal.querySelector('#file-name').textContent = '';
+        darknessRange.value = 0;
+        darknessValue.value = 0;
+        blurRange.value = 0;
+        blurValue.value = 0;
+    });
+
+    // ============== ИНТЕРФЕЙС ==============
     modal.querySelectorAll('.settings-btn[data-daypicker]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const style = e.target.dataset.daypicker;
@@ -388,61 +738,6 @@ export function openSettings() {
         });
     });
 
-    modal.querySelectorAll('.settings-btn[data-scale]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const scale = parseFloat(e.target.dataset.scale);
-            modal.querySelectorAll('.settings-btn[data-scale]').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            state.set('settings', { ...state.get('settings'), textScale: scale });
-            applyTextScale(scale);
-        });
-    });
-
-    modal.querySelector('#bg-url').addEventListener('input', (e) => { state.set('settings', { ...state.get('settings'), bgUrl: e.target.value }); });
-    modal.querySelector('#bg-file').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        modal.querySelector('#file-name').textContent = `Выбрано: ${file.name}`;
-        if (file.size > 4 * 1024 * 1024) { alert('Файл слишком большой (макс. 4 МБ).'); return; }
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            state.set('settings', { ...state.get('settings'), bgUrl: event.target.result });
-            modal.querySelector('#bg-url').value = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-    modal.querySelector('#bg-darkness').addEventListener('input', (e) => { state.set('settings', { ...state.get('settings'), bgDarkness: parseFloat(e.target.value) }); });
-    modal.querySelector('#bg-blur').addEventListener('input', (e) => { state.set('settings', { ...state.get('settings'), bgBlur: parseInt(e.target.value) }); });
-    
-    modal.querySelector('#btn-clear-bg').addEventListener('click', () => {
-        state.set('settings', { ...state.get('settings'), bgUrl: '', bgDarkness: 0, bgBlur: 0 });
-        modal.querySelector('#bg-url').value = '';
-        modal.querySelector('#bg-file').value = '';
-        modal.querySelector('#file-name').textContent = '';
-        modal.querySelector('#bg-darkness').value = 0;
-        modal.querySelector('#bg-blur').value = 0;
-    });
-
-    modal.querySelectorAll('.settings-btn[data-font]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const font = e.target.dataset.font;
-            modal.querySelectorAll('.settings-btn[data-font]').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            state.set('settings', { ...state.get('settings'), font: font });
-            applyFont(font);
-        });
-    });
-
-    modal.querySelectorAll('.theme-pill[data-theme]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const theme = e.target.dataset.theme;
-            modal.querySelectorAll('.theme-pill[data-theme]').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            state.set('settings', { ...state.get('settings'), theme: theme });
-            applyTheme(theme);
-        });
-    });
-
     modal.querySelectorAll('.settings-btn[data-weather]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const weather = e.target.dataset.weather;
@@ -452,6 +747,7 @@ export function openSettings() {
         });
     });
 
+    // ============== ТУМБЛЕРЫ ==============
     const setupToggle = (id, settingName, callback) => {
         const toggle = modal.querySelector(`#${id}`);
         if (!toggle) return;
@@ -469,6 +765,7 @@ export function openSettings() {
     });
     setupToggle('toggle-week-swipe', 'enableWeekSwipe');
 
+    // ============== DANGER ZONE ОБРАБОТЧИКИ ==============
     if (CONFIG.ENABLE_DEBUG) {
         const timeInput = modal.querySelector('#debug-time-input');
         const weekSelect = modal.querySelector('#debug-week-select');
@@ -554,6 +851,8 @@ export function openSettings() {
         `;
     }
 }
+
+// ... (остальные функции ensureDarkEnough, copyToClipboard, openQRCodeModal остаются без изменений) ...
 
 function ensureDarkEnough(color) {
     const hexMatch = color.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);

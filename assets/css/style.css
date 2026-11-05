@@ -323,8 +323,27 @@ body.no-glass .glass-panel {
 /* --- Таймер и Замены --- */
 .timer-widget { border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); cursor: pointer; }
 #app > .timer-widget { margin-bottom: 8px; }
-.schedule-card.is-substitution { border-color: #ef4444; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(20, 22, 26, 0.7)); }
-.badge-substitution { position: absolute; top: 8px; right: 8px; background: #ef4444; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; animation: pulse-danger 2s infinite; }
+/* Аккуратные замены (без ядовитого градиента) */
+.schedule-card.is-substitution {
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.08), var(--shadow);
+}
+.badge-substitution {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(239, 68, 68, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
 @keyframes pulse-danger { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
 /* --- Погода и Неделя --- */
@@ -1002,4 +1021,196 @@ body.theme-nothing .badge-substitution {
 }
 .debug-info b {
     color: #fff;
+}
+/* =========================================================
+   НОВЫЕ КОНТРОЛЫ НАСТРОЕК v2.1
+   (свои цвета, слайдеры с числом, color picker)
+   ========================================================= */
+
+/* Слайдер + числовое поле рядом */
+.slider-with-value {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.slider-with-value input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+.slider-with-value input[type="number"] {
+    width: 64px;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: calc(13px * var(--text-scale));
+    outline: none;
+    transition: border-color 0.2s;
+}
+.slider-with-value input[type="number"]:focus {
+    border-color: var(--accent-color);
+}
+.slider-with-value input[type="number"]::-webkit-outer-spin-button,
+.slider-with-value input[type="number"]::-webkit-inner-spin-button {
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* Color picker */
+input[type="color"] {
+    width: 56px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.1s;
+    flex-shrink: 0;
+}
+input[type="color"]:hover {
+    border-color: var(--accent-color);
+}
+input[type="color"]:active {
+    transform: scale(0.95);
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
+input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
+
+/* Строка "название — color picker" */
+.color-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.color-row:last-child {
+    border-bottom: none;
+}
+.color-row label {
+    font-size: calc(13px * var(--text-scale));
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+/* Плавное появление полей при включении тумблера */
+#custom-colors-fields,
+#gradient-fields {
+    transition: opacity 0.25s ease;
+}
+/* =========================================================
+   ФИКСЫ ДЛЯ ШРИФТОВ И МАСШТАБА (Дописано в конец)
+   ========================================================= */
+
+/* Убираем жесткие px у подсказок таймера, чтобы они тянулись за ползунком */
+.timer-timeleft .time-label { font-size: calc(14px * var(--text-scale)) !important; }
+.timer-timeleft .time-value { font-size: calc(22px * var(--text-scale)) !important; }
+.timer-hint { font-size: calc(12px * var(--text-scale)) !important; }
+.timer-status { font-size: calc(18px * var(--text-scale)) !important; }
+.timer-subject { font-size: calc(16px * var(--text-scale)) !important; }
+
+/* Фиксы для Tsap (он визуально меньше, поэтому делаем его больше) */
+body.font-tsap .timer-timeleft .time-label { font-size: calc(20px * var(--text-scale)) !important; }
+body.font-tsap .timer-timeleft .time-value { font-size: calc(32px * var(--text-scale)) !important; }
+body.font-tsap .timer-hint { font-size: calc(16px * var(--text-scale)) !important; }
+body.font-tsap .timer-status { font-size: calc(26px * var(--text-scale)) !important; }
+body.font-tsap .timer-subject { font-size: calc(24px * var(--text-scale)) !important; }
+
+/* Фиксы для Minecraft */
+body.font-minecraft .timer-timeleft .time-label { font-size: calc(16px * var(--text-scale)) !important; }
+body.font-minecraft .timer-timeleft .time-value { font-size: calc(26px * var(--text-scale)) !important; }
+body.font-minecraft .timer-hint { font-size: calc(14px * var(--text-scale)) !important; }
+body.font-minecraft .timer-status { font-size: calc(22px * var(--text-scale)) !important; }
+
+/* Фикс подсказок в настройках */
+.settings-hint { font-size: calc(12px * var(--text-scale)) !important; }
+.settings-row-label { font-size: calc(13px * var(--text-scale)) !important; }
+.toggle-row span { font-size: calc(14px * var(--text-scale)) !important; }
+.color-row label { font-size: calc(14px * var(--text-scale)) !important; }
+/* =========================================================
+   ФИКСЫ v2.3 (Острые настройки, день в таймере, числовые поля)
+   ========================================================= */
+
+/* Контейнер для подсказки и дня в таймере */
+.timer-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Бейджик выбранного дня в таймере */
+.timer-day-badge {
+    background: var(--accent-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: calc(11px * var(--text-scale));
+    font-weight: bold;
+    font-family: inherit;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    text-transform: uppercase;
+    pointer-events: none; /* Чтобы клик проходил на таймер */
+    opacity: 0.9;
+}
+
+/* Настройки подчиняются выбранному скруглению (--border-radius) */
+.modal-content {
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+.settings-group {
+    border-radius: var(--border-radius);
+}
+
+.settings-btn, 
+.theme-pill,
+.settings-select {
+    border-radius: calc(var(--border-radius) * 0.6);
+}
+
+.toggle-switch .slider {
+    border-radius: 24px; /* Тумблеры всегда овальные */
+}
+
+/* --- КРАСИВОЕ ЧИСЛОВОЕ ПОЛЕ (Без стрелок) --- */
+.slider-with-value input[type="number"] {
+    -moz-appearance: textfield; /* Убирает стрелки в Firefox */
+    appearance: textfield;
+    background: rgba(0, 0, 0, 0.3); /* Чуть темнее фон для контраста */
+    border: 1px solid var(--border-color);
+    font-weight: bold;
+    color: var(--accent-color); /* Цифра красится в цвет акцента */
+    text-align: center;
+    padding: 6px 8px;
+    font-family: inherit;
+    font-size: calc(14px * var(--text-scale));
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.slider-with-value input[type="number"]:focus {
+    border-color: var(--accent-color);
+}
+
+/* Убирает стрелки в Chrome, Safari, Edge (Telegram) */
+.slider-with-value input[type="number"]::-webkit-outer-spin-button,
+.slider-with-value input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }

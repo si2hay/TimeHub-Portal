@@ -1,4 +1,4 @@
-/* themes.css: Настройка цветовых тем и переменных */
+/* assets/css/themes.css: Настройка цветовых тем и переменных */
 
 :root {
     /* 1. Базовая (Газпром) */
@@ -158,61 +158,45 @@ body.theme-sakura {
 }
 
 /* =========================================================
-   СТИЛИ ИНТЕРФЕЙСА (ОСТАВЛЕНЫ 4, РАБОТАЮТ С ЦВЕТАМИ)
+   СИСТЕМА ЭФФЕКТОВ
    ========================================================= */
 
-/* --- 1. ТЕРМИНАЛ / MAINFRAME --- */
-body.style-terminal {
-    --border-radius: 0px;
-    --glass-blur: blur(0px);
-    --shadow: none;
+/* 1. Строгие углы */
+body.effect-strict-corners { 
+    --border-radius: 0px !important; 
 }
-body.style-terminal::before {
+
+/* 2. Неоновое свечение */
+body.effect-neon-glow .lesson-num { text-shadow: 0 0 10px var(--accent-color); }
+body.effect-neon-glow .timer-timeleft .time-value { text-shadow: 0 0 15px var(--accent-color); }
+body.effect-neon-glow .glass-panel { box-shadow: 0 0 15px rgba(255,255,255,0.1), inset 0 0 10px rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.3); }
+
+/* 3. Фоновая сетка (Терминал) */
+body.effect-terminal-grid::before {
     content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background-image: linear-gradient(var(--border-color) 1px, transparent 1px), linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
-    background-size: 20px 20px; pointer-events: none; z-index: 9998; opacity: 0.3;
+    background-size: 20px 20px; pointer-events: none; z-index: 0; opacity: 0.5;
 }
-body.style-terminal::after {
+
+/* 4. Сканлайны (CRT) */
+body.effect-scanlines::after {
     content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
     background-size: 100% 4px; pointer-events: none; z-index: 9999;
 }
-body.style-terminal .app-header h1::before { content: "> "; color: var(--accent-color); }
-body.style-terminal .section-header h2::before { content: "[ "; color: var(--accent-color); }
-body.style-terminal .section-header h2::after { content: " ]"; color: var(--accent-color); }
-body.style-terminal .glass-panel { border: 1px solid var(--accent-color); box-shadow: none; background: transparent; }
-body.style-terminal .lesson-num { text-shadow: 0 0 5px var(--accent-color); }
-body.style-terminal .timer-timeleft .time-value { text-shadow: 0 0 10px var(--accent-color); }
-body.style-terminal .timer-timeleft .time-value::after { content: "_"; animation: blink 1s step-end infinite; }
-@keyframes blink { 50% { opacity: 0; } }
 
-/* --- 2. БРУТАЛИЗМ --- */
-body.style-brutalism {
-    --border-radius: 0px;
-    --glass-blur: none;
-    --shadow: 4px 4px 0px var(--text-main);
-}
-body.style-brutalism .glass-panel { border: 3px solid var(--text-main); padding: 16px; background: var(--surface-color); }
-body.style-brutalism .lesson-time { background: var(--text-main); color: var(--bg-color); border-right: 3px solid var(--text-main); }
-body.style-brutalism .lesson-num { color: var(--bg-color); }
-body.style-brutalism .lesson-clock { color: var(--bg-color); opacity: 0.8; }
-body.style-brutalism .schedule-card { border: 3px solid var(--text-main); }
-body.style-brutalism .week-control { border: 2px solid var(--text-main); background: var(--surface-color); }
-body.style-brutalism .settings-header { border-bottom: 2px solid var(--text-main); background: var(--surface-color); }
-body.style-brutalism .app-header { border-bottom: 3px solid var(--text-main); }
+/* 5. Жирные рамки (Брутализм) */
+body.effect-thick-borders .glass-panel { border: 3px solid var(--text-main) !important; box-shadow: 4px 4px 0px var(--text-main) !important; }
+body.effect-thick-borders .lesson-time { background: var(--text-main); color: var(--bg-color); border-right: 3px solid var(--text-main); }
+body.effect-thick-borders .lesson-num { color: var(--bg-color); }
 
-/* --- 3. NOTHING OS --- */
-body.style-nothing {
-    --border-radius: 0px;
-    --glass-blur: blur(20px);
-    --shadow: none;
-}
-body.style-nothing::before {
+/* 6. Точечный фон (Nothing) */
+body.effect-dot-background::before {
     content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background-image: radial-gradient(var(--text-main) 1px, transparent 1px);
-    background-size: 10px 10px; pointer-events: none; z-index: -1; opacity: 0.1;
+    background-size: 10px 10px; pointer-events: none; z-index: 0; opacity: 0.15;
 }
-body.style-nothing .glass-panel { border: 1px solid var(--border-color); background: var(--surface-color); }
-body.style-nothing .logo-icon { background: transparent; border: 2px solid var(--text-main); color: var(--text-main); }
-body.style-nothing .badge-substitution { background: var(--accent-color); color: var(--bg-color); font-weight: 900; }
-body.style-nothing .timer-timeleft .time-value { font-family: 'Space Mono', monospace; }
+
+/* 7. ASCII-скобки */
+body.effect-ascii-brackets .section-header h2::before { content: "[ "; color: var(--accent-color); }
+body.effect-ascii-brackets .section-header h2::after { content: " ]"; color: var(--accent-color); }

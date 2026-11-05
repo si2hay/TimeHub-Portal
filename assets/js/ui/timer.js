@@ -26,7 +26,12 @@ export function createTimer() {
             <div class="timer-progress-track">
                 <div class="timer-progress-fill" id="t-progress"></div>
             </div>
-            <div class="timer-hint" id="t-hint">Нажми, чтобы раскрыть</div>
+            
+            <!-- НОВЫЙ БЛОК: Подсказка и бейджик дня -->
+            <div class="timer-bottom-row">
+                <div class="timer-hint" id="t-hint">Нажми, чтобы раскрыть</div>
+                <div class="timer-day-badge" id="t-day-badge">Пн</div>
+            </div>
         </div>
     `;
 
@@ -36,8 +41,18 @@ export function createTimer() {
     const tTimeValue = widget.querySelector('#t-time-value');
     const tProgress = widget.querySelector('#t-progress');
     const tHint = widget.querySelector('#t-hint');
+    const tDayBadge = widget.querySelector('#t-day-badge');
     const canvas = widget.querySelector('#timer-particles');
     const ctx = canvas.getContext('2d');
+
+    // Обновление выбранного дня
+    const updateSelectedDay = (dayNum) => {
+        const days = ['', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт'];
+        if (tDayBadge) tDayBadge.textContent = days[dayNum] || 'Пн';
+    };
+
+    updateSelectedDay(state.get('currentDay'));
+    state.on('change:currentDay', updateSelectedDay);
 
     let localParticles = [];
     const LOCAL_PARTICLES_COUNT = 30;
@@ -120,7 +135,6 @@ export function createTimer() {
 
         const ordinals = ['первой', 'второй', 'третьей', 'четвертой', 'пятой', 'шестой', 'седьмой'];
         
-        // Векторная иконка книги
         const bookIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 4px; margin-bottom: 2px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
 
         let status = 'waiting';
@@ -209,7 +223,6 @@ export function createTimer() {
                     }
                 }
 
-                // Перемена между парами
                 if (currentMins >= end && i < todaySchedule.length - 1) {
                     const nextPair = todaySchedule[i+1];
                     const nextStart = timeToMinutes(nextPair.startTime);
@@ -226,7 +239,6 @@ export function createTimer() {
             }
         }
 
-        // ИСПРАВЛЕНО: Теперь кабинет добавляется в название предмета, когда идет пара
         let subjectHTML = '';
         if (currentPairNum !== null && currentLessons.length > 0) {
             const lesson = currentLessons.find(l => l.pair === currentPairNum);
@@ -238,7 +250,7 @@ export function createTimer() {
 
         tStatus.innerHTML = text; 
         tStatus.className = `timer-status ${status}`;
-        tSubject.innerHTML = subjectHTML; // Используем innerHTML для отрисовки span с кабинетом
+        tSubject.innerHTML = subjectHTML;
         tTimeLabel.textContent = timeLabelStr;
         tTimeValue.textContent = timeValueStr;
         tProgress.style.width = `${progress * 100}%`;

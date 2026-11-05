@@ -1,4 +1,4 @@
-// ui/header.js: Отрисовка верхней панели
+// assets/js/ui/header.js: Отрисовка верхней панели
 
 import { openSettings } from './settings.js';
 import { applyTheme } from '../themes.js';
@@ -10,7 +10,7 @@ export function createHeader() {
     
     const updateDate = () => {
         const now = state.getNow();
-        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        const options = { day: 'numeric', month: 'long' };
         let dateStr = now.toLocaleDateString('ru-RU', options);
         dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
         header.querySelector('.header-date').textContent = dateStr;
@@ -43,7 +43,9 @@ export function createHeader() {
                 <button id="btn-reset-streak" class="streak-revive-btn" style="display:none; background: var(--accent-color);">Начать заново</button>
             </div>
         </div>
+        
         <div class="header-date"></div>
+        
         <button id="btn-settings" class="icon-btn" aria-label="Настройки">⚙️</button>
     `;
 

@@ -83,7 +83,9 @@ export function createSchedule() {
                            currentMins >= startMins && currentMins <= endMins);
 
             const card = document.createElement('div');
-            card.className = `schedule-card glass-panel schedule-card-anim anim-${animType} ${isNow ? 'current-lesson animate-pulse' : ''} ${lesson.isSubstitution ? 'is-substitution' : ''}`;
+            
+            // ИСПРАВЛЕНИЕ: Убрали animate-pulse из начального класса, чтобы он не конфликтовал с анимацией появления
+            card.className = `schedule-card glass-panel schedule-card-anim anim-${animType} ${isNow ? 'current-lesson' : ''} ${lesson.isSubstitution ? 'is-substitution' : ''}`;
             card.style.animationDelay = `${index * 0.03}s`; 
             card.dataset.pair = lesson.pair;
             card.dataset.start = startMins;
@@ -111,9 +113,13 @@ export function createSchedule() {
             `;
             container.appendChild(card);
 
+            // Ждем окончания анимации появления (600мс) и только потом включаем пульсацию
             setTimeout(() => {
                 card.classList.remove('schedule-card-anim');
                 card.classList.remove(`anim-${animType}`);
+                if (isNow) {
+                    card.classList.add('animate-pulse');
+                }
             }, 600);
         });
 
@@ -153,7 +159,11 @@ export function createSchedule() {
                            currentMins >= start && currentMins <= end);
 
             if (isNow && !card.classList.contains('current-lesson')) {
-                card.classList.add('current-lesson', 'animate-pulse');
+                card.classList.add('current-lesson');
+                // Если карточка уже отрисована (не в процессе анимации появления), сразу добавляем пульс
+                if (!card.classList.contains('schedule-card-anim')) {
+                    card.classList.add('animate-pulse');
+                }
             } else if (!isNow && card.classList.contains('current-lesson')) {
                 card.classList.remove('current-lesson', 'animate-pulse');
             }

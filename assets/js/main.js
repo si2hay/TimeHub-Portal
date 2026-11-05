@@ -1,8 +1,12 @@
-// main.js: Точка входа в приложение
+// assets/js/main.js: Точка входа в приложение
 
 import { state } from './state.js';
 import { CONFIG } from './config.js';
-import { initThemes, applyTextScale, applyTheme, applyStyle, applyFont } from './themes.js';
+import {
+    initThemes, applyTextScaleLevel, applyTextScale,
+    applyTheme, applyEffects, applyFont,
+    applyCustomColors, applyCustomBorderRadius
+} from './themes.js';
 import { initParticles } from './particles.js';
 import { initPWA } from './pwa.js';
 import { createHeader } from './ui/header.js';
@@ -66,8 +70,9 @@ function applyBackground() {
 
     if (!settings.bgUrl) {
         container.style.display = 'none';
-        document.body.style.backgroundColor = 'var(--bg-color)';
-        document.body.style.backgroundImage = 'var(--bg-gradient)';
+        // ИСПРАВЛЕНИЕ: Очищаем инлайн-стили, чтобы цвета темы работали свободно
+        document.body.style.backgroundColor = '';
+        document.body.style.backgroundImage = '';
         return;
     }
 
@@ -75,8 +80,11 @@ function applyBackground() {
     document.body.style.backgroundColor = 'transparent';
     document.body.style.backgroundImage = 'none';
 
-    overlay.style.opacity = settings.bgDarkness || 0;
-    media.style.filter = `blur(${settings.bgBlur || 0}px)`;
+    const darknessLevel = settings.bgDarknessLevel ?? 0;
+    const blurLevel = settings.bgBlurLevel ?? 0;
+
+    overlay.style.opacity = (darknessLevel / 10) * 0.8;
+    media.style.filter = `blur(${blurLevel * 1.5}px)`;
 
     const isVideo = settings.bgUrl.match(/\.(mp4|webm|ogg)$/i) || (settings.bgUrl.startsWith('data:video'));
     
@@ -98,9 +106,17 @@ function applyBackground() {
 function applyAllSettings(newSettings) {
     applyBackground();
     if (newSettings.theme) applyTheme(newSettings.theme);
-    if (newSettings.uiStyle !== undefined) applyStyle(newSettings.uiStyle);
+    if (newSettings.effects) applyEffects(newSettings.effects);
     if (newSettings.font) applyFont(newSettings.font);
-    if (newSettings.textScale) applyTextScale(newSettings.textScale);
+    
+    if (newSettings.textScaleLevel !== undefined) {
+        applyTextScaleLevel(newSettings.textScaleLevel);
+    } else if (newSettings.textScale) {
+        applyTextScale(newSettings.textScale);
+    }
+    
+    applyCustomColors(newSettings.customColors);
+    applyCustomBorderRadius(newSettings.customBorderRadius);
 }
 
 const appDiv = document.getElementById('app');
