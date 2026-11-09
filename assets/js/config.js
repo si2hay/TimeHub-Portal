@@ -2,7 +2,7 @@
 
 export const CONFIG = {
     APP_NAME: "TimeHub-Portal",
-    VERSION: "05.11.2026-03:29",
+    VERSION: "09.11.2026-03:16",
     
     ENABLE_DEBUG: false, //вкл отладку true,выключить false
     SEMESTER_START_DATE: new Date("2026-10-26T00:00:00"),
